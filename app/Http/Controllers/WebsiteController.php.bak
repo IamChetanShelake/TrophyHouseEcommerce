@@ -1,0 +1,138 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use App\Models\Client;
+use App\Models\Testimonial;
+use App\Models\cartItem;
+use App\Models\Contact;
+use App\Mail\ContactFormSubmitted;
+use App\Models\WishlistItem;
+use App\Models\AwardCategory;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+
+class WebsiteController extends Controller
+{
+    public function Websiteindex()
+    {
+        $products = Product::all();
+        $categories = AwardCategory::with('products')->get();
+        $cart_items = Auth::check() ? CartItem::where('user_id', Auth::id())->count() : 0;
+        $wishlist_product_ids = Auth::check() ? WishlistItem::where('user_id', Auth::id())->pluck('product_id')->toArray() : [];
+        $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+        $testimonials = Testimonial::all();
+        $clients = Client::all();
+        // $aboutus = About::all();
+        return view('website.home', compact('testimonials', 'clients','products', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count'));
+    }
+
+    // public function about()
+    // {  
+    //     $categories = AwardCategory::select('name')->get();
+    //     $cart_items = Auth::check() ? CartItem::where('user_id', Auth::id())->count() : 0;
+    //     $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+    //     return view('website.about', compact('categories', 'cart_items', 'wishlist_count'));
+    // }
+
+    public function contact()
+    {
+        $categories = AwardCategory::select('name')->get();
+        $cart_items = Auth::check() ? CartItem::where('user_id', Auth::id())->count() : 0;
+        $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+        return view('website.contact', compact('cat egories', 'cart_items', 'wishlist_count'));
+    }
+
+    public function storeContact(Request $request)
+    {
+        // Validate the form input
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        try {
+            // Store the contact form data
+            $contact = Contact::create($validated);
+
+            // Send email to the specified address with reply-to set to user's email
+            Mail::to('chetanshelake147@gmail.com')
+                ->queue(new ContactFormSubmitted($contact));
+
+            // Return success message
+            return redirect()->route('contact')->with('success', 'Your message has been sent successfully!');
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Contact form submission error: ' . $e->getMessage());
+
+            // Return error message
+            return redirect()->route('contact')->with('error', 'An error occurred while sending your message. Please try again.');
+        }
+    }
+
+    public function gallery()
+        {
+            $products = Product::select('id', 'title', 'image')->get();
+            $categories = AwardCategory::select('name')->get();
+            $cart_items = Auth::check() ? CartItem::where('user_id', Auth::id())->count() : 0;
+            $wishlist_product_ids = Auth::check() ? WishlistItem::where('user_id', Auth::id())->pluck('product_id')->toArray() : [];
+            $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+
+            return view('website.gallery', compact('products', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count'));
+        }
+
+        public function searchLive(Request $request)
+            {
+                if ($request->ajax()) {
+                    $query = $request->query('query');
+
+                    $products = Product::where('title', 'like', '%' . $query . '%')
+                                    ->select('id', 'title')
+                                    ->limit(10)
+                                    ->get();
+
+                    return response()->json($products);
+                }
+
+                abort(403); // block non-AJAX
+            }
+
+        //added by sonali
+
+    public function cart()
+        {      
+            if (Auth::check()) {
+                // Fetch cart items as an array
+                $cartItems = cartItem::with('product.variants')->where('user_id', Auth::id())->get();
+                // return $cartItems;
+            }
+            return view('website.cart',compact('cartItems'));
+        }
+
+
+        public function viewCategory($id)
+            {
+                $products = Product::with('variants')
+                            ->where('category_id', $id)
+                            ->get();
+                        
+                        $category = AwardCategory::findOrFail($id);
+                    $subcategories = SubCategory::where('category_id', $id)->get();
+                        
+                return view('website.categories',compact('category','subcategories','products'));
+            }
+
+    public function viewProduct($id)
+    {
+         $products = Product::with('variants')
+                    ->where('category_id', $id)
+                    ->get();
+        
+        return view('website.categories',compact('category','subcategories','products'));
+    }
+}

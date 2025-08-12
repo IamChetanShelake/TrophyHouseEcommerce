@@ -1,0 +1,168 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Page;
+use App\Models\Product;
+use App\Models\CartItem;
+use App\Models\WishlistItem;
+use App\Models\AwardCategory;
+use App\Models\Address;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
+class CartItemController extends Controller
+{
+    public function addToCart(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'variant_id' => 'required|exists:product_variants,id',
+        ]);
+
+        $userId = auth()->id();
+        $productId = $request->product_id;
+        $variantId = $request->variant_id;
+
+        // Check if the same product + variant already exists in the cart
+        $cartItem = CartItem::where('user_id', $userId)
+            ->where('product_id', $productId)
+            ->where('variant_id', $variantId)
+            ->first();
+
+        if ($cartItem) {
+            // If already in cart with same size, just increment quantity
+            $cartItem->quantity += 1;
+            if ($cartItem->save()) {
+                return redirect()->back()->with('success', 'Product quantity updated in cart!');
+            } else {
+                return redirect()->back()->with('error', 'Something went wrong, please try again!');
+            }
+        } else {
+            // Create new cart item
+            $addedToCart = CartItem::create([
+                'user_id' => $userId,
+                'product_id' => $productId,
+                'variant_id' => $variantId,
+                'quantity' => 1
+            ]);
+
+            if ($addedToCart) {
+                return redirect()->back()->with('success', 'Product added to cart!');
+            } else {
+                return redirect()->back()->with('error', 'Something went wrong, please try again!');
+            }
+        }
+    }
+
+    public function productDetail($id)
+    {
+        $product = Product::with('variants')->find($id);
+        $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+
+        $similarProducts = Product::where('category_id', $product->category_id)
+            ->where('sub_category_id', $product->sub_category_id)
+            ->where('id', '!=', $id)
+            ->get();
+
+        $categories = AwardCategory::with('products')->get();
+        $cart_items = Auth::check() ? CartItem::where('user_id', Auth::id())->count() : 0;
+        $pages = Page::all();
+
+        return view('website.Product.productDetails', compact('pages', 'product', 'wishlist_count', 'similarProducts', 'categories', 'cart_items'));
+    }
+
+    public function showAddressPage()
+    {
+        $addresses = Address::where('user_id', auth()->id())->get();
+        $selectedAddress = Address::where('user_id', auth()->id())->where('is_default', true)->first();
+        $cartItems = CartItem::with('product.variants')->where('user_id', auth()->id())->get();
+
+        $cartSummary = session('cart_summary'); // ✅ Fetch from session
+
+        return view('website.cart', compact('addresses', 'selectedAddress', 'cartItems', 'cartSummary'));
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(CartItem $cartItem)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(CartItem $cartItem)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, CartItem $cartItem)
+{
+    $request->validate([
+        'variant_id' => 'required|exists:product_variants,id',
+        'quantity' => 'required|integer|min:1|max:200',
+    ]);
+
+    if ($cartItem->user_id !== auth()->id()) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    $cartItem->variant_id = $request->variant_id;
+    $cartItem->quantity = $request->quantity;
+
+    if ($cartItem->save()) {
+        return response()->json(['success' => true, 'message' => 'Cart item updated']);
+    } else {
+        return response()->json(['success' => false, 'message' => 'Failed to update cart item']);
+    }
+}
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        $cartItem = CartItem::findOrFail($id);
+
+        // Optional: Ensure only the owner can delete
+        if ($cartItem->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($cartItem->delete()) {
+            return redirect()->back()->with('success', 'Item removed from cart.');
+        }
+    }
+}
