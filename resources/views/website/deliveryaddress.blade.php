@@ -262,9 +262,11 @@
                     <strong>₹{{ number_format($totalAmount, 2) }}</strong>
                 </div>
 
-                <a href="{{ route('payment') }}">
-                    <button class="btn btn-continue">Proceed To Pay</button>
-                </a>
+                <form action="{{ route('pay') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="amount" value="{{ $totalAmount }}">
+                    <button type="submit" class="btn btn-continue">Proceed To Pay</button>
+                </form>
             </div>
         </div>
     </div>

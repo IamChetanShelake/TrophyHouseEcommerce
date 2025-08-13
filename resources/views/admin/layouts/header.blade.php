@@ -111,6 +111,13 @@
                         </a>
                     </li>
 
+                    <li class="nav-item" data-keywords="payments">
+                        <a class="nav-link" href="{{ route('admin.payments') }}">
+                            <span class="menu-title">Payments</span>
+                            <i class="mdi mdi-credit-card menu-icon"></i>
+                        </a>
+                    </li>
+
 
                     <li class="nav-item" data-keywords="products,addProducts,editProducts,viewProducts">
                         <a class="nav-link" href="{{ route('products') }}">

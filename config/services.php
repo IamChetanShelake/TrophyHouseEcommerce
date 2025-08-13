@@ -35,9 +35,16 @@ return [
         ],
     ],
     'google' => [
-    'client_id' => env('GOOGLE_CLIENT_ID'),
-    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect' => 'https://trophyhouse.shop/auth/google/call-back',
-],
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => 'https://trophyhouse.shop/auth/google/call-back',
+    ],
+
+    'cashfree' => [
+        'app_id' => env('CASHFREE_APP_ID'),
+        'secret_key' => env('CASHFREE_SECRET_KEY'),
+        'stage' => env('CASHFREE_STAGE'),
+        'webhook_secret' => env('CASHFREE_WEBHOOK_SECRET'),
+    ],
 
 ];

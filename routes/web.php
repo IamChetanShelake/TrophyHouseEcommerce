@@ -151,7 +151,12 @@ Route::post('/customization/{id}/request-edit', [CustomizationController::class,
     //profile---------------------------------
     Route::get('/edit-profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/update-profile', [ProfileController::class, 'update'])->name('profile.update');
-      Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
+    Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
+    
+    // Orders
+    Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('my.orders');
+    Route::get('/order-details/{id}', [OrderController::class, 'orderDetails'])->name('order.details');
+    Route::get('/payment-details/{order_id}', [OrderController::class, 'paymentDetails'])->name('payment.details');
 });
 
 /*
@@ -312,6 +317,18 @@ Route::get('/clean-cache', function () {
     $exitCode = Artisan::call('event:clear');
     $exitCode = Artisan::call('optimize');
     return '<h1>Cache facade value cleared</h1>';
+});
+
+Route::post('/pay', 'App\Http\Controllers\PaymentController@createOrder')->name('pay');
+Route::get('/payment-callback', 'App\Http\Controllers\PaymentController@paymentCallback');
+Route::post('/payment-webhook', 'App\Http\Controllers\PaymentController@paymentWebhook');
+
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::get('/admin/payments', 'App\Http\Controllers\Admin\PaymentAdminController@index')->name('admin.payments');
+    Route::get('/admin/payments/{order_id}/details', 'App\Http\Controllers\Admin\PaymentAdminController@details')->name('admin.payments.details');
+    Route::get('/admin/payments/{order_id}/show', 'App\Http\Controllers\Admin\PaymentAdminController@show')->name('admin.payments.show');
+    Route::get('/admin/payments/{order_id}/invoice', 'App\Http\Controllers\Admin\PaymentAdminController@invoice')->name('admin.payments.invoice');
+    Route::get('/admin/payments/analytics', 'App\Http\Controllers\Admin\PaymentAdminController@analytics')->name('admin.payments.analytics');
 });
 // Route::middleware(['auth',isAdmin::class])->group(function()
 //         {

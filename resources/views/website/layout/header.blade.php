@@ -309,7 +309,7 @@
                 <!--</div>-->
                 <div class="sidebar-footer mt-auto px-3">
                     <ul class="list-unstyled" style="position: relative;top: 10px;">
-                        <li><i class="fas fa-box"></i> My Orders</li>
+                        <li><i class="fas fa-box"></i><a href="{{ route('my.orders') }}" style="text-decoration: none; color: inherit;"> My Orders</a></li>
                         <li><i class="fas fa-heart"></i><a href="{{ route('wishlist') }}"> Wishlist </a></a></li>
                         <li><i class="fas fa-cog"></i> Change Password</li>
                         <!--<li><i class="fas fa-paint-brush"></i> Customization & Support</li>-->
