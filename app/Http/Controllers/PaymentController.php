@@ -13,7 +13,9 @@ use App\Models\Page;
 use App\Models\WishlistItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Address;
 use App\Models\Payment;
 use App\Models\PaymentItem;
@@ -306,47 +308,67 @@ class PaymentController extends Controller
                 return;
             }
 
-            // Get user's default address
-            $defaultAddress = Address::where('user_id', $user->id)
-                ->where('is_default', true)
-                ->first();
+            // Get the payment record
+            $payment = Payment::where('order_id', $paymentOrderId)->first();
+            if (!$payment) {
+                Log::error('Payment record not found for order creation', ['payment_order_id' => $paymentOrderId]);
+                return;
+            }
 
-            $shippingAddress = $defaultAddress ? 
-                $defaultAddress->address . ', ' . $defaultAddress->city . ', ' . $defaultAddress->state . ' - ' . $defaultAddress->pincode :
-                'No address provided';
-
-            // Create orders for each cart item (current structure seems to be one order per product)
+            // Calculate total price from cart items
+            $calculatedTotal = 0;
             foreach ($cartItems as $cartItem) {
                 $variant = $cartItem->variant;
                 $unitPrice = $variant ? ($variant->discounted_price ?? $variant->price) : 0;
-                $itemTotal = $unitPrice * $cartItem->quantity;
+                $calculatedTotal += $unitPrice * $cartItem->quantity;
+            }
 
-                // Create order
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'product_id' => $cartItem->product_id,
-                    'order_number' => $paymentOrderId . '_' . $cartItem->product_id,
-                    'total_amount' => $itemTotal,
-                    'quantity' => $cartItem->quantity,
-                    'payment_method' => $paymentMethod,
-                    'status' => 'processing',
-                    'shipping_address' => $shippingAddress,
-                ]);
+            // Create single order record for all products
+            $order = new Order();
+            $order->payment_id = $payment->id;
+            $order->user_id = $user->id;
+            $order->total_price = $calculatedTotal;
+            $order->status = 'approved';
+            $order->save();
 
-                // Create order item
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $cartItem->product_id,
-                    'quantity' => $cartItem->quantity,
-                    'final_price' => $itemTotal,
-                ]);
+            Log::info('Order created successfully', [
+                'order_id' => $order->order_id,
+                'payment_order_id' => $paymentOrderId,
+                'payment_id' => $payment->id,
+                'user_id' => $user->id,
+                'total_price' => $calculatedTotal
+            ]);
 
-                Log::info('Order created successfully', [
-                    'order_id' => $order->id,
-                    'payment_order_id' => $paymentOrderId,
-                    'product_id' => $cartItem->product_id,
-                    'quantity' => $cartItem->quantity,
-                    'total_amount' => $itemTotal
+            // Create order_products records for each cart item
+            foreach ($cartItems as $cartItem) {
+                $variant = $cartItem->variant;
+                
+                if (!$variant) {
+                    Log::warning('Variant not found for cart item', [
+                        'cart_item_id' => $cartItem->id,
+                        'product_id' => $cartItem->product_id
+                    ]);
+                    continue;
+                }
+
+                $unitPrice = $variant->discounted_price ?? $variant->price;
+
+                $orderProduct = new OrderProduct();
+                $orderProduct->order_id = $order->order_id;
+                $orderProduct->payment_id = $payment->id;
+                $orderProduct->variant_id = $cartItem->variant_id;
+                $orderProduct->unit_price = $unitPrice;
+                $orderProduct->quantity = $cartItem->quantity;
+                $orderProduct->status = 'approved';
+                $orderProduct->save();
+
+                Log::info('Order product created successfully', [
+                    'order_product_id' => $orderProduct->id,
+                    'order_id' => $order->order_id,
+                    'payment_id' => $payment->id,
+                    'variant_id' => $cartItem->variant_id,
+                    'unit_price' => $unitPrice,
+                    'quantity' => $cartItem->quantity
                 ]);
             }
 

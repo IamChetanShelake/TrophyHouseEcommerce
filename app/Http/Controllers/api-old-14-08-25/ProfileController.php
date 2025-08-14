@@ -36,7 +36,6 @@ class ProfileController extends Controller
         $filename = time() . '.' . $image->extension();
 
         $filepath = base_path('profile_images/'.$user->profile_img);
-        
         if ($user->profile_img && is_file($filepath)) {
             unlink($filepath);
         }
@@ -64,38 +63,11 @@ class ProfileController extends Controller
             'status_code' => 200,
             'message' => 'Profile updated successfully',
             'updated_user' => $user,
-            // 'profile_img' => $user->profile_img 
-            // ? asset('profile_images/' . $user->profile_img) 
-            // : null,
-        ], 200);
-    }
-    
-    public function getProfile(Request $req)
-{
-    $user = User::find($req->user_id);
-
-    if($user){
-    return response()->json([
-        'success' => true,
-         'status_code' => 200,
-        'data' => [
-            'name'        => $user->name,
-            'email'       => $user->email,
-            'mobile'      => $user->mobile,
             'profile_img' => $user->profile_img 
-                ? asset('profile_images/' . $user->profile_img)
-                : null
-        ]
-    ]);
-    }else{
-          return response()->json([
-        'success' => false,
-         'status_code' => 404,
-         'message'=>'no user found with this details',
-    ]);
-    }
-}
-
+            ? base_path('profile_images/' . $user->profile_img) 
+            : null,
+        ], 200);
+    } 
 }
     
    

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\AwardCategory;
 use App\Models\cartItem;
 use App\Models\Page;
@@ -26,9 +27,13 @@ class OrderController extends Controller
             return redirect()->route('login')->with('error', 'Please login to view your orders.');
         }
 
-        // Get user's payment history with items
-        $payments = Payment::with(['paymentItems.product', 'paymentItems.variant'])
-            ->where('customer_id', Auth::id())
+        // Get user's orders with related data
+        $orders = Order::with([
+            'payment', 
+            'orderProducts.variant.product',
+            'orderProducts.variant'
+        ])
+            ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -41,7 +46,7 @@ class OrderController extends Controller
         ];
 
         return view('website.orders.my-orders', array_merge($commonData, [
-            'payments' => $payments
+            'orders' => $orders
         ]));
     }
 

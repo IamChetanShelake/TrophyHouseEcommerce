@@ -131,9 +131,63 @@ class WebsiteController extends Controller
         abort(403);
     }
 
-    public function viewProducts()
+    // public function viewProducts()
+    // {
+    //     $products = Product::paginate(16);
+    //     $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+    //     $categories = AwardCategory::with('products')->get();
+    //     $pages = Page::all();
+    //     $cart_items = Auth::check() ? CartItem::where('user_id', Auth::id())->count() : 0;
+    //     $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+
+
+        
+    //     $allPrices = ProductVariant::pluck('price')->sort()->values();
+       
+    //     $minPrice = floor($allPrices->min() / 500) * 500;
+    //     $maxPrice = ceil($allPrices->max() / 500) * 500;
+    //     $priceRanges = [];
+    //     $step = 500;
+    //     for ($i = $minPrice; $i < $maxPrice; $i += $step) {
+    //         $range = '₹' . $i . ' - ₹' . ($i + $step);
+    //         $priceRanges[] = $range;
+           
+    //     }
+       
+    //     $priceRanges[] = '₹' . $maxPrice . ' & above';
+
+
+    //     //for colors --------------------------------------
+    //     $allColors = ProductVariant::whereNotNull('color')
+    //         ->pluck('color')
+    //         ->flatMap(function ($color) {
+    //             // Handle JSON string or array
+    //             if (is_string($color)) {
+    //                 $decoded = json_decode($color, true);
+    //                 return is_array($decoded) ? $decoded : [];
+    //             }
+    //             return is_array($color) ? $color : ($color ? [$color] : []);
+    //         })
+    //         ->filter()
+    //         ->map(function ($color) {
+    //             return ucfirst(strtolower(trim($color))); 
+    //         })
+    //         ->unique()
+    //         ->values()
+    //         ->toArray();
+
+
+    //     $sizes = $this->getSizeLabels();
+    //     return view('website.Product.products', compact('wishlist_count', 'cart_items', 'pages', 'products', 'wishlist_count', 'categories', 'allPrices', 'priceRanges', 'allColors', 'sizes'));
+    // }
+    public function viewProducts(Request $request)
     {
-        $products = Product::paginate(16);
+        $subcategoryId = $request->query('subcategory');
+        // return $subcategoryId;
+        //   //   $products = Product::paginate(16);
+        $products = Product::get();
+        // $products = Product::where('subcategory_id', $subcategoryId)
+        // ->paginate(16);
         $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
         $categories = AwardCategory::with('products')->get();
         $pages = Page::all();
@@ -188,7 +242,7 @@ class WebsiteController extends Controller
         //     ->sort()   // Sort ascending
         //     ->values();
         $sizes = $this->getSizeLabels();
-        return view('website.Product.products', compact('wishlist_count', 'cart_items', 'pages', 'products', 'wishlist_count', 'categories', 'allPrices', 'priceRanges', 'allColors', 'sizes'));
+        return view('website.Product.products', compact('wishlist_count', 'cart_items', 'pages', 'products', 'wishlist_count', 'categories', 'allPrices', 'priceRanges', 'allColors', 'sizes', 'subcategoryId'));
     }
 
     public function cart()

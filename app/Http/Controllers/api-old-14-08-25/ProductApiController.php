@@ -5,7 +5,6 @@ namespace App\Http\Controllers\api;
 use App\Models\Product;
 use App\Models\productImage;
 use App\Models\SubCategory;
-use App\Models\Gallery;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -291,74 +290,171 @@ class ProductApiController extends Controller
         ]);
     }
     
-    public function getProductsByCategoryAndSubcategory(Request $req)
-{
-    $category_id     = $req->category_id;
-    $subCategory_id  = $req->sub_category_id;
+     public function getProductsByCategoryAndSubcategory(Request $req)
+    {
 
-    // Build base query
-    $query = Product::with([
-        'category',
-        'subcategory',
-        'variants',
-        'images'
-    ]);
+        // Check if category_id is provided
+        if (!$req->has('category_id') || is_null($req->category_id)) {
+            return response()->json([
+                'success' => false,
+                'status_code' => 400,
+                'message' => 'Category ID is required'
+            ], 400);
+        }
 
-    // Apply category filter if provided
-    if (!empty($category_id)) {
-        $query->where('category_id', $category_id);
-    }
 
-    // Apply subcategory filter if provided
-    if (!empty($subCategory_id)) {
-        $query->where('sub_category_id', $subCategory_id);
-    }
+        // Validate inputs
+        $req->validate([
+            'category_id' => 'required|exists:category,id',
+            'subCategory_id' => 'nullable|exists:sub_categories,id',
+        ]);
 
-    $products = $query->get();
+        
+            
 
-    if ($products->isEmpty()) {
+        $category_id = $req->category_id;
+        $subCategory_id = $req->sub_category_id ?? null;
+
+
+        if ($subCategory_id) {
+
+            $subcategory = SubCategory::where('id', $subCategory_id)
+                ->where('category_id', $category_id)
+                ->first();
+       
+
+            if (!$subcategory) {
+                return response()->json([
+                    'success' => false,
+                    'status_code' => 400,
+                    'message' => 'Subcategory does not belong to the specified category'
+                ], 400);
+            }
+        }
+
+        // Query products by category_id
+        $categoryProducts = Product::where('category_id', $category_id)->where('sub_category_id', $subcategory->id)
+            ->with(['category', 'subcategory', 'variants','images'])
+            ->get();
+
+
+
+        if (!$subCategory_id) {
+            if ($categoryProducts->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status_code' => 404,
+                    'message' => 'No products found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status_code' => 200,
+                'category' => [
+                    'id' => $categoryProducts->first()->category->id,
+                    'name' => $categoryProducts->first()->category->name,
+                ],
+                'sub_category' => [
+                    'id' => $categoryProducts->first()->subcategory->id,
+                    'title' => $categoryProducts->first()->subcategory->title,
+                ],
+
+                'products' => $categoryProducts->map(function ($product) {
+
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->variants,
+                        'discount_percentage' => $product->variants->first()->discount_percentage,
+                        'discounted_price' => $product->variants->first()->discounted_price,
+                        'color' => $product->variants->first()->color,
+                        'size' => $product->variants->first()->size,
+                        'category_id' => $product->category->id,
+                        'subcategory_id' => $product->subcategory ? $product->subcategory->id : null,
+                    ];
+                }),
+            ], 200);
+        }
+
+        // Query products by category_id and subCategory_id
+        $subcategoryProducts = Product::where('category_id', $category_id)
+            ->where('sub_category_id', $subcategory->id)
+            ->with(['category', 'subcategory','variants','images'])
+            ->get();
+
+        if ($subcategoryProducts->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No products found'
+            ], 404);
+        }
+
+//   return response()->json([
+//                 'success' => true,
+//                 'message' => $subcategoryProducts,
+//             ], 200);
+
         return response()->json([
-            'success'      => false,
-            'status_code'  => 404,
-            'message'      => 'No products found'
-        ], 404);
-    }
+            'success' => true,
+            'category' => [
+                'id' => $subcategoryProducts->first()->category->id,
+                'name' => $subcategoryProducts->first()->category->name,
+            ],
+            'subcategory' => [
+                'id' => $subcategoryProducts->first()->subcategory->id,
+                'title' => $subcategoryProducts->first()->subcategory->title,
 
-    return response()->json([
-        'success'        => true,
-        'status_code'    => 200,
-        'category'       => [
-            'id'   => $products->first()->category->id ?? null,
-            'name' => $products->first()->category->name ?? null,
-        ],
-        'subcategory'    => [
-            'id'    => $products->first()->subcategory->id ?? null,
-            'title' => $products->first()->subcategory->title ?? null,
-        ],
-        'total_products' => $products->count(),
-        'products'       => $products->map(function ($product) {
-           return response()->json([
+            ],
+            'total_products'=>$subcategoryProducts->count(),
+            'products' => $subcategoryProducts->map(function ($product) {
+                  return response()->json([
                 'success' => true,
                 'message' => $product,
             ], 200);
 
-        }),
-    ], 200);
-}
+                // return [
+                //     'id' => $product->id,
+                //     'name' => $product->title,
+                //     'description'=>$product->description,
+                //     'rating'=>$product->rating,
+                //     'is_top_pick'=>$product->is_top_pick,
+                //     'is_best_seller'=>$product->is_best_seller,
+                //     'is_new_arrival'=>$product->is_new_arrival,
+                //     'price' => $product->variants->first()->price ?? null,
+                //     'discount_percentage' => $product->variants->first()->discount_percentage ?? null,
+                //     'discounted_price' => $product->variants->first()->discounted_price ?? null,
+                //     'color' => $product->variants->first()->color ?? null,
+                //     'size' => $product->variants->first()->size ?? null,
+                //     'category_id' => $product->category->id ?? null,
+                //     'subcategory_id' => $product->subcategory ? $product->subcategory->id : null,
+                //       // Add more product fields if needed
+                // 'image_url' => $product->images->map(function ($img) {
+                //     return $img;
+                // }),
+                // ];
+            }),
+        ], 200);
+        // Query products by category_id
+        $query = Product::where('category_id', $category_id)
+            ->with(['category', 'subcategory','images']);
 
-
-    public function gallery() {
-        
-        $gallery = Gallery::all();
-        
-        if($gallery){
-              return response()->json([
-                    'success' => true,
-                    'status_code' => 200,
-                    'message' => 'gallery fetched successfully',
-                    'gallery'=>$gallery,
-                ], 200);
+        // Filter by subcategory_id if provided
+        if ($subCategory_id) {
+            $query->where('sub_category_id', $subCategory_id);
         }
-        
+
+        $products = $query->get();
+
+        // Return response
+        if ($products->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'status_code' => 404,
+                'message' => 'No products found'
+            ], 404);
+        }
     }
+
+    public function allcat() {}
 }
