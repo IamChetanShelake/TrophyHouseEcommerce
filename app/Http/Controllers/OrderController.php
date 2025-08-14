@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderProduct;
 use App\Models\AwardCategory;
 use App\Models\cartItem;
 use App\Models\Page;
@@ -12,6 +11,8 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PDF;
+
 
 class OrderController extends Controller
 {
@@ -27,13 +28,9 @@ class OrderController extends Controller
             return redirect()->route('login')->with('error', 'Please login to view your orders.');
         }
 
-        // Get user's orders with related data
-        $orders = Order::with([
-            'payment', 
-            'orderProducts.variant.product',
-            'orderProducts.variant'
-        ])
-            ->where('user_id', Auth::id())
+        // Get user's payment history with items
+        $payments = Payment::with(['paymentItems.product', 'paymentItems.variant'])
+            ->where('customer_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -46,7 +43,7 @@ class OrderController extends Controller
         ];
 
         return view('website.orders.my-orders', array_merge($commonData, [
-            'orders' => $orders
+            'payments' => $payments
         ]));
     }
 
@@ -78,6 +75,25 @@ class OrderController extends Controller
             'order' => $order
         ]));
     }
+//     public function downloadBill($order_id)
+// {
+//     $payment = Payment::with(['paymentItems.product', 'paymentItems.variant'])
+//         ->where('customer_id', Auth::id())
+//         ->where('order_id', $order_id)
+//         ->firstOrFail();
+
+//     $pdf = PDF::loadView('website.orders.bill-pdf', compact('payment'))
+//               ->setPaper('a4');
+
+//     // Preview in browser:
+//     return $pdf->stream('Order-'.$payment->order_id.'.pdf');
+    
+//     // If you want direct download:
+//     // return $pdf->download('Order-'.$payment->order_id.'.pdf');
+// }
+
+
+
 
     public function paymentDetails($order_id)
     {

@@ -9,7 +9,7 @@
         }
 
         .orders-header {
-            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px 0;
             margin-bottom: 40px;
@@ -186,11 +186,11 @@
 
     <div class="orders-container">
         <div class="container">
-            @if ($orders->count() > 0)
+            @if ($payments->count() > 0)
                 <div class="row">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4>Your Orders ({{ $orders->count() }})</h4>
+                            <h4>Your Orders ({{ $payments->count() }})</h4>
                             <div class="dropdown">
                                 <button class="btn btn-outline-secondary dropdown-toggle" type="button"
                                     data-bs-toggle="dropdown">
@@ -199,89 +199,92 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="#" onclick="filterOrders('all')">All Orders</a>
                                     </li>
-                                    <li><a class="dropdown-item" href="#" onclick="filterOrders('pending')">Pending</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="filterOrders('approved')">Approved</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="filterOrders('completed')">Completed</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="filterOrders('delivered')">Delivered</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterOrders('paid')">Paid</a></li>
+                                    <li><a class="dropdown-item" href="#"
+                                            onclick="filterOrders('pending')">Pending</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterOrders('failed')">Failed</a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
 
-                        @foreach ($orders as $order)
-                            <div class="order-card" data-status="{{ $order->status }}">
+                        @foreach ($payments as $payment)
+                            <div class="order-card" data-status="{{ $payment->status }}">
                                 <div class="order-header">
                                     <div class="row align-items-center">
                                         <div class="col-md-3">
-                                            <strong>Order #{{ $order->order_id }}</strong>
+                                            <strong>Order #{{ $payment->order_id }}</strong>
                                         </div>
                                         <div class="col-md-2">
-                                            <span class="order-status status-{{ $order->status }}">
-                                                {{ ucfirst($order->status) }}
+                                            <span class="order-status status-{{ $payment->status }}">
+                                                {{ ucfirst($payment->status) }}
                                             </span>
                                         </div>
                                         <div class="col-md-2">
                                             <small class="text-muted">
                                                 <i class="fas fa-calendar"></i>
-                                                {{ $order->created_at->format('d M Y') }}
+                                                {{ $payment->created_at->format('d M Y') }}
                                             </small>
                                         </div>
                                         <div class="col-md-2">
-                                            <strong class="text-success">₹{{ number_format($order->total_price, 2) }}</strong>
+                                            <strong class="text-success">₹{{ number_format($payment->amount, 2) }}</strong>
                                         </div>
+
                                         <div class="col-md-3 text-end">
-                                            @if ($order->status == 'delivered')
+                                            {{-- @if ($payment->status == 'paid')
+                                                <a href="{{ route('orders.bill', $payment->order_id) }}" target="_blank"
+                                                    class="btn btn-sm btn-outline-primary mt-2">
+                                                    <i class="fas fa-file-pdf"></i> Download E-Bill
+                                                </a>
+                                            @endif --}}
+
+
+                                            @if ($payment->status == 'paid')
                                                 <span class="badge bg-success">
-                                                    <i class="fas fa-check"></i> Delivered
+                                                    <i class="fas fa-check"></i> Payment Successful
                                                 </span>
-                                            @elseif($order->status == 'completed')
-                                                <span class="badge bg-info">
-                                                    <i class="fas fa-box"></i> Completed
-                                                </span>
-                                            @elseif($order->status == 'approved')
-                                                <span class="badge bg-primary">
-                                                    <i class="fas fa-thumbs-up"></i> Approved
+                                            @elseif($payment->status == 'pending')
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock"></i> Payment Pending
                                                 </span>
                                             @else
-                                                <span class="badge bg-warning">
-                                                    <i class="fas fa-clock"></i> Pending
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times"></i> Payment Failed
                                                 </span>
                                             @endif
                                         </div>
+
                                     </div>
                                 </div>
                                 <div class="order-body">
-                                    @if ($order->orderProducts->count() > 0)
-                                        @foreach ($order->orderProducts as $orderProduct)
+                                    @if ($payment->paymentItems->count() > 0)
+                                        @foreach ($payment->paymentItems as $item)
                                             <div class="product-item">
-                                                <img src="{{ asset('product_images/' . $orderProduct->variant->product->image) }}"
-                                                    alt="{{ $orderProduct->variant->product->title }}" class="product-image">
+                                                <img src="{{ asset('product_images/' . $item->product->image) }}"
+                                                    alt="{{ $item->product->title }}" class="product-image">
                                                 <div class="product-details">
-                                                    <div class="product-name">{{ $orderProduct->variant->product->title }}</div>
-                                                    <div class="text-muted">Quantity: {{ $orderProduct->quantity }}</div>
-                                                    @if ($orderProduct->variant)
+                                                    <div class="product-name">{{ $item->product->title }}</div>
+                                                    <div class="text-muted">Quantity: {{ $item->quantity }}</div>
+                                                    @if ($item->variant)
                                                         <div class="text-muted small">
-                                                            Variant: {{ $orderProduct->variant->size ?? 'Standard' }}
+                                                            Variant: {{ $item->variant->size ?? 'Standard' }}
                                                         </div>
                                                     @endif
-                                                    <div class="product-price">₹{{ number_format($orderProduct->total_price, 2) }}
+                                                    <div class="product-price">₹{{ number_format($item->total_price, 2) }}
                                                     </div>
                                                 </div>
                                                 <div class="text-end">
-                                                    @if ($orderProduct->status == 'delivered')
+                                                    @if ($payment->status == 'paid')
                                                         <small class="text-success">
-                                                            <i class="fas fa-check-circle"></i> Delivered
+                                                            <i class="fas fa-check-circle"></i> Paid
                                                         </small>
-                                                    @elseif($orderProduct->status == 'completed')
-                                                        <small class="text-info">
-                                                            <i class="fas fa-box"></i> Completed
-                                                        </small>
-                                                    @elseif($orderProduct->status == 'approved')
-                                                        <small class="text-primary">
-                                                            <i class="fas fa-thumbs-up"></i> Approved
-                                                        </small>
-                                                    @else
+                                                    @elseif($payment->status == 'pending')
                                                         <small class="text-warning">
                                                             <i class="fas fa-clock"></i> Pending
+                                                        </small>
+                                                    @else
+                                                        <small class="text-danger">
+                                                            <i class="fas fa-times-circle"></i> Failed
                                                         </small>
                                                     @endif
                                                 </div>
@@ -290,7 +293,7 @@
                                     @else
                                         <div class="text-center py-3">
                                             <i class="fas fa-box-open text-muted" style="font-size: 48px;"></i>
-                                            <p class="text-muted mt-2">No items found for this order</p>
+                                            <p class="text-muted mt-2">No items found for this payment</p>
                                         </div>
                                     @endif
 
@@ -300,14 +303,14 @@
                                                 <small class="text-muted">
                                                     <i class="fas fa-credit-card"></i>
                                                     <strong>Payment Method:</strong>
-                                                    {{ ucfirst($order->payment->payment_mode ?? 'Online Payment') }}
+                                                    {{ ucfirst($payment->payment_mode ?? 'Online Payment') }}
                                                 </small>
                                             </div>
                                             <div class="col-md-6">
-                                                @if ($order->payment && $order->payment->transaction_id)
+                                                @if ($payment->transaction_id)
                                                     <small class="text-muted">
                                                         <i class="fas fa-receipt"></i>
-                                                        <strong>Transaction ID:</strong> {{ $order->payment->transaction_id }}
+                                                        <strong>Transaction ID:</strong> {{ $payment->transaction_id }}
                                                     </small>
                                                 @endif
                                             </div>

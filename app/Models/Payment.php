@@ -35,20 +35,9 @@ class Payment extends Model
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
+    public function customer()
+{
+    return $this->belongsTo(User::class, 'customer_id');
+}
 
-    /**
-     * Get the order associated with this payment.
-     */
-    public function order()
-    {
-        return $this->hasOne(Order::class);
-    }
-
-    /**
-     * Get the order products associated with this payment.
-     */
-    public function orderProducts()
-    {
-        return $this->hasMany(OrderProduct::class);
-    }
 }
