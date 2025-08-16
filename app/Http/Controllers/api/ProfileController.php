@@ -68,6 +68,33 @@ class ProfileController extends Controller
             : null,
         ], 200);
     } 
+    public function getProfile(Request $req)
+{
+    $user = User::find($req->user_id);
+
+    if($user){
+    return response()->json([
+        'success' => true,
+         'status_code' => 200,
+        'data' => [
+            'name'        => $user->name,
+            'email'       => $user->email,
+            'mobile'      => $user->mobile,
+              'profile_img' => $user->profile_img
+                    ? (filter_var($user->profile_img, FILTER_VALIDATE_URL)
+                        ? $user->profile_img
+                        : asset('profile_images/' . $user->profile_img))
+                    : null
+        ]
+    ]);
+    }else{
+          return response()->json([
+        'success' => false,
+         'status_code' => 404,
+         'message'=>'no user found with this details',
+        ]);
+
 }
-    
-   
+}}
+
+

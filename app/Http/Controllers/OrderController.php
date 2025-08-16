@@ -11,6 +11,8 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PDF;
+
 
 class OrderController extends Controller
 {
@@ -73,6 +75,44 @@ class OrderController extends Controller
             'order' => $order
         ]));
     }
+//     public function downloadBill($order_id)
+// {
+//     $payment = Payment::with(['paymentItems.product', 'paymentItems.variant'])
+//         ->where('customer_id', Auth::id())
+//         ->where('order_id', $order_id)
+//         ->firstOrFail();
+
+//     $pdf = PDF::loadView('website.orders.bill-pdf', compact('payment'))
+//               ->setPaper('a4');
+
+//     // Preview in browser:
+//     return $pdf->stream('Order-'.$payment->order_id.'.pdf');
+    
+//     // If you want direct download:
+//     // return $pdf->download('Order-'.$payment->order_id.'.pdf');
+// }
+public function downloadBill($order_id)
+{
+    $payment = Payment::with([
+        'paymentItems.product',
+        'paymentItems.variant'
+    ])
+    ->where('customer_id', Auth::id())
+    ->where('order_id', $order_id)
+    ->firstOrFail();
+
+    // Get customer info from the users table
+    $customer = \App\Models\User::find($payment->customer_id);
+
+    $pdf = \PDF::loadView('website.orders.bill-pdf', [
+        'payment' => $payment,
+        'customer' => $customer
+    ])->setPaper('a4');
+
+    return $pdf->stream('Order-' . $payment->order_id . '.pdf');
+}
+
+
 
     public function paymentDetails($order_id)
     {

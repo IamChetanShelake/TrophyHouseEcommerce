@@ -268,28 +268,110 @@ class ProductApiController extends Controller
         ],200);
     }
 
+    // public function search(Request $request)
+    // {
+    //     $query = Product::query();
+
+    //     if ($request->has('title')) {
+    //         $query->where('title', 'LIKE', '%' . $request->title . '%');
+    //     }
+
+    //     if ($request->has('category_id')) {
+    //         $query->where('category_id', $request->category_id);
+    //     }
+
+    //     if ($request->has('subcategory_id')) {
+    //         $query->where('sub_category_id', $request->subcategory_id);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'products' => $query->with(['variants', 'images'])->get()
+    //     ]);
+    // }
     public function search(Request $request)
-    {
-        $query = Product::query();
+{
+    $searchTerm = $request->input('query', ''); // Agar query na aaye to empty string
+    $categoryId = $request->input('category_id');
+    $subcategoryId = $request->input('sub_category_id');
 
-        if ($request->has('title')) {
-            $query->where('title', 'LIKE', '%' . $request->title . '%');
-        }
+    // Search products with category, subcategory, variants, images
+    $products = Product::with(['category', 'subcategory', 'variants', 'images'])
+        ->when($searchTerm, fn($q) => $q->where('title', 'LIKE', "%{$searchTerm}%"))
+        ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+        ->when($subcategoryId, fn($q) => $q->where('sub_category_id', $subcategoryId))
+        ->get();
 
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->has('subcategory_id')) {
-            $query->where('sub_category_id', $request->subcategory_id);
-        }
-
+    // Agar koi product na mile
+    if ($products->isEmpty()) {
         return response()->json([
-            'success' => true,
-            'products' => $query->with(['variants', 'images'])->get()
+            'success' => false,
+            'message' => 'No products found'
         ]);
     }
-    
+
+    // Category & Subcategory from first product
+    $category = $products->first()->category;
+    $subcategory = $products->first()->subcategory;
+
+    // Products ko required nested format me map karna
+    $formattedProducts = $products->map(function ($product) {
+        return [
+            "headers" => new \stdClass(), // empty object
+            "original" => [
+                "success" => true,
+                "message" => [
+                    "id" => $product->id,
+                    "category_id" => $product->category_id,
+                    "sub_category_id" => $product->sub_category_id,
+                    "title" => $product->title,
+                    "description" => $product->description,
+                    "rating" => $product->rating,
+                    "cdr_file" => $product->cdr_file,
+                    "is_top_pick" => $product->is_top_pick,
+                    "is_best_seller" => $product->is_best_seller,
+                    "is_new_arrival" => $product->is_new_arrival,
+                    "created_at" => $product->created_at,
+                    "updated_at" => $product->updated_at,
+                    "image_url" => $product->image_url,
+                    "category" => $product->category,
+                    "subcategory" => $product->subcategory,
+                    "variants" => $product->variants->map(function ($variant) {
+                        return [
+                            "id" => $variant->id,
+                            "product_id" => $variant->product_id,
+                            "occasion_product_id" => $variant->occasion_product_id,
+                            "size" => $variant->size,
+                            "color" => $variant->color,
+                            "price" => $variant->price,
+                            "discount_percentage" => $variant->discount_percentage,
+                            "discounted_price" => $variant->discounted_price,
+                            "created_at" => $variant->created_at,
+                            "updated_at" => $variant->updated_at,
+                        ];
+                    }),
+                    "images" => $product->images
+                ]
+            ],
+            "exception" => null
+        ];
+    });
+
+    return response()->json([
+        "success" => true,
+        "category" => [
+            "id" => $category->id,
+            "name" => $category->name
+        ],
+        "subcategory" => [
+            "id" => $subcategory->id,
+            "title" => $subcategory->title
+        ],
+        "total_products" => $products->count(),
+        "products" => $formattedProducts
+]);
+}
+
      public function getProductsByCategoryAndSubcategory(Request $req)
     {
 

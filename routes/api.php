@@ -16,12 +16,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\CartApiController;
 use App\Http\Controllers\api\ProfileController;
+use App\Http\Controllers\api\galleryApicontroller;
 use App\Http\Controllers\api\addressApiController;
 use App\Http\Controllers\api\ProductApiController;
 use App\Http\Controllers\api\CategoryApiController;
 use App\Http\Controllers\api\wishlistApiController;
 use App\Http\Controllers\api\occProductApiController;
 use App\Http\Controllers\api\subCategoryApiController;
+use App\Http\Controllers\API\OrderController;
+
 
 
 Route::get('/testapi', function () {
@@ -36,6 +39,7 @@ Route::get('/testapi', function () {
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/change-password',  action: [AuthController::class, 'changePassword']);
 
 
 //product----------------------------------------------------------------
@@ -56,7 +60,7 @@ Route::post('/storeOccasionalProduct', [occProductApiController::class, 'storepr
 Route::get('/OccProduct/{id}', [occProductApiController::class, 'showOccproduct']);
 Route::put('/updateProduct/{id}', [occProductApiController::class, 'updateproduct']);
 Route::delete('/deleteProduct/{id}', [occProductApiController::class, 'deleteProduct']);
-Route::get('/searchProduct', [occProductApiController::class, 'search']);
+Route::get('/searchOccasionalProduct', [occProductApiController::class, 'search']);
 
 //categories----------------------------------------------------------------
 Route::get('/categories', [CategoryApiController::class, 'allcat']);
@@ -76,20 +80,25 @@ Route::post('/getsubcategories', [subCategoryApiController::class, 'getsubcatego
 
 
 
+// gallery api----------------------------------------------------------------
+
+Route::get('/gallery', [galleryApicontroller::class, 'gallery']);
+
 // wishlist----------------------------------------------------------------
 
-Route::post('/wishlist/add/{id}', [wishlistApiController::class, 'addToWishlist'])->middleware('auth');
-Route::get('/wishlist', [wishlistApiController::class, 'index'])->middleware('auth');
-Route::delete('/wishlist/remove/{id}', [wishlistApiController::class, 'removeFromWishlist'])->middleware('auth');
+Route::post('/wishlist/add', [wishlistApiController::class, 'addToWishlist']);
+Route::post('/wishlist', [wishlistApiController::class, 'index']);
+Route::post('/wishlist/remove', [wishlistApiController::class, 'removeFromWishlist']);
 
 
     Route::post('/editprofile', [ProfileController::class, 'editProfile']);
+    Route::post('/getProfile', [ProfileController::class, 'getProfile']);
 //cart-----------------------------------------------------------------------
 // Route::middleware('auth')->group(function () {
 
 
 
-Route::middleware(['auth'])->group(function () {
+// Route::middleware(['auth'])->group(function () {
     
     Route::get('/user', function (Request $request) {
     return $request->user();
@@ -117,27 +126,27 @@ Route::middleware(['auth'])->group(function () {
     
     
 
+Route::get('/my-orders/{user_id}', [OrderController::class, 'myOrders']);
 
 
     // View all items in cart
-    Route::get('/cart', [CartApiController::class, 'index']);
+    Route::post('/cart', [CartApiController::class, 'index']);
 
     // Add item to cart
-    Route::post('/cart/add/{id}', [CartApiController::class, 'addToCart']);
+    Route::post('/cart/add', [CartApiController::class, 'addToCart']);
 
     // Update quantity or variant of a cart item
     // Route::put('/cart/update/{cart_item_id}', [CartApiController::class, 'updateCart']);
 
     // Remove an item from the cart
-    Route::delete('/cart/remove/{id}', [CartApiController::class, 'removeFromCart']);
+    Route::post('/cart/remove', [CartApiController::class, 'removeFromCart']);
 
 
-    Route::get('/addresses', [addressApiController::class, 'index']);
-    Route::post('/addresses', [addressApiController::class, 'store']);
-    Route::get('/addresses/{id}', [addressApiController::class, 'show']);
-    Route::put('/addresses/{id}', [addressApiController::class, 'update']);
+    Route::post('/addresses', [addressApiController::class, 'index']);
+    Route::post('/addresses/store', [addressApiController::class, 'store']);
+    Route::post('/addresses/show', [addressApiController::class, 'show']);
+    Route::post('/addresses/update', [addressApiController::class, 'update']);
     Route::delete('/addresses/{id}', [addressApiController::class, 'destroy']);
     
-    
-    
-});
+
+// });

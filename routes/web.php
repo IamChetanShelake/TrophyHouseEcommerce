@@ -158,6 +158,11 @@ Route::post('/customization/{id}/request-edit', [CustomizationController::class,
     Route::get('/order-details/{id}', [OrderController::class, 'orderDetails'])->name('order.details');
     Route::get('/payment-details/{order_id}', [OrderController::class, 'paymentDetails'])->name('payment.details');
 });
+//bill--------------------------------
+Route::get('/orders/{order_id}/bill', [OrderController::class, 'downloadBill'])
+    ->name('orders.bill')
+    ->middleware('auth');
+
 
 /*
 |--------------------------------------------------------------------------

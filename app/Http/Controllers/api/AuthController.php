@@ -115,4 +115,35 @@ class AuthController extends Controller
                 'message' => 'User logged out successfully',
             ], 200);
         }
+        public function changePassword(Request $req)
+{
+    // Validate request
+    $req->validate([
+        'user_id' => 'required|exists:users,id',
+        'old_password' => 'required',
+        'new_password' => 'required|min:6|confirmed', // Needs new_password_confirmation
+    ]);
+
+    $user = User::find($req->user_id);
+
+    // Check if old password matches
+    if (!Hash::check($req->old_password, $user->password)) {
+        return response()->json([
+            'status' => false,
+            'status_code' => 400,
+            'message' => 'Old password is incorrect',
+        ], 400);
+    }
+
+    // Update password
+    $user->password = Hash::make($req->new_password);
+    $user->save();
+
+    return response()->json([
+        'status' => true,
+        'status_code' => 200,
+        'message' => 'Password changed successfully',
+    ], 200);
+}
+
 }
