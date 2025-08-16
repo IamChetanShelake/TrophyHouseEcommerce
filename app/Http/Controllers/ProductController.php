@@ -16,12 +16,54 @@ use Maatwebsite\Excel\Facades\Excel;
 class ProductController extends Controller
 {
 
+    public function createorder()
+    {
+        $categories = AwardCategory::all();
+        // $occasions = Occasion::all();
+        $subcategories = SubCategory::all();
+        // return $subcategories;
+        $products = Product::all();
+        return view('admin.Orders.createOrder', compact('categories', 'subcategories', 'products'));
+    }
+
+
+    // Get subcategories for a category
+    public function getSubcategories($categoryId)
+    {
+        $subcategories = SubCategory::where('category_id', $categoryId)
+            ->select('id', 'title') // important: 'title' for dropdown
+            ->get();
+
+        return response()->json($subcategories);
+    }
+
+    // Get products for a subcategory
+    // public function getProducts($subCategoryId)
+    // {
+    //     // dd($subCategoryId);
+    //     $products = Product::where('sub_category_id', $subCategoryId)
+    //         ->select('id', 'title') // important: 'title' for dropdown
+    //         ->get();
+
+    //     return response()->json($products);
+    // }
+    public function getProducts($subCategoryId)
+    {
+
+        $products = Product::where('sub_category_id', $subCategoryId)
+            ->get();
+
+
+        return response()->json($products);
+    }
+
+
     public function import(Request $request)
     {
         $validated =  $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls',
         ]);
-    //mayurs code
+        //mayurs code
         Excel::import(
             new ProductImport($request->product_cat_id, $request->subcategory_id),
             $request->file('excel_file')
@@ -77,45 +119,44 @@ class ProductController extends Controller
             $product->image = $imageName;
         }
         $product->save();
-        
-            // Save product variants
-        
-            $colors = $request->colors ?? []; // array of global colors
 
-            foreach ($request->variants as $variant) {
+        // Save product variants
 
-                $price = $variant['price'];
-                $discount = $variant['discount_percentage'] ?? 0;
+        $colors = $request->colors ?? []; // array of global colors
 
-                $discounted = $price - ($price * $discount / 100);
+        foreach ($request->variants as $variant) {
 
-                $product->variants()->create([
-                    'size' => $variant['size'],
-                    'color' => json_encode($colors), // assign global colors
-                    'price' => $price,
-                    'discount_percentage' => $discount,
-                    'discounted_price' => $discounted,
-                ]);
+            $price = $variant['price'];
+            $discount = $variant['discount_percentage'] ?? 0;
+
+            $discounted = $price - ($price * $discount / 100);
+
+            $product->variants()->create([
+                'size' => $variant['size'],
+                'color' => json_encode($colors), // assign global colors
+                'price' => $price,
+                'discount_percentage' => $discount,
+                'discounted_price' => $discounted,
+            ]);
+        }
+        if ($request->hasFile('images')) {
+
+            foreach ($request->file('images') as $image) {
+
+                $imageName = time() . rand(1, 1000) . '.' . $image->extension();
+
+                // Move the file to the public directory
+                $image->move('product_images/', $imageName);
+
+                // Save image record in DB
+                $prod_image = new productImage();
+                $prod_image->product_id = $product->id;
+                $prod_image->image = $imageName;
+                $prod_image->save();
             }
-            if ($request->hasFile('images')) {
-               
-                foreach ($request->file('images') as $image) {
+        }
 
-                    $imageName = time() . rand(1, 1000) . '.' . $image->extension();
-
-                    // Move the file to the public directory
-                    $image->move('product_images/', $imageName);
-
-                    // Save image record in DB
-                    $prod_image = new productImage();
-                    $prod_image->product_id = $product->id;
-                    $prod_image->image = $imageName;
-                    $prod_image->save();
-                }
-            }
- 
-            return redirect()->route('products')->with('success', 'Product created successfully!');
-        
+        return redirect()->route('products')->with('success', 'Product created successfully!');
     }
 
     public function show($id)
@@ -328,6 +369,7 @@ class ProductController extends Controller
         $orders = Order::latest()->paginate(100);
         return view('admin.Orders.index', compact('orders'));
     }
+
     public function updateStatus($id, Request $request)
     {
         // dd($id);

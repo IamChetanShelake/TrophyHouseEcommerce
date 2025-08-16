@@ -36,15 +36,15 @@
 
                         <div class="form-group col-lg-12">
                             <label for="title">Title</label> <span style="color:red;">*</span>
-                            <input type="text" class="form-control" id="title" name="title" value="{{old('title')}}" placeholder=""
-                                required>
+                            <input type="text" class="form-control" id="title" name="title"
+                                value="{{ old('title') }}" placeholder="" required>
                             @error('title')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
                         <div class="form-group col-lg-12">
                             <label for="description">Description</label><span style="color:red;">*</span>
-                            <textarea class="form-control" name="description" id="summernote" rows="4">{{old('description')}}</textarea>
+                            <textarea class="form-control" name="description" id="summernote" rows="4">{{ old('description') }}</textarea>
                             @error('description')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
@@ -52,24 +52,27 @@
 
 
                         <div class="variant-wrapper">
-                        
+
                             <div class="variant-row row gx-2 mb-2 align-items-center">
                                 <div class="col-3">
                                     <input type="number" name="variants[0][size]" class="form-control" min="0"
-                                        step="0.01" placeholder="Size (inch)" value="{{old('variants.0.size')}}"   required>
+                                        step="0.01" placeholder="Size (inch)" value="{{ old('variants.0.size') }}"
+                                        required>
                                 </div>
                                 <div class="col-3">
                                     <input type="number" name="variants[0][price]" class="form-control price"
-                                        min="0" step="0.01" placeholder="Price" value="{{old('variants.0.price')}}" required>
+                                        min="0" step="0.01" placeholder="Price"
+                                        value="{{ old('variants.0.price') }}" required>
                                 </div>
                                 <div class="col-3">
                                     <input type="number" name="variants[0][discount_percentage]"
                                         class="form-control discount" min="0" max="100" step="0.01"
-                                        placeholder="Discount %"  value="{{old('variants.0.discount_percentage')}}">
+                                        placeholder="Discount %" value="{{ old('variants.0.discount_percentage') }}">
                                 </div>
                                 <div class="col-2">
                                     <input type="number" name="variants[0][discounted_price]"
-                                        class="form-control discounted_price" placeholder="Final Price"  value="{{old('variants.0.discounted_price')}}" readonly>
+                                        class="form-control discounted_price" placeholder="Final Price"
+                                        value="{{ old('variants.0.discounted_price') }}" readonly>
                                 </div>
                                 <div class="col-1">
                                     <button type="button" class="btn btn-success add-variant">+</button>
@@ -80,7 +83,7 @@
                             @php $colors = old('colors',['']); //default with empty input @endphp
                             <div class="color-row row gx-2 mb-2 align-items-center">
                                 <div class="col-11">
-                                    <input type="text" name="colors[]" class="form-control color"  placeholder="color"> 
+                                    <input type="text" name="colors[]" class="form-control color" placeholder="color">
                                 </div>
                                 <div class="col-1">
                                     <button type="button" class="btn btn-success add-color">+</button>
@@ -94,7 +97,7 @@
                             <select class="form-select" id="product_cat_id" name="product_cat_id" required>
                                 <option value="">-- Select Category --</option>
                                 @foreach ($category as $cat)
-                                    <option value="{{ $cat->id }}" >{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                             @error('product_cat_id')
@@ -106,7 +109,7 @@
                         <div class="form-group col-lg-6 col-sm-12">
                             <label for="subcategory_id">Subcategory</label><span style="color:red;">*</span>
                             <select name="subcategory_id" id="subcategory_id" class="form-control" required>
-                                <option value="" >-- Select Subcategory --</option>
+                                <option value="">-- Select Subcategory --</option>
                             </select>
                             @error('subcategory_id')
                                 <small class="text-danger">{{ $message }}</small>
@@ -116,7 +119,7 @@
                         <div class="form-group col-6">
                             <label for="rating">Rating (1-5)</label>
                             <input type="number" class="form-control" id="rating" name="rating" min="0"
-                                max="5" step="0.01" placeholder="" value="{{old('rating')}}" required>
+                                max="5" step="0.01" placeholder="" value="{{ old('rating') }}" required>
                             @error('rating')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
@@ -129,17 +132,17 @@
                                     <div class="col-lg-3 col-sm-2">
                                         <div class="d-flex align-items-center gap-2">
 
-
                                             <label for="top_picks" style="margin-bottom:0px;">Top Pick ?</label>
-                                            <input type="checkbox" name="is_top_pick" id="top_picks" style="zoom: 2;" {{old('is_top_pick')}} ? 'checked' : ''>
+                                            <input type="checkbox" name="is_top_pick" id="top_picks" style="zoom: 2;"
+                                                {{ old('is_top_pick') }} ? 'checked' : ''>
                                         </div>
                                     </div>
 
                                     <div class="col-lg-4 col-sm-2">
                                         <div class="d-flex align-items-center gap-2">
                                             <label for="top_picks" style="margin-bottom:0px;">Best Seller ?</label>
-                                            <input type="checkbox" name="is_best_seller" id="" {{old('is_best_seller')}} ? 'checked' : ''
-                                                style="zoom: 2;">
+                                            <input type="checkbox" name="is_best_seller" id=""
+                                                {{ old('is_best_seller') }} ? 'checked' : '' style="zoom: 2;">
                                         </div>
                                     </div>
 
@@ -149,8 +152,8 @@
                                     <div class="col-lg-3 col-sm-2">
                                         <div class="d-flex align-items-center gap-2">
                                             <label for="top_picks" style="margin-bottom:0px;">New Arrival ?</label>
-                                            <input type="checkbox" name="is_new_arrival" id="" {{old('is_new_arrival')}} ? 'checked' : ''
-                                                style="zoom: 2;">
+                                            <input type="checkbox" name="is_new_arrival" id=""
+                                                {{ old('is_new_arrival') }} ? 'checked' : '' style="zoom: 2;">
                                         </div>
                                     </div>
                                 </div>
@@ -161,8 +164,8 @@
                         <div class="form-group">
 
                             <label>File upload</label><span style="color:red;">*</span>
-                            <input type="file" name="image" class="file-upload-default"  accept="image/*">
-                           
+                            <input type="file" name="image" class="file-upload-default" accept="image/*">
+
                             <div class="input-group col-xs-12">
                                 <input type="text" class="form-control file-upload-info" disabled
                                     placeholder="Upload Image">
@@ -171,7 +174,7 @@
                                         type="button">Upload</button>
                                 </span>
                             </div>
-                             @error('image')
+                            @error('image')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
@@ -230,7 +233,7 @@
                             const option = document.createElement('option');
                             option.value = subcat.id;
                             option.text = subcat.title;
-                            
+
                             subcatSelect.appendChild(option);
                         });
                     })

@@ -11,6 +11,8 @@
     <div class="content-wrapper">
         <div class="page-header">
             <h3 class="page-title"> Orders Table </h3>
+            <div><a href="{{ route('createorder') }}" class="btn" style="background:#ffc107;color:white; font-size:21px;">+
+                    New</a></div>
 
         </div>
         <div class="row">
@@ -63,11 +65,11 @@
 
 
                                         </td>
-                                            <td colspan="2">
-                                                <a href="{{route('order.view',$ord->id)}}" class="btn btn-primary">
-                                                    <i class="mdi mdi-eye"></i>
-                                                </a>
-                                            </td>
+                                        <td colspan="2">
+                                            <a href="{{ route('order.view', $ord->id) }}" class="btn btn-primary">
+                                                <i class="mdi mdi-eye"></i>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
 
@@ -88,53 +90,55 @@
 
     {{-- on-change content javascript  --}}
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const statusColors = {
-            'pending': '#ffcf3f',     // Yellow
-            'processing': '#00dcff',  // Teal
-            'shipped': '#429dff',     // Blue
-            'delivered': '#00ff3a',   // Green
-            'cancelled': '#ff3649'    // Red
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusColors = {
+                'pending': '#ffcf3f', // Yellow
+                'processing': '#00dcff', // Teal
+                'shipped': '#429dff', // Blue
+                'delivered': '#00ff3a', // Green
+                'cancelled': '#ff3649' // Red
+            };
 
-        // Function to set color
-        function setColor(select) {
-            const color = statusColors[select.value] || '#6c757d'; // Default grey
-            select.style.backgroundColor = color;
-            select.style.color = 'white';
-            select.style.borderRadius = '99px';
-            select.style.width = '90px';
-        }
+            // Function to set color
+            function setColor(select) {
+                const color = statusColors[select.value] || '#6c757d'; // Default grey
+                select.style.backgroundColor = color;
+                select.style.color = 'white';
+                select.style.borderRadius = '99px';
+                select.style.width = '90px';
+            }
 
-        document.querySelectorAll('.status-dropdown').forEach(function (dropdown) {
-            setColor(dropdown); // Set initial color on page load
+            document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
+                setColor(dropdown); // Set initial color on page load
 
-            dropdown.addEventListener('change', function () {
-                let orderId = this.getAttribute('data-id');
-                let status = this.value;
+                dropdown.addEventListener('change', function() {
+                    let orderId = this.getAttribute('data-id');
+                    let status = this.value;
 
-                setColor(this); // Update color on change
+                    setColor(this); // Update color on change
 
-                fetch(`/updateStatus/${orderId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ status: status })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById(`status-message-${orderId}`).innerHTML =
-                        `<span class="text-success">${data.message}</span>`;
-                })
-                .catch(error => {
-                    document.getElementById(`status-message-${orderId}`).innerHTML =
-                        `<span class="text-danger">Failed to update.</span>`;
+                    fetch(`/updateStatus/${orderId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                status: status
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById(`status-message-${orderId}`).innerHTML =
+                                `<span class="text-success">${data.message}</span>`;
+                        })
+                        .catch(error => {
+                            document.getElementById(`status-message-${orderId}`).innerHTML =
+                                `<span class="text-danger">Failed to update.</span>`;
+                        });
                 });
             });
         });
-    });
-</script>
-
+    </script>
 @endsection
