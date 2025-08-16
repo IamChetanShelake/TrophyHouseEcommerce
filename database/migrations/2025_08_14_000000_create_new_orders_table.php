@@ -12,15 +12,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id('order_id');
-            $table->unsignedBigInteger('payment_id');
-            $table->foreign('payment_id')->references('id')->on('payments')->onDelete('cascade');
-            $table->unsignedBigInteger('user_id');
-            $table->decimal('total_price', 10, 2);
-            $table->enum('status', ['pending', 'approved', 'completed', 'delivered'])->default('pending');
-            $table->timestamps();
-        });
+       Schema::create('orders', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete(); 
+        // customer placing the order
+    $table->string('order_number')->unique(); 
+        // something like ORD-2025-0001
+    $table->decimal('total_amount', 10, 2)->default(0);
+    $table->decimal('gst_amount', 10, 2)->default(0);
+    $table->decimal('grand_total', 10, 2)->default(0);
+    $table->string('payment_method')->nullable(); 
+        // cashfree, COD, etc.
+    $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+    $table->enum('order_status', ['pending', 'processing', 'completed', 'cancelled'])
+          ->default('pending'); 
+        // general overall status (per-item statuses in order_items)
+
+    $table->timestamp('placed_at')->nullable();
+    $table->timestamps();
+});
+
     }
 
     /**

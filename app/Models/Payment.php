@@ -1,23 +1,15 @@
 <?php
 
 namespace App\Models;
+use App\Models\User;
+use App\Models\PaymentItem;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    protected $fillable = [
-        'order_id',
-        'cf_order_id',
-        'customer_id',
-        'customer_name',
-        'customer_email',
-        'customer_phone',
-        'amount',
-        'currency',
-        'status',
-        'payment_mode',
-        'transaction_id'
+    protected $guarded = [
+       
     ];
 
     protected $casts = [
@@ -39,5 +31,12 @@ class Payment extends Model
 {
     return $this->belongsTo(User::class, 'customer_id');
 }
+public function items()
+{
+    return $this->hasMany(PaymentItem::class);
+}
+
+
+
 
 }

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Designer Panel - @yield('title')</title>
     <link rel="stylesheet" href="{{ asset('admin/assets/css/style.css') }}">
 </head>
+
 <body>
     <div class="container-fluid">
         <div class="row">
@@ -19,4 +21,5 @@
         </div>
     </div>
 </body>
+
 </html>

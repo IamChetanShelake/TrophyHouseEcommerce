@@ -106,25 +106,47 @@ Route::delete('delete-Designer/{id?}', [DesignerController::class, 'destroy'])->
     Route::get('/requests', [CustomizationController::class, 'showRequests'])->name('requests');
     Route::get('/recustomizations', [CustomizationController::class, 'showRecustomizations'])->name('recustomizations');
     
-    Route::get('/chats/{userId?}', [CustomizationController::class, 'designerChats'])->name('chats');
-    Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
+    Route::get('/chats/{customizationRequestId?}', [CustomizationController::class, 'designerChats'])->name('chats');
 
-    Route::post('/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('accept');
-    Route::post('/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('reject');
-    Route::get('/workspace/{id}', [CustomizationController::class, 'workspace'])->name('workspace');
+    // Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
+
+
+
+Route::post('/designer/chats/send/{customizationRequestId}', [CustomizationController::class, 'sendMessage'])
+    ->name('send.message')
+    ->middleware('auth');
+
+    // Route::post('/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('accept');
+    // Route::post('/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('reject');
+    // Route::get('/workspace/{id}', [CustomizationController::class, 'workspace'])->name('workspace');
     
     Route::post('/workspace/{id}', [CustomizationController::class, 'completeRequest'])->name('submit');
 
+    
+    
 });
+// Order-level workspace
+Route::get('/workspace/order/{orderId}', [CustomizationController::class, 'orderWorkspace'])
+->name('workspace.order');
 
     Route::post('/customization/request/{cartId}', [CartItemController::class, 'createCustomizationRequest'])->name('customization.request');
 
-    Route::post('/customization/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('customization.accept');
+    Route::post('/customization/accept/{orderId}', [CustomizationController::class, 'acceptRequest'])->name('customization.accept');
 
-    Route::post('/customization/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('customization.reject');
+    Route::post('/customization/reject/{orderId}', [CustomizationController::class, 'rejectRequest'])->name('customization.reject');
     
-    Route::post('/customization/transfer/{id}', [CustomizationController::class, 'transferRequest'])->name('customization.transfer');
+    Route::post('/customization/transfer/{orderId}', [CustomizationController::class, 'transferRequest'])->name('customization.transfer');
     
+    Route::post('/customization/approve-image/{message}', [CustomizationController::class, 'approveImage'])
+    ->name('customization.approveImage');
+    
+    Route::post('/customization/cancel-approval/{message}', [CustomizationController::class, 'cancelApproval'])->name('customization.cancelApproval');
+
+
+Route::post('/customization/finalize/{customization}', [CustomizationController::class, 'finalize'])
+    ->name('customization.finalize');
+
+
     
     Route::any('/customization/{id}/approve', [CustomizationController::class, 'approveRequest'])->name('customization.approve');
 
@@ -246,8 +268,24 @@ Route::middleware(['auth',isAdmin::class])->group(function () {
     // Cart
     Route::get('/cart', [ProductController::class, 'cart'])->name('cart');
 
-    // Orders
-    Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
+    // Orders 
+    // Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+
+    
+    Route::get('orders/user/{orderId}', [OrderController::class, 'getUserDetails'])->name('user');
+     Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
+
+   Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
+
+
+
+      // Single order details
+        Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');
+
+        // Update per-item delivery status
+        Route::patch('orders/item/{paymentItem}/delivery-status', [OrderController::class, 'updateDeliveryStatus'])
+             ->name('orders.item.delivery_status');
     Route::put('/updateStatus/{id}', [ProductController::class, 'updateStatus'])->name('update.status');
     Route::get('/ViewOrder/{id}', [OrderController::class, 'viewOrder'])->name('order.view');
 

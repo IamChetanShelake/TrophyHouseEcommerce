@@ -22,7 +22,7 @@ class Product extends Model
     }
 
     // Optionally hide the raw image column
-    protected $hidden = ['image'];
+    protected $hidden = [];
     protected $guarded = [];
 
     public function variants()

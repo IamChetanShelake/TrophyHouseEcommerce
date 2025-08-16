@@ -247,80 +247,62 @@ if (is_file($imagePath)) {
     
     public function createCustomizationRequest(Request $request, $cartId)
     {
-
-        // $request->validate([
-        //     'description' => 'required|string',
-        //     'images' => 'required|max:3048', // Max 2MB
-        // ]);
-
-        // $cartItem = CartItem::where('id', $cartId)->where('user_id', Auth::id())->firstOrFail();
-
-        // $imagePath = $request->file('images')->store('customizations', 'public');
-        // foreach()
-        // $customization = CustomizationRequest::create([
-        //     'user_id' => Auth::id(),
-        //     'cart_item_id' => $cartId,
-        //     'designer_id' => null,
-        //     'description' => $request->description,
-        //     'status' => 'pending',
-        // ]);
-
-        // $this->broadcastToDesigners($customization->id);
         // Validation
         $request->validate([
-
+            
             'description' => 'required|string',
-
+            
             'images' => 'required|array',
-
-            'images.*' => 'image', // Max 3MB per image
-
+            
+            'images.*' => 'image', 
+            
         ]);
-
-
-
+        
+        
         // Check if cart item exists and belongs to current user
-
+        
         $cartItem = CartItem::where('id', $cartId)->where('user_id', Auth::id())->firstOrFail();
-
-
-
+        
+        
+        
         // Store customization request using model instance
-
+        
         $customization = new CustomizationRequest();
-
+        
         $customization->user_id = Auth::id();
-
+        
         $customization->cart_item_id = $cartId;
-
+        
         $customization->designer_id = null;
-
+        
         $customization->description = $request->description;
-
+        
         $customization->status = 'pending';
-
+        
+        
         $customization->save();
         // Loop through images and store each
-
+        
         foreach ($request->file('images') as $image) {
-
+            
             $imageName = time() . rand(1, 1000) . '.' . $image->extension();
-
+            
             // Move the file to the public directory
             $image->move('customization_images', $imageName);
-
+            
             // Store each image using model instance
             $customization_image = new Customization_image();
-
+            
             $customization_image->user_id = Auth::id();
-
+            
             $customization_image->customization_request_id = $customization->id;
-
+            
             $customization_image->image = $imageName;
-
+            
             $customization_image->save();
+            
         }
-
+        
         // return response()->json(['success' => true, 'message' => 'Request sent to designers']);
         return redirect()->back()->with('success', 'Your Customization Request has been sent, please wait for our  response');
     }

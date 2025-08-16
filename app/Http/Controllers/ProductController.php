@@ -323,11 +323,11 @@ class ProductController extends Controller
     {
         return view('admin.Cart.index');
     }
-    public function orders()
-    {
-        $orders = Order::latest()->paginate(100);
-        return view('admin.Orders.index', compact('orders'));
-    }
+    // public function orders()
+    // {
+    //     $orders = Order::latest()->paginate(100);
+    //     return view('admin.Orders.index', compact('orders'));
+    // }
     public function updateStatus($id, Request $request)
     {
         // dd($id);
