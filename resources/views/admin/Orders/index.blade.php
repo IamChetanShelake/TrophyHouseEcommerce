@@ -33,6 +33,8 @@
 
 
     <h1>Orders</h1>
+    <div><a href="{{ route('createorder') }}" class="btn" style="background:#ffc107;color:white; font-size:21px;">+
+            New</a></div>
 
     <form method="GET" action="{{ route('orders') }}" style="margin-bottom:12px;">
         <input type="text" name="q" value="{{ request('q') }}" placeholder="search order id / customer" />
