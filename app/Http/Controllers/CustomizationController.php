@@ -12,6 +12,8 @@ use App\Models\CustomizationRequest;
 use App\Models\Customization_image;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\PaymentItem;
+
 
 
 class CustomizationController extends Controller
@@ -19,64 +21,59 @@ class CustomizationController extends Controller
     /**
      * Accept a customization request
      */
-    public function acceptRequest(Request $request, $id)
+    public function acceptRequest(Request $request, $orderId)
     {
-        $customization = CustomizationRequest::findOrFail($id);
-    
-        if ($customization->status != 'pending') {
-            return response()->json(['success' => false, 'message' => 'Request cannot be accepted.'], 403);
-        }
+        $designerId = auth()->id();
 
-        $customization->designer_id = Auth::id();
-        $customization->status = 'accepted';
-        $customization->save();
+    // Update all customization requests under this order
+    CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
+        $q->where('order_id', $orderId);
+    })->update([
+        'designer_id' => $designerId,
+        'status' => 'accepted'
+    ]);
+
+     PaymentItem::whereHas('payment', function($q) use ($orderId) {
+        $q->where('order_id', $orderId);
+    })->update([
+        'designer_id' => $designerId
+    ]);
+
+
+        // if ($customization->status != 'pending') {
+        //     return response()->json(['success' => false, 'message' => 'Request cannot be accepted.'], 403);
+        // }
+
+        // $customization->designer_id = Auth::id();
+        // $customization->status = 'accepted';
+        // $customization->save();
 
     return redirect()->route('requests');
         // return response()->json(['success' => true, 'message' => 'Request accepted successfully.']);
     }
 
-    public function designerChats($userId = null)
+public function designerChats($customizationRequestId = null)
 {
-   $designerId = Auth::id();
+    $designerId = auth()->id();
 
-// Fetch all user IDs that the designer has chatted with
-$chatUserIds = CustomizationMessage::where(function ($query) use ($designerId) {
-    $query->where('sender_id', $designerId)
-          ->orWhere('receiver_id', $designerId);
-})
-->get()
-->flatMap(function ($msg) {
-    return [$msg->sender_id, $msg->receiver_id];
-})
-->filter(function ($id) use ($designerId) {
-    return $id != $designerId;
-})
-->unique();
+    // Get all customization requests assigned to this designer
+    $customizations = CustomizationRequest::with(['cartItem.product', 'paymentItem.product'])
+        ->where(function($q) use ($designerId) {
+            $q->where('designer_id', $designerId)
+              ->orWhere('transferred_from', $designerId);
+        })
+        ->get();
 
-// Get User models for these IDs
-$users = User::whereIn('id', $chatUserIds)->get();
-// Get selected chat user and their messages
-$activeUser = $userId ? User::find($userId) : null;
+    // Selected customization
+    $activeCustomization = $customizationRequestId ? CustomizationRequest::with(['cartItem.product', 'paymentItem.product', 'messages.sender'])->find($customizationRequestId) : null;
 
-// return $a = CustomizationMessage::with('cartItem')->get();
-$messages = $activeUser ? CustomizationMessage::where(function ($query) use ($designerId, $userId) {
-    $query->where('sender_id', $designerId)->where('receiver_id', $userId);
-})->orWhere(function ($query) use ($designerId, $userId) {
-    $query->where('sender_id', $userId)->where('receiver_id', $designerId);
-})->orderBy('created_at')->get() : collect();
+    $messages = $activeCustomization ? $activeCustomization->messages()->with('sender', 'cartItem.product')->orderBy('created_at')->get() : collect();
 
-// $messages = CustomizationMessage::with('cartItem.product')->find(84);
-// return $messages->cartItem->product->title;
-
-$messages = $activeUser ? CustomizationMessage::with('cartItem.product')->where(function ($query) use ($designerId, $userId) {
-    $query->where('sender_id', $designerId)->where('receiver_id', $userId);
-})->orWhere(function ($query) use ($designerId, $userId) {
-    $query->where('sender_id', $userId)->where('receiver_id', $designerId);
-})->orderBy('created_at')->get() : collect();
-
-
-    return view('admin.designer.chat', compact('users', 'activeUser', 'messages'));
+    return view('admin.designer.chat', compact('customizations', 'activeCustomization', 'messages'));
 }
+
+
+
     /**
      * Reject a customization request
      */
@@ -101,15 +98,44 @@ $messages = $activeUser ? CustomizationMessage::with('cartItem.product')->where(
     /**
      * Display the workspace for an accepted request
      */
+public function orderWorkspace($orderId)
+{
+    $designerId = auth()->id();
+
+    // Fetch all customization requests under this order
+    $requests = CustomizationRequest::with([
+        'user',
+        'cartItem.product',
+        'paymentItem.variant',
+        'messages.sender'
+    ])
+    ->whereHas('paymentItem.payment', function($q) use ($orderId) {
+        $q->where('order_id', $orderId)
+          ->where('status', 'paid');
+    })
+    ->where(function ($query) use ($designerId) {
+        $query->where(function ($sub) {
+            $sub->where('status', 'pending')->whereNull('designer_id');
+        })->orWhere(function ($sub) use ($designerId) {
+            $sub->where('status', 'accepted')->where('designer_id', $designerId);
+        });
+    })
+    ->get();
+
+    if ($requests->isEmpty()) {
+        abort(404, 'No customization requests found for this order.');
+    }
+
+    return view('admin.designer.order_workspace', compact('requests', 'orderId'));
+}
+
+
     public function workspace($id)
     {
         $customization = CustomizationRequest::with('cartItem.product')->findOrFail($id);
         
         $custImg = Customization_image::where('customization_request_id',$customization->id)->get();
-        // return $custImg;
-    // foreach($custImg as $img){
-    //     echo $img->image;
-    // }
+      
     
         if (!in_array($customization->status, ['accepted', 'pending','approved']) || $customization->designer_id !== Auth::id()) {
             // abort(403, 'Unauthorized access to this workspace.');
@@ -148,6 +174,64 @@ $messages = $activeUser ? CustomizationMessage::with('cartItem.product')->where(
 
     //     return redirect()->route('home')->with('success', 'Request completed successfully.');
     // }
+
+    public function approveImage(CustomizationMessage $message)
+{
+    $user = auth()->user();
+
+    // Ensure the user owns this customization request
+    if ($message->customizationRequest->user_id !== $user->id) {
+        abort(403);
+    }
+
+    $message->is_approved = 1;
+    $message->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Image approved successfully',
+    ]);
+}
+
+//cancel approve 
+public function cancelApproval(CustomizationMessage $message)
+{
+    $user = auth()->user();
+    if ($message->customizationRequest->user_id !== $user->id) abort(403);
+
+    $message->is_approved = 0;
+   
+    $message->save();
+
+    return response()->json(['success' => true]);
+}
+
+public function finalize($customizationId)
+{
+    $customization = CustomizationRequest::findOrFail($customizationId);
+
+    // Check if the customization belongs to the logged-in user
+    if ($customization->user_id !== auth()->id()) {
+        return redirect()->back()->with('error', 'Unauthorized action.');
+    }
+
+    // Check if at least one message is approved
+    $approvedMessageCount = $customization->messages()->where('is_approved', 1)->count();
+    if ($approvedMessageCount == 0) {
+        return redirect()->back()->with('error', 'You must approve at least one image before finalizing.');
+    }
+
+    // Finalize the customization
+    $customization->status = 'finalized';
+    $customization->finalized_at = now();
+    $customization->save();
+
+    return redirect()->back()->with('success', 'Customization finalized successfully!');
+}
+
+
+
+
     public function completeRequest(Request $request, $id)
     {
         $customization = CustomizationRequest::findOrFail($id);
@@ -392,27 +476,62 @@ $messages = $activeUser ? CustomizationMessage::with('cartItem.product')->where(
     return redirect()->back()->with('success', 'Message sent to user.');
 }
     
-     public function showRequests()
+   public function showRequests()
 {
-    // $requests = CustomizationRequest::where(function ($query) {
-    //     $query->whereNull('designer_id')->orWhere('designer_id', Auth::id());
-    // })->get();
-    // Show only relevant requests:
     $designerId = auth()->id();
-$requests = CustomizationRequest::with(['user', 'cartItem.product'])->where(function ($query) use ($designerId) {
-    $query->where('status', 'pending')
-          ->whereNull('designer_id');
-})->orWhere(function ($query) use ($designerId) {
-    $query->where('status', 'accepted')
-          ->where('designer_id', $designerId);
-})->get();
 
-$otherDesigners = User::where('role', 2)  // or role = 2 if using integer roles
-    ->where('id', '!=', Auth::id()) // exclude current designer
-    ->get();
+    $designerId = auth()->id();
 
-    return view('admin.designer.requests', compact('requests','otherDesigners'));
+// Get all order IDs where requests are already accepted by other designers
+$blockedOrderIds = CustomizationRequest::where('status', 'accepted')
+    ->whereNotNull('designer_id')
+    ->where('designer_id', '!=', $designerId)
+    ->pluck('payment_item_id') // temporarily get payment_item_id
+    ->map(function($paymentItemId) {
+        $paymentItem = PaymentItem::find($paymentItemId);
+        return $paymentItem ? $paymentItem->payment->order_id : null;
+    })
+    ->filter()
+    ->unique()
+    ->toArray();
+
+// Now fetch requests visible to current designer
+$requests = CustomizationRequest::with([
+        'user',
+        'paymentItem.product',
+        'paymentItem.variant',
+        'paymentItem.payment.paymentItems.product',
+        'paymentItem.payment.paymentItems.variant',
+    ])
+    ->whereHas('paymentItem.payment', function ($q) {
+        $q->where('status', 'paid');
+    })
+    ->where(function ($query) use ($designerId) {
+        $query->where(function ($sub) {
+            $sub->where('status', 'pending')->whereNull('designer_id');
+        })->orWhere(function ($sub) use ($designerId) {
+            $sub->where('status', 'accepted')->where('designer_id', $designerId);
+        });
+    })
+    ->get()
+    ->filter(function ($request) use ($blockedOrderIds) {
+        return $request->paymentItem && $request->paymentItem->payment
+            && !in_array($request->paymentItem->payment->order_id, $blockedOrderIds);
+    })
+    ->groupBy(function($request) {
+        return $request->paymentItem->payment->order_id;
+    });
+    
+   
+
+    // Other designers for transfer dropdown
+    $otherDesigners = User::where('role', 2) // role = 2 for designers
+        ->where('id', '!=', $designerId) // exclude current designer
+        ->get();
+
+    return view('admin.designer.requests', compact('requests', 'otherDesigners'));
 }
+
 
 public function showRecustomizations()
 {

@@ -164,6 +164,10 @@
             color: white;
             text-decoration: none;
         }
+
+        .finalize-btn {
+            margin-top: 10px;
+        }
     </style>
 
     <div class="orders-header">
@@ -229,21 +233,12 @@
                                         <div class="col-md-2">
                                             <strong class="text-success">₹{{ number_format($payment->amount, 2) }}</strong>
                                         </div>
-
                                         <div class="col-md-3 text-end">
-                                            {{-- @if ($payment->status == 'paid')
-                                                <a href="{{ route('orders.bill', $payment->order_id) }}" target="_blank"
-                                                    class="btn btn-sm btn-outline-primary mt-2">
-                                                    <i class="fas fa-file-pdf"></i> Download E-Bill
-                                                </a>
-                                            @endif --}}
-
-
                                             @if ($payment->status == 'paid')
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-check"></i> Payment Successful
                                                 </span>
-                                            @elseif($payment->status == 'pending')
+                                            @elseif ($payment->status == 'pending')
                                                 <span class="badge bg-warning">
                                                     <i class="fas fa-clock"></i> Payment Pending
                                                 </span>
@@ -253,9 +248,9 @@
                                                 </span>
                                             @endif
                                         </div>
-
                                     </div>
                                 </div>
+
                                 <div class="order-body">
                                     @if ($payment->paymentItems->count() > 0)
                                         @foreach ($payment->paymentItems as $item)
@@ -267,13 +262,24 @@
                                                     <div class="text-muted">Quantity: {{ $item->quantity }}</div>
                                                     @if ($item->variant)
                                                         <div class="text-muted small">
-                                                            Variant: {{ $item->variant->size ?? 'Standard' }}
+                                                            Variant: {{ $item->variant->size ?? 'Standard' }} - inch
                                                         </div>
                                                     @endif
                                                     <div class="product-price">₹{{ number_format($item->total_price, 2) }}
                                                     </div>
+
+                                                    {{-- Approval Status --}}
+                                                    @if ($item->is_approved)
+                                                        <span class="badge bg-success mt-1">Customization Approved</span>
+                                                    @else
+                                                        <span class="badge bg-warning mt-1">Pending Customization
+                                                            Approval</span>
+                                                    @endif
+
+
                                                 </div>
-                                                <div class="text-end">
+
+                                                <div class="text-end d-flex flex-column align-items-end">
                                                     @if ($payment->status == 'paid')
                                                         <small class="text-success">
                                                             <i class="fas fa-check-circle"></i> Paid
@@ -286,6 +292,25 @@
                                                         <small class="text-danger">
                                                             <i class="fas fa-times-circle"></i> Failed
                                                         </small>
+                                                    @endif
+
+                                                    @if ($item->customizationRequest)
+                                                        <span class="badge bg-primary">
+                                                            <i class="fas fa-pencil-alt"></i>
+                                                            {{ ucfirst($item->customizationRequest->status) }}
+                                                        </span>
+                                                    @endif
+
+                                                    @if ($item->customizationRequest && $item->customizationRequest->messages->count())
+                                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                                            <p class="mb-0"> </p>
+                                                            <a href="{{ route('customization.userchat', $item->customizationRequest->id) }}"
+                                                                class="btn btn-sm btn-success mt-1">
+                                                                <i class="fas fa-comments"></i> View Chat
+                                                            </a>
+                                                        </div>
+                                                    @else
+                                                        <p class="mt-2 mb-0">No chat messages yet.</p>
                                                     @endif
                                                 </div>
                                             </div>
@@ -313,10 +338,29 @@
                                                         <strong>Transaction ID:</strong> {{ $payment->transaction_id }}
                                                     </small>
                                                 @endif
+
+                                                {{-- Finalize Customization Button (once per order) --}}
+                                                @php
+                                                    $allApproved = $payment->paymentItems->every(function ($item) {
+                                                        return $item->is_approved;
+                                                    });
+                                                @endphp
+
+                                                @if ($allApproved && $payment->paymentItems->count() > 0)
+                                                    <form action="{{ route('customization.finalize', $payment->id) }}"
+                                                        method="POST" class="mt-3">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-success">
+                                                            Finalize Customization for Entire Order
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
+
                             </div>
                         @endforeach
                     </div>
@@ -340,17 +384,11 @@
     <script>
         function filterOrders(status) {
             const orderCards = document.querySelectorAll('.order-card');
-
             orderCards.forEach(card => {
-                if (status === 'all' || card.dataset.status === status) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
             });
         }
     </script>
 
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 @endsection

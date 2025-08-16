@@ -28,10 +28,12 @@ class ProductImport implements ToModel, WithHeadingRow
         $product->sub_category_id = $this->subcategory_id;
         $product->rating = $row['rating'] ?? null;
         $product->image = trim($row['image']);
+        $product->cdr_file = trim($row['cdr_file']) ?? null;
         $product->is_top_pick = !empty($row['is_top_pick']) ? 1 : 0;
         $product->is_best_seller = !empty($row['is_best_seller']) ? 1 : 0;
         $product->is_new_arrival = !empty($row['is_new_arrival']) ? 1 : 0;
         $product->save();
+
 
         // 2. Handle Multiple Images (optional)
         if (!empty($row['images'])) {

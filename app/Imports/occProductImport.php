@@ -33,7 +33,9 @@ class occProductImport implements ToModel, WithHeadingRow
         $occproduct->sub_category_id = $this->subcategory_id;
         $occproduct->occasion_id = $this->occasion_id;
         $occproduct->rating = $row['rating'] ?? null;
+       $occproduct->cdr_file = trim($row['cdr_file']) ?? null;
         $occproduct->image = trim($row['image']);
+
         $occproduct->save();
         
     

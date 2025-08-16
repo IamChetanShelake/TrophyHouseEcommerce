@@ -19,6 +19,11 @@ use App\Models\ProductVariant;
 use App\Models\Address;
 use App\Models\Payment;
 use App\Models\PaymentItem;
+use App\Models\CustomizationRequest;
+use App\Models\CustomizationMessage;
+use App\Models\Customization_image;
+use App\Models\User;
+
 
 class PaymentController extends Controller
 {
@@ -56,7 +61,9 @@ class PaymentController extends Controller
 
             $user = Auth::user();
             $orderId = 'TH_' . time() . '_' . $user->id;
-            $amount = $request->input('amount');
+            // $amount = $request->input('amount');
+            $amount = round($request->input('amount'), 2);
+
 
             // Prepare customer details
             $customerDetails = [
@@ -386,11 +393,19 @@ class PaymentController extends Controller
     {
         try {
             if (!Auth::check()) {
+                 Log::warning('storePaymentItems called without authenticated user');
                 return;
             }
 
             $user = Auth::user();
-            
+            $payment = Payment::where('order_id', $paymentOrderId)->first();
+             if (!$payment) {
+            Log::error('Payment record not found while storing payment items', [
+                'payment_order_id' => $paymentOrderId,
+                'user_id' => $user->id
+            ]);
+            return;
+        }
             // Get user's cart items
             $cartItems = cartItem::with(['product', 'variant'])
                 ->where('user_id', $user->id)
@@ -407,24 +422,38 @@ class PaymentController extends Controller
                 $unitPrice = $variant ? ($variant->discounted_price ?? $variant->price) : 0;
                 $totalPrice = $unitPrice * $cartItem->quantity;
 
-                PaymentItem::create([
+                $paymentItem = PaymentItem::create([
                     'payment_order_id' => $paymentOrderId,
+                    'payment_id' => $payment->id,
                     'user_id' => $user->id,
                     'product_id' => $cartItem->product_id,
                     'variant_id' => $cartItem->variant_id,
                     'quantity' => $cartItem->quantity,
                     'unit_price' => $unitPrice,
-                    'total_price' => $totalPrice,
-                ]);
-
-                Log::info('Payment item stored', [
-                    'payment_order_id' => $paymentOrderId,
-                    'product_id' => $cartItem->product_id,
-                    'quantity' => $cartItem->quantity,
-                    'unit_price' => $unitPrice,
                     'total_price' => $totalPrice
                 ]);
+
+               Log::info('Payment item stored successfully', [
+                'payment_item_id' => $paymentItem->id,
+                'payment_order_id' => $paymentOrderId,
+                'product_id' => $cartItem->product_id,
+                'variant_id' => $cartItem->variant_id,
+                'quantity' => $cartItem->quantity,
+                'unit_price' => $unitPrice,
+                'total_price' => $totalPrice
+            ]);
+
+                // Link customization requests to this payment item
+            CustomizationRequest::where('cart_item_id', $cartItem->id)
+                ->update([
+                    'payment_item_id' => $paymentItem->id,
+                    'cart_item_id'    => null // unlink to avoid cascade delete
+                ]);
             }
+
+             // After processing all items, delete the cart
+        cartItem::where('user_id', $user->id)->delete();
+        Log::info('Cart items deleted after storing payment items', ['user_id' => $user->id]);
 
         } catch (\Exception $e) {
             Log::error('Error storing payment items:', [
@@ -440,7 +469,15 @@ class PaymentController extends Controller
     {
         try {
             if (Auth::check()) {
+
+                $userId = Auth::id();
+
+            // Just in case any cart_item_id is still linked in customization_requests, unlink it
+           CustomizationRequest::where('user_id', $userId)
+                ->update(['cart_item_id' => null]);
+
                 DB::table('cart_items')->where('user_id', Auth::id())->delete();
+
                 Log::info('Cart cleared for user:', ['user_id' => Auth::id()]);
             }
         } catch (\Exception $e) {

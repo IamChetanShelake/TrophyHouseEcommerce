@@ -10,38 +10,36 @@ class CartApiController extends Controller
 {
     public function index(Request $req)
 {
-        $userId = $req->input('user_id'); // Request se user id le
+         public function index(Request $request)
+    {
+        $user = auth()->user();
 
-    if (!$userId) {
+        // Eager load product, category, subcategory, and variant
+        $cartItems = CartItem::with([
+            'product.category',
+            'product.subcategory',
+            'variant'
+        ])
+        ->where('user_id', $user->id)
+        ->get()
+        ->map(function ($item) {
+            return [
+                'user_id' => $item->user_id,
+                'quantity' => $item->quantity,
+                'product' => $item->product,
+                'category' => $item->product->category ?? null,
+                'subcategory' => $item->product->subcategory ?? null,
+                'variant' => $item->variant ?? null,
+            ];
+        });
+
         return response()->json([
-            'status' => false,
-            'status_code' => 400,
-            'message' => 'User ID is required',
-        ], 400);
+            'status' => true,
+            'message' => 'Cart items fetched successfully!',
+            'total_items' => count($cartItems),
+            'cart' => $cartItems
+        ]);
     }
-
-    $cartItems = cartItem::where('user_id', $userId)
-        ->with('product') // Product relation load karo
-        ->get();
-
-    return response()->json([
-        'status' => true,
-        'status_code' => 200,
-        'message' => 'Cart items fetched successfully!',
-        'total_items' => count($cartItems),
-        'cart' => $cartItems
-    ]);
-
-    // $user = auth()->user();
-
-    // $cartItems = cartItem::with('product')->where('user_id', $user->id)->get();
-
-    // return response()->json([
-    //     'status' => true,
-    //     'message'=>'cart items fetched successfully !',
-    //     'total items'=>count($cartItems),
-    //     'cart' => $cartItems
-    // ]);
 }
 
 // public function addToCart()

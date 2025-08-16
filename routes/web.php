@@ -102,23 +102,24 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('designer')->group(function () {
 
-        Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
-        Route::get('/requests', [CustomizationController::class, 'showRequests'])->name('requests');
-        Route::get('/recustomizations', [CustomizationController::class, 'showRecustomizations'])->name('recustomizations');
+    Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
+    Route::get('/requests', [CustomizationController::class, 'showRequests'])->name('requests');
+    Route::get('/recustomizations', [CustomizationController::class, 'showRecustomizations'])->name('recustomizations');
 
-        Route::get('/chats/{userId?}', [CustomizationController::class, 'designerChats'])->name('chats');
-        Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
+    Route::get('/chats/{userId?}', [CustomizationController::class, 'designerChats'])->name('chats');
+    Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
 
-        Route::post('/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('accept');
-        Route::post('/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('reject');
-        Route::get('/workspace/{id}', [CustomizationController::class, 'workspace'])->name('workspace');
+    Route::post('/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('accept');
+    Route::post('/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('reject');
+    Route::get('/workspace/{id}', [CustomizationController::class, 'workspace'])->name('workspace');
 
-        Route::post('/workspace/{id}', [CustomizationController::class, 'completeRequest'])->name('submit');
-    });
+    Route::post('/workspace/{id}', [CustomizationController::class, 'completeRequest'])->name('submit');
+
+});
 
     Route::post('/customization/request/{cartId}', [CartItemController::class, 'createCustomizationRequest'])->name('customization.request');
 
-    Route::post('/customization/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('customization.accept');
+    Route::post('/customization/accept/{orderId}', [CustomizationController::class, 'acceptRequest'])->name('customization.accept');
 
     Route::post('/customization/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('customization.reject');
 
@@ -246,7 +247,23 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/cart', [ProductController::class, 'cart'])->name('cart');
 
     // Orders
-    Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
+    // Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+
+
+    Route::get('orders/user/{orderId}', [OrderController::class, 'getUserDetails'])->name('user');
+     Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
+
+   Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
+
+
+
+      // Single order details
+        Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');
+
+        // Update per-item delivery status
+        Route::patch('orders/item/{paymentItem}/delivery-status', [OrderController::class, 'updateDeliveryStatus'])
+             ->name('orders.item.delivery_status');
     Route::put('/updateStatus/{id}', [ProductController::class, 'updateStatus'])->name('update.status');
     Route::get('/ViewOrder/{id}', [OrderController::class, 'viewOrder'])->name('order.view');
 

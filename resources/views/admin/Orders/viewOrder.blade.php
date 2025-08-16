@@ -77,7 +77,7 @@
                         </table>
                     </div>
 
-                     <div class="col-lg-12 col-sm-12 grid-margin stretch-card">
+                    <div class="col-lg-12 col-sm-12 grid-margin stretch-card">
                         <table class="table table-hover">
                             <tr>
                                 <th class="text-center" colspan="2">Order Details</th>
@@ -98,7 +98,7 @@
 
                             </tbody>
                         </table>
-                     </div>
+                    </div>
                 </div>
                 <a href="{{ route('orders') }}" class="btn btn-dark">Back</a>
             </div>

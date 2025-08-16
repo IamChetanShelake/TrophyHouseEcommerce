@@ -369,7 +369,6 @@ class ProductController extends Controller
         $orders = Order::latest()->paginate(100);
         return view('admin.Orders.index', compact('orders'));
     }
-
     public function updateStatus($id, Request $request)
     {
         // dd($id);
