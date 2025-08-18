@@ -23,7 +23,8 @@ class ProductController extends Controller
         $subcategories = SubCategory::all();
         // return $subcategories;
         $products = Product::all();
-        return view('admin.Orders.createOrder', compact('categories', 'subcategories', 'products'));
+        $productsizes = ProductVariant::get();
+        return view('admin.Orders.createOrder', compact('categories', 'subcategories', 'products', 'productsizes'));
     }
 
 
@@ -37,16 +38,7 @@ class ProductController extends Controller
         return response()->json($subcategories);
     }
 
-    // Get products for a subcategory
-    // public function getProducts($subCategoryId)
-    // {
-    //     // dd($subCategoryId);
-    //     $products = Product::where('sub_category_id', $subCategoryId)
-    //         ->select('id', 'title') // important: 'title' for dropdown
-    //         ->get();
 
-    //     return response()->json($products);
-    // }
     public function getProducts($subCategoryId)
     {
 
@@ -55,6 +47,15 @@ class ProductController extends Controller
 
 
         return response()->json($products);
+    }
+
+    public function getSizes($productId)
+    {
+        $sizes = ProductVariant::where('product_id', $productId)
+            ->select('id', 'size', 'price','discounted_price') 
+            ->get();
+
+        return response()->json($sizes);
     }
 
 
@@ -286,7 +287,7 @@ class ProductController extends Controller
 
         // Delete from folder
         $filepath = public_path('product_images/' . $image->images);
-        if ($image->images && if_file($filepath)) {
+        if ($image->images && is_file($filepath)) {
             unlink($filepath);
         }
 

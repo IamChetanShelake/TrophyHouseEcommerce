@@ -51,6 +51,7 @@ class OrderController extends Controller
             'items.designer'
         ]);
 
+
         return view('admin.payments.show', compact('payment'));
     }
 
@@ -265,7 +266,7 @@ public function showOrderProducts($orderId)
         'items.designer',
         'items.customizationRequest.messages', 
     ])->where('order_id', $orderId)->firstOrFail();
-        // return $payment->items;
+      
     return view('admin.orders.products', [
         'orderId' => $orderId,
         'products' => $payment->items

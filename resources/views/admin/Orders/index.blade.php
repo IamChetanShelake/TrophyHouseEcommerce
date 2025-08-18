@@ -33,6 +33,8 @@
 
 
     <h1>Orders</h1>
+    <div><a href="{{ route('createorder') }}" class="btn" style="background:#ffc107;color:white; font-size:21px;">+
+            New</a></div>
 
     <form method="GET" action="{{ route('orders') }}" style="margin-bottom:12px;">
         <input type="text" name="q" value="{{ request('q') }}" placeholder="search order id / customer" />
@@ -68,79 +70,47 @@
                                 class="btn btn-primary btn-sm">Products</a>
 
 
-                                        </td>
-                                            <td colspan="2">
-                                                <a href="{{route('order.view',$ord->id)}}" class="btn btn-primary">
-                                                    <i class="mdi mdi-eye"></i>
-                                                </a>
-                                            </td>
-                                    </tr>
-                                @endforeach
+                        </td>
 
-                                <!-- Pagination Links -->
-                                <div class="mt-3">
-                                    {{ $orders->links() }}
-                                </div>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <!-- content-wrapper ends -->
-    </div>
-
-    {{-- on-change content javascript  --}}
+        {{ $payments->links() }}
+    @else
+        <p>No paid orders yet.</p>
+    @endif
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const statusColors = {
-            'pending': '#ffcf3f',     // Yellow
-            'processing': '#00dcff',  // Teal
-            'shipped': '#429dff',     // Blue
-            'delivered': '#00ff3a',   // Green
-            'cancelled': '#ff3649'    // Red
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            // View User Details
+            document.querySelectorAll('.view-user').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    let orderId = this.getAttribute('data-id');
+                    fetch(`/orders/user/${orderId}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                            return res.json();
+                        })
+                        .then(user => {
+                            document.getElementById('user-details').innerHTML = `
+            <p><strong>Name:</strong> ${user.name}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Phone:</strong> ${user.phone ?? 'N/A'}</p>
+        `;
+                            new bootstrap.Modal(document.getElementById('userModal')).show();
+                        })
+                        .catch(err => {
+                            console.error('Fetch error:', err);
+                            document.getElementById('user-details').innerHTML =
+                                `<p style="color:red;">Unable to load user details.</p>`;
+                            new bootstrap.Modal(document.getElementById('userModal')).show();
+                        });
 
-        // Function to set color
-        function setColor(select) {
-            const color = statusColors[select.value] || '#6c757d'; // Default grey
-            select.style.backgroundColor = color;
-            select.style.color = 'white';
-            select.style.borderRadius = '99px';
-            select.style.width = '90px';
-        }
-
-        document.querySelectorAll('.status-dropdown').forEach(function (dropdown) {
-            setColor(dropdown); // Set initial color on page load
-
-            dropdown.addEventListener('change', function () {
-                let orderId = this.getAttribute('data-id');
-                let status = this.value;
-
-                setColor(this); // Update color on change
-
-                fetch(`/updateStatus/${orderId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ status: status })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById(`status-message-${orderId}`).innerHTML =
-                        `<span class="text-success">${data.message}</span>`;
-                })
-                .catch(error => {
-                    document.getElementById(`status-message-${orderId}`).innerHTML =
-                        `<span class="text-danger">Failed to update.</span>`;
                 });
             });
         });
-    });
-</script>
+    </script>
+
 
 @endsection
