@@ -25,6 +25,26 @@ use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\OccasionProductController;
+use App\Http\Controllers\PaymentController;
+
+use App\Http\Controllers\Admin\PaymentAdminController;
+
+use App\Models\CustomizationRequest;
+use App\Models\PaymentItem;
+use App\Models\CustomizationMessage;
+
+use App\Models\Customization_image;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +130,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
 
+Route::get('/test', function () {
+    return "Server is working!";
+});
 
 
 Route::post('/designer/chats/send/{customizationRequestId}', [CustomizationController::class, 'sendMessage'])
@@ -143,8 +166,10 @@ Route::get('/workspace/order/{orderId}', [CustomizationController::class, 'order
     Route::post('/customization/cancel-approval/{message}', [CustomizationController::class, 'cancelApproval'])->name('customization.cancelApproval');
 
 
-Route::post('/customization/finalize/{customization}', [CustomizationController::class, 'finalize'])
+    Route::post('/customization/finalize/{order_id}', [CustomizationController::class, 'finalize'])
     ->name('customization.finalize');
+
+
 
 
     

@@ -84,8 +84,8 @@
                                         <td>{{ $req->description ?? 'N/A' }}</td>
                                         <td>
                                             @if ($req->paymentItem?->product?->title)
-                                                <img src="{{ asset('customization_images/' . $req->paymentItem->product->image) }}"
-                                                    alt="Product Image" style="width:50px; height:50px;">
+                                                <img src="{{ asset('product_images/' . $req->paymentItem->product->image) }}"
+                                                    alt="Product Image" style="width:auto; height:70px;border-radius:0px;">
                                             @else
                                                 N/A
                                             @endif

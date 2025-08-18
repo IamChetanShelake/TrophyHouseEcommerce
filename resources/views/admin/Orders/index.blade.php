@@ -64,10 +64,11 @@
                         <td>{{ $p->payment_mode ?? '-' }}</td>
                         <td>{{ $p->updated_at?->format('d M Y, h:i A') ?? $p->created_at?->format('d M Y, h:i A') }}</td>
                         <td>
-                            <button class="btn btn-info btn-sm view-user" data-id="{{ $p->order_id }}">View
+                            <button class="btn btn-info btn-sm view-user" data-id="{{ $p->order_id }}">
+                                <i class="fa fa-eye"></i>
                                 User</button>
-                            <a href="{{ route('orders.products', $p->order_id) }}"
-                                class="btn btn-primary btn-sm">Products</a>
+                            <a href="{{ route('orders.products', $p->order_id) }}" class="btn btn-primary btn-sm">
+                                Products</a>
 
 
                         </td>

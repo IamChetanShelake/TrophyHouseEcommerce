@@ -2,7 +2,7 @@
 
 @section('content')
     {{-- Back button --}}
-    <a href="{{ route('orders', $orderId) }}" class="btn btn-dark mb-3" style="display:inline-block; width:16%; ">
+    <a href="{{ route('orders', $orderId) }}" class="btn btn-dark mb-3" style="display:inline-block; width:20%; ">
         ← Back to Orders
     </a>
     <h1>Products in Order {{ $orderId }}</h1>
@@ -42,7 +42,10 @@
                     <td>{{ $p->variant ? $p->variant->size . ' (' . $p->variant->color . ')' : 'N/A' }}</td>
                     <td>{{ $p->quantity }}</td>
                     <td>{{ $p->unit_price }}</td>
-                    <td>{{ $p->designer->name ?? 'Not Assigned' }}</td>
+                    <td>
+                        {{ $p->designer->name ?? ($p->customizationRequest?->designer?->name ?? 'Not Assigned') }}
+                    </td>
+
                     <td>
                         @if ($p->customizationRequest && $p->customizationRequest->messages->count() > 0)
                             <a href="javascript:void(0);" class="btn btn-info btn-sm view-chat-btn"

@@ -73,8 +73,9 @@ class ProductController extends Controller
     }
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with('variants')->get();
         $category = AwardCategory::all();
+            // return $products->variants;
         return view('admin.productCrud.productsTable', compact('products', 'category'));
     }
     public function add()
@@ -97,6 +98,7 @@ class ProductController extends Controller
             'colors' => 'nullable|array',
             'colors.*' => 'nullable|string|max:50',
             'variants.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
+             'variants.*.quantity' => 'required|integer|min:0',
         ]);
 
         $product = new Product();
@@ -128,6 +130,7 @@ class ProductController extends Controller
 
             $price = $variant['price'];
             $discount = $variant['discount_percentage'] ?? 0;
+            $quantity = $variant['quantity'] ?? 0;
 
             $discounted = $price - ($price * $discount / 100);
 
@@ -137,6 +140,7 @@ class ProductController extends Controller
                 'price' => $price,
                 'discount_percentage' => $discount,
                 'discounted_price' => $discounted,
+                'quantity' => $quantity,
             ]);
         }
         if ($request->hasFile('images')) {
@@ -221,6 +225,7 @@ class ProductController extends Controller
             foreach ($request->variants as $variant) {
                 $price = $variant['price'];
                 $discount = $variant['discount_percentage'] ?? 0;
+                $quantity = $variant['quantity'] ?? 0;
                 $discounted = $price - ($price * $discount / 100);
 
                 $variantModel = $product->variants()->updateOrCreate(
@@ -234,6 +239,7 @@ class ProductController extends Controller
                         'color' => json_encode($colors),
                         'discount_percentage' => $discount,
                         'discounted_price' => $discounted,
+                        'quantity' => $quantity,
                     ]
                 );
 
@@ -286,7 +292,7 @@ class ProductController extends Controller
 
         // Delete from folder
         $filepath = public_path('product_images/' . $image->images);
-        if ($image->images && if_file($filepath)) {
+        if ($image->images && is_file($filepath)) {
             unlink($filepath);
         }
 

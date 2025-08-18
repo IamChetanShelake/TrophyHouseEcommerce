@@ -151,6 +151,7 @@
                                     <th>Title</th>
                                     <th>Category</th>
                                     <th>Sub Category</th>
+                                    <th>Quantity</th>
                                     <th>Top Pick</th>
                                     <th>Best Seller</th>
                                     <th>New Arrival</th>
@@ -168,6 +169,8 @@
                                         <td>{{ $prod->title }}</td>
                                         <td>{{ $prod->category->name }}</td>
                                         <td>{{ $prod->subcategory->title }}</td>
+                                        <td>{{ $prod->variants->sum('quantity') }}</td>
+
                                         <td>
 
 
@@ -220,14 +223,23 @@
                                         <td>
                                             <div class="d-flex gap-1" style="justify-content: center;">
                                                 <a href="{{ route('product.show', $prod->id) }}" class="btn btn-info"
-                                                    style="padding:6px 10px;">View</a>
+                                                    style="padding:6px 10px;">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
                                                 <a href="{{ route('product.edit', $prod->id) }}" class="btn btn-success"
-                                                    style="padding:6px 10px;">update</a>
+                                                    style="padding:6px 10px;">
+                                                    <i class="fa fa-pencil"></i>
+                                                </a>
                                                 <form action="{{ route('product.destroy', $prod->id) }}" method="post">
                                                     @csrf
                                                     @method('delete')
-                                                    <input type="submit" onclick="return confirm('sure delete ?')"
-                                                        value="Delete" class="btn btn-dark" style="padding:6px 10px;">
+                                                    {{-- <input type="submit" onclick="return confirm('sure delete ?')"
+                                                        value="Delete" class="btn btn-dark" style="padding:6px 10px;"> --}}
+                                                    <button type="submit" class="btn btn-danger"
+                                                        style="padding:6px 10px;"
+                                                        onclick="return confirm('Are you sure you want to delete this item?')">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>

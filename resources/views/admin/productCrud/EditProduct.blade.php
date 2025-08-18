@@ -38,27 +38,33 @@
                         <div class="variant-wrapper">
                             @foreach ($product->variants as $index => $variant)
                                 <div class="variant-row d-flex gap-2 mb-2 align-items-center">
-                                    <label for="variants[{{ $index }}][size]">Size (inch):</label>
+                                    <label for="variants[{{ $index }}][size]">Size</label>
                                     <input type="text" name="variants[{{ $index }}][size]" class="form-control"
-                                        min="0" step="0.01" placeholder="Size (inch)" value="{{ $variant->size }}"
+                                        min="0" step="0.01" placeholder="inch" value="{{ $variant->size }}"
                                         required>
 
-                                    <label for="variants[{{ $index }}][price]">Price(₹):</label>
+                                    <label for="variants[{{ $index }}][price]">Price:</label>
                                     <input type="number" name="variants[{{ $index }}][price]"
                                         class="form-control price-input" placeholder="Price" value="{{ $variant->price }}"
                                         step="0.01" required>
 
-                                    <label for="variants[{{ $index }}][discount_percentage]">Discount(%):</label>
+                                    <label for="variants[{{ $index }}][discount_percentage]">Discount:</label>
                                     <input type="number" name="variants[{{ $index }}][discount_percentage]"
-                                        class="form-control discount-input" placeholder="Discount %"
+                                        class="form-control discount-input" placeholder="x%"
                                         value="{{ $variant->discount_percentage }}" step="0.01" min="0"
                                         max="100">
 
-                                    <label for="variants[{{ $index }}][discounted_price]">Discounted
-                                        Price(₹):</label>
+                                    <label for="variants[{{ $index }}][discounted_price]">new
+                                        Price:</label>
                                     <input type="number" name="variants[{{ $index }}][discounted_price]"
-                                        class="form-control discounted-price" placeholder="Discounted Price"
+                                        class="form-control discounted-price" placeholder="new Price"
                                         value="{{ $variant->discounted_price }}" readonly>
+
+                                    <label for="variants[{{ $index }}][quantity]">quantity
+                                        :</label>
+                                    <input type="number" name="variants[{{ $index }}][quantity]"
+                                        class="form-control dquantity" placeholder="xxx" min="0" step="1"
+                                        value="{{ $variant->quantity }}">
 
                                     <input type="hidden" name="variants[{{ $index }}][id]"
                                         value="{{ $variant->id }}">

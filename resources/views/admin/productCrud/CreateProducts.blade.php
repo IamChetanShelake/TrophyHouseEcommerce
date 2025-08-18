@@ -54,17 +54,17 @@
                         <div class="variant-wrapper">
 
                             <div class="variant-row row gx-2 mb-2 align-items-center">
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input type="number" name="variants[0][size]" class="form-control" min="0"
                                         step="0.01" placeholder="Size (inch)" value="{{ old('variants.0.size') }}"
                                         required>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input type="number" name="variants[0][price]" class="form-control price"
                                         min="0" step="0.01" placeholder="Price"
                                         value="{{ old('variants.0.price') }}" required>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input type="number" name="variants[0][discount_percentage]"
                                         class="form-control discount" min="0" max="100" step="0.01"
                                         placeholder="Discount %" value="{{ old('variants.0.discount_percentage') }}">
@@ -74,18 +74,23 @@
                                         class="form-control discounted_price" placeholder="Final Price"
                                         value="{{ old('variants.0.discounted_price') }}" readonly>
                                 </div>
-                                <div class="col-1">
+                                <div class="col-2">
+                                    <input type="number" name="variants[0][quantity]" class="form-control" min="0"
+                                        step="1" placeholder="Quantity" value="{{ old('variants.0.quantity') }}"
+                                        required>
+                                </div>
+                                <div class="col-2">
                                     <button type="button" class="btn btn-success add-variant">+</button>
                                 </div>
                             </div>
                         </div>
                         <div class="color-wrapper">
-                            @php $colors = old('colors',['']); //default with empty input @endphp
+                            @php $colors = old('colors',['']); @endphp
                             <div class="color-row row gx-2 mb-2 align-items-center">
-                                <div class="col-11">
+                                <div class="col-10">
                                     <input type="text" name="colors[]" class="form-control color" placeholder="color">
                                 </div>
-                                <div class="col-1">
+                                <div class="col-2">
                                     <button type="button" class="btn btn-success add-color">+</button>
                                 </div>
                             </div>
@@ -196,6 +201,18 @@
                                 </span>
                             </div>
                         </div>
+
+
+                        <div class="form-group">
+                            <label for="cdr_file">Upload CDR File</label>
+                            <input type="file" name="cdr_file" accept=".cdr" class="form-control">
+
+
+                            @error('cdr_file')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
                         <div class="col-4">
 
 
@@ -282,7 +299,7 @@
                 });
 
                 // Replace the add button with remove button
-                const buttonCol = newRow.querySelector('.col-1');
+                const buttonCol = newRow.querySelector('.col-2:last-child');
                 buttonCol.innerHTML = `<button type="button" class="btn btn-danger remove-variant">−</button>`;
 
                 document.querySelector('.variant-wrapper').appendChild(newRow);

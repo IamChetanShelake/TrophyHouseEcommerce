@@ -51,6 +51,7 @@ class OrderController extends Controller
             'items.designer'
         ]);
 
+
         return view('admin.payments.show', compact('payment'));
     }
 
@@ -84,12 +85,11 @@ class OrderController extends Controller
         }
 
         // Get user's payment history with items
-        $payments = Payment::with(['paymentItems.product', 'paymentItems.variant','paymentItems.customizationRequest',
-        'paymentItems.customizationRequest.messages'  ])
-            ->where('customer_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+            $payments = Payment::with(['paymentItems.product', 'paymentItems.variant','paymentItems.customizationRequest',
+            'paymentItems.customizationRequest.messages'  ])
+                ->where('customer_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get(); 
         //approval checks
         // Add is_approved property dynamically
 foreach ($payments as $payment) {
@@ -99,6 +99,7 @@ foreach ($payments as $payment) {
                 ->where('is_approved', 1)
                 ->count() > 0
             : false;
+
            
     }}
         
@@ -265,7 +266,7 @@ public function showOrderProducts($orderId)
         'items.designer',
         'items.customizationRequest.messages', 
     ])->where('order_id', $orderId)->firstOrFail();
-        // return $payment->items;
+      
     return view('admin.orders.products', [
         'orderId' => $orderId,
         'products' => $payment->items

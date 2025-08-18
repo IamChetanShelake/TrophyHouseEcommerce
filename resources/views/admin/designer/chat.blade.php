@@ -140,6 +140,11 @@
                                     width="120">
                             </a>
                         @endif
+                        <div class="m-1">
+                            @if ($msg->is_approved == 1)
+                                <span class="badge bg-success">Approved</span>
+                            @endif
+                        </div>
                     </div>
                 @endforeach
             </div>
