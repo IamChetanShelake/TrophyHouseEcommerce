@@ -90,6 +90,7 @@
                                 <th>Discount (%)</th>
                                 <th>Final Price</th>
                                 <th>Colors</th>
+                                <th>Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -112,6 +113,9 @@
                                         @else
                                             <span>—</span>
                                         @endif
+                                    </td>
+                                    <td>
+                                        {{ $variant->quantity ?? '—' }}
                                     </td>
                                 </tr>
                             @endforeach

@@ -51,11 +51,12 @@
                             📝 Requests
                         </a>
                     </li>
-                    <!--<li class="nav-item">-->
-                    <!--    <a class="nav-link {{ request()->is('designer/recustomizations') ? 'active' : '' }}" href="{{ route('recustomizations') }}">-->
-                    <!--        🔁 Re-Customizations-->
-                    <!--    </a>-->
-                    <!--</li>-->
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('designer/recustomizations') ? 'active' : '' }}"
+                            href="{{ route('recustomizations') }}">
+                            Completed
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('designer/chats') ? 'active' : '' }}"
                             href="{{ route('chats') }}">

@@ -347,10 +347,11 @@
                                                 @endphp
 
                                                 @if ($allApproved && $payment->paymentItems->count() > 0)
-                                                    <form action="{{ route('customization.finalize', $payment->id) }}"
+                                                    <form
+                                                        action="{{ route('customization.finalize', $payment->order_id) }}"
                                                         method="POST" class="mt-3">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-success">
+                                                        <button type="submit" class="btn btn-primary">
                                                             Finalize Customization for Entire Order
                                                         </button>
                                                     </form>

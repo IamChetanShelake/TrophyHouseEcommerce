@@ -85,12 +85,11 @@ class OrderController extends Controller
         }
 
         // Get user's payment history with items
-        $payments = Payment::with(['paymentItems.product', 'paymentItems.variant','paymentItems.customizationRequest',
-        'paymentItems.customizationRequest.messages'  ])
-            ->where('customer_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+            $payments = Payment::with(['paymentItems.product', 'paymentItems.variant','paymentItems.customizationRequest',
+            'paymentItems.customizationRequest.messages'  ])
+                ->where('customer_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get(); 
         //approval checks
         // Add is_approved property dynamically
 foreach ($payments as $payment) {
@@ -100,6 +99,7 @@ foreach ($payments as $payment) {
                 ->where('is_approved', 1)
                 ->count() > 0
             : false;
+
            
     }}
         
