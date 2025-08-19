@@ -52,7 +52,7 @@ class ProductController extends Controller
     public function getSizes($productId)
     {
         $sizes = ProductVariant::where('product_id', $productId)
-            ->select('id', 'size', 'price','discounted_price') 
+            ->select('id', 'size', 'price', 'discounted_price', 'quantity')
             ->get();
 
         return response()->json($sizes);
@@ -76,7 +76,7 @@ class ProductController extends Controller
     {
         $products = Product::with('variants')->get();
         $category = AwardCategory::all();
-            // return $products->variants;
+        // return $products->variants;
         return view('admin.productCrud.productsTable', compact('products', 'category'));
     }
     public function add()
@@ -99,7 +99,7 @@ class ProductController extends Controller
             'colors' => 'nullable|array',
             'colors.*' => 'nullable|string|max:50',
             'variants.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
-             'variants.*.quantity' => 'required|integer|min:0',
+            'variants.*.quantity' => 'required|integer|min:0',
         ]);
 
         $product = new Product();
