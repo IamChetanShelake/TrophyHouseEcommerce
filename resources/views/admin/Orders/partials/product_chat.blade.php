@@ -26,6 +26,11 @@
                         <img src="{{ asset('customizations/' . $msg->attachment) }}" alt="Attachment" width="120">
                     </a>
                 @endif
+                <div class="m-1">
+                    @if ($msg->is_approved == 1)
+                        <span class="badge bg-success">Approved</span>
+                    @endif
+                </div>
 
                 {{-- <div class="text-muted small">
                     {{ \Carbon\Carbon::parse($msg->sent_at)->format('d M Y H:i') }}

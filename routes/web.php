@@ -36,7 +36,6 @@ use App\Models\CustomizationMessage;
 use App\Models\Customization_image;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -130,9 +129,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
 
-        Route::get('/test', function () {
-            return "Server is working!";
-        });
+Route::any('/test', function () {
+    return "Server is working!";
+})->name('test');
 
 
         Route::post('/designer/chats/send/{customizationRequestId}', [CustomizationController::class, 'sendMessage'])
@@ -306,8 +305,9 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');
 
     // Update per-item delivery status
-    Route::patch('orders/item/{paymentItem}/delivery-status', [OrderController::class, 'updateDeliveryStatus'])
+    Route::any('orders/item/{id}/delivery_status', [OrderController::class, 'updateDeliveryStatus'])
         ->name('orders.item.delivery_status');
+
     Route::put('/updateStatus/{id}', [ProductController::class, 'updateStatus'])->name('update.status');
     Route::get('/ViewOrder/{id}', [OrderController::class, 'viewOrder'])->name('order.view');
 

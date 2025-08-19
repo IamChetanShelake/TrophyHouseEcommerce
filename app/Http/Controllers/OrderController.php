@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\AwardCategory;
 use App\Models\cartItem;
 use App\Models\Page;
+use App\Models\User;
 use App\Models\WishlistItem;
 use App\Models\Payment;
 use App\Models\PaymentItem;
@@ -19,14 +20,15 @@ class OrderController extends Controller
      public function index(Request $request)
     {
         $q = Payment::with([
-                'user:id,name,email,mobile',
+                'user',
                 'items.product',
                 'items.variant:id,product_id,size,color,price,discounted_price',
-                'items.customizationRequest:id,status',
+               'items.customizationRequest:id,payment_item_id,status',
+                'items.customizationRequest.messages', 
                 'items.designer:id,name'
             ])
             ->where('status', 'paid'); // show only paid
-
+        
         if ($request->filled('q')) {
             $term = '%'.$request->q.'%';
             $q->where(function($qb) use ($term) {
@@ -37,7 +39,10 @@ class OrderController extends Controller
         }
 
         $payments = $q->latest('updated_at')->paginate(20);
-
+        // return $payments;
+        // foreach($payments as $p){
+        //     echo $p ;
+        // }
         return view('admin.Orders.index', compact('payments'));
     }
 
@@ -55,22 +60,56 @@ class OrderController extends Controller
         return view('admin.payments.show', compact('payment'));
     }
 
-    public function updateDeliveryStatus(Request $request, PaymentItem $paymentItem)
-    {
+       public function updateDeliveryStatus(Request $request, $id)
+{
+        
+       $payment = Payment::where('id', $id)->first();
         $data = $request->validate([
-            'delivery_status' => 'required|in:pending,ready_to_pickup,delivered'
+            'delivery_status' => 'required'
         ]);
-
-        // if item has a customization, ensure it's approved before marking ready/delivered
-        if ($paymentItem->customizationRequest && $paymentItem->customizationRequest->status !== 'approved') {
-            return back()->with('error', 'Customization is not approved yet.');
+       
+        $payment->delivery_status = $data['delivery_status'];
+       $updated =  $payment->save();
+        if($updated){
+            return back()->with('success', 'Delivery status updated.');
+        }
+        else{
+             return back()->with('error', 'Delivery cannot status updated.');
         }
 
-        $paymentItem->delivery_status = $data['delivery_status'];
-        $paymentItem->save();
+   
+}
 
-        return back()->with('success', 'Delivery status updated.');
-    }
+
+
+//     public function updateDeliveryStatus(Request $request, PaymentItem $paymentItem)
+//     {
+//         $data = $request->validate([
+//             'delivery_status' => 'required|in:pending,ready_to_pickup,delivered'
+//         ]);
+
+//         // if item has a customization, ensure it's approved before marking ready/delivered
+        
+// if ($paymentItem->customizationRequest) {
+//     $hasApprovedMessage = $paymentItem->customizationRequest
+//         ->messages()
+//         ->where('is_approved', 1)
+//         ->exists();
+
+//     if (!$hasApprovedMessage) {
+//         return back()->with('error', 'Customization is not approved yet.');
+//     }
+// }
+//         // if ($paymentItem->customizationRequest && $paymentItem->customizationRequest->status !== 'approved') {
+//         //     return back()->with('error', 'Customization is not approved yet.');
+//         // }
+
+        
+//         $paymentItem->delivery_status = $data['delivery_status'];
+//         $paymentItem->save();
+
+//         return back()->with('success', 'Delivery status updated.');
+//     }
 
     public function viewOrder($id){
         $order = Order::with('user','orderItems.product','product')->find($id);
@@ -266,10 +305,24 @@ public function showOrderProducts($orderId)
         'items.designer',
         'items.customizationRequest.messages', 
     ])->where('order_id', $orderId)->firstOrFail();
-      
+
+    // Get designer IDs who have already accepted this order
+$acceptedDesignerIds = $payment->items
+    ->pluck('customizationRequest')
+    ->filter(fn($c) => $c && $c->status === 'accepted')
+    ->pluck('designer_id')
+    ->unique()
+    ->toArray();
+
+// Get all designers except those who already accepted
+$designers = User::where('role', 2)
+    ->whereNotIn('id', $acceptedDesignerIds)
+    ->get();
+
     return view('admin.orders.products', [
         'orderId' => $orderId,
-        'products' => $payment->items
+        'products' => $payment->items,
+        'designers' => $designers
     ]);
 }
 

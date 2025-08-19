@@ -17,7 +17,7 @@ class User extends Authenticatable
 
 public function getProfileImgAttribute()
 {
-    if ($this->attributes['profile_img']) {
+   if (!empty($this->attributes['profile_img'])) {
         return asset('profile_images/' . $this->attributes['profile_img']);
     }
     return null;
