@@ -23,7 +23,8 @@ class ProductController extends Controller
         $subcategories = SubCategory::all();
         // return $subcategories;
         $products = Product::all();
-        return view('admin.Orders.createOrder', compact('categories', 'subcategories', 'products'));
+        $productsizes = ProductVariant::get();
+        return view('admin.Orders.createOrder', compact('categories', 'subcategories', 'products', 'productsizes'));
     }
 
 
@@ -37,16 +38,7 @@ class ProductController extends Controller
         return response()->json($subcategories);
     }
 
-    // Get products for a subcategory
-    // public function getProducts($subCategoryId)
-    // {
-    //     // dd($subCategoryId);
-    //     $products = Product::where('sub_category_id', $subCategoryId)
-    //         ->select('id', 'title') // important: 'title' for dropdown
-    //         ->get();
 
-    //     return response()->json($products);
-    // }
     public function getProducts($subCategoryId)
     {
 
@@ -55,6 +47,15 @@ class ProductController extends Controller
 
 
         return response()->json($products);
+    }
+
+    public function getSizes($productId)
+    {
+        $sizes = ProductVariant::where('product_id', $productId)
+            ->select('id', 'size', 'price','discounted_price') 
+            ->get();
+
+        return response()->json($sizes);
     }
 
 
@@ -373,9 +374,9 @@ class ProductController extends Controller
     public function orders()
     {
         $orders = Order::latest()->paginate(100);
+        
         return view('admin.Orders.index', compact('orders'));
     }
-
     public function updateStatus($id, Request $request)
     {
         // dd($id);

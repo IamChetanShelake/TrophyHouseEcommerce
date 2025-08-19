@@ -5,7 +5,20 @@
     <a href="{{ route('orders', $orderId) }}" class="btn btn-dark mb-3" style="display:inline-block; width:20%; ">
         ← Back to Orders
     </a>
-    <h1>Products in Order {{ $orderId }}</h1>
+    <!-- Transfer Designer Dropdown -->
+    <form action="{{ route('customization.transfer', $orderId) }}" method="POST">
+        @csrf
+        <div class="input-group">
+            <select name="new_designer_id" class="form-select form-select-sm" required>
+                <option value="">Select Designer</option>
+                @foreach ($designers as $designer)
+                    <option value="{{ $designer->id }}">{{ $designer->name }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-warning btn-sm">Transfer</button>
+        </div>
+    </form>
+    <h3>Products in Order - {{ $orderId }}</h3>
     <!-- Chat Modal -->
     <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -33,13 +46,14 @@
                 <th>Price</th>
                 <th>Designer</th>
                 <th>Chat</th>
+                <th>Customization Status</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($products as $p)
                 <tr>
                     <td>{{ $p->product->title ?? 'N/A' }}</td>
-                    <td>{{ $p->variant ? $p->variant->size . ' (' . $p->variant->color . ')' : 'N/A' }}</td>
+                    <td>{{ $p->variant ? $p->variant->size . ' -inch' . ' (' . $p->variant->color . ')' : 'N/A' }}</td>
                     <td>{{ $p->quantity }}</td>
                     <td>{{ $p->unit_price }}</td>
                     <td>
@@ -54,6 +68,17 @@
                             </a>
                         @else
                             <span class="text-muted">No Chat</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if ($p->customizationRequest)
+                            {{-- <span class="badge 
+                        @if ($status === 'Approved') bg-success 
+                        @elseif ($status === 'Rejected') bg-danger 
+                        @else bg-warning text-dark @endif">
+                        {{ $status }}
+                    </span> --}}
+                            {{ $p->customizationRequest->status }}
                         @endif
                     </td>
                 </tr>

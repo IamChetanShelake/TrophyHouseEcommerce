@@ -25,7 +25,6 @@ class CustomizationController extends Controller
      */
     public function acceptRequest(Request $request, $orderId)
     {
-
         
         $designerId = auth()->id();
 
@@ -317,15 +316,21 @@ public function finalize($paymentId)
         return redirect()->route('dashboard')->with('success', 'Design submitted. Waiting for user approval.');
     }
     
-    public function transferRequest(Request $request, $id)
+    public function transferRequest(Request $request, $orderId)
 {
     $request->validate([
         'new_designer_id' => 'required|exists:users,id',
     ]);
 
-    $customization = CustomizationRequest::findOrFail($id);
+    // Get all customization requests under this order that are accepted
+    $customizations = CustomizationRequest::where('payment_item_id', function($q) use ($orderId) {
+        $q->select('id')
+          ->from('payment_items')
+          ->where('order_id', $orderId);
+    })->where('status', 'accepted')->get();
 
     // Only the current designer can transfer
+    
     if ($customization->designer_id !== auth()->id()) {
         return back()->with('error', 'Unauthorized');
     }

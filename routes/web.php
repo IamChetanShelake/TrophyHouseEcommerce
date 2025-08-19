@@ -5,12 +5,11 @@ use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\ValidUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\AboutController;
-use App\Http\Controllers\DesignerController;
-use App\Http\Controllers\CustomizationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\GalleryController;
@@ -19,11 +18,13 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DesignerController;
 use App\Http\Controllers\OccasionController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\CustomizationController;
 use App\Http\Controllers\OccasionProductController;
 use App\Http\Controllers\PaymentController;
 
@@ -36,7 +37,6 @@ use App\Models\CustomizationMessage;
 use App\Models\Customization_image;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -122,47 +122,44 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('designer')->group(function () {
 
-    Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
-    Route::get('/requests', [CustomizationController::class, 'showRequests'])->name('requests');
-    Route::get('/recustomizations', [CustomizationController::class, 'showRecustomizations'])->name('recustomizations');
-    
-    Route::get('/chats/{customizationRequestId?}', [CustomizationController::class, 'designerChats'])->name('chats');
+        Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
+        Route::get('/requests', [CustomizationController::class, 'showRequests'])->name('requests');
+        Route::get('/recustomizations', [CustomizationController::class, 'showRecustomizations'])->name('recustomizations');
 
-    // Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
+        Route::get('/chats/{customizationRequestId?}', [CustomizationController::class, 'designerChats'])->name('chats');
 
-Route::get('/test', function () {
+        // Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
+
+Route::any('/test', function () {
     return "Server is working!";
-});
+})->name('test');
 
 
-Route::post('/designer/chats/send/{customizationRequestId}', [CustomizationController::class, 'sendMessage'])
-    ->name('send.message')
-    ->middleware('auth');
+        Route::post('/designer/chats/send/{customizationRequestId}', [CustomizationController::class, 'sendMessage'])
+            ->name('send.message')
+            ->middleware('auth');
 
-    // Route::post('/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('accept');
-    // Route::post('/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('reject');
-    // Route::get('/workspace/{id}', [CustomizationController::class, 'workspace'])->name('workspace');
-    
-    Route::post('/workspace/{id}', [CustomizationController::class, 'completeRequest'])->name('submit');
+        // Route::post('/accept/{id}', [CustomizationController::class, 'acceptRequest'])->name('accept');
+        // Route::post('/reject/{id}', [CustomizationController::class, 'rejectRequest'])->name('reject');
+        // Route::get('/workspace/{id}', [CustomizationController::class, 'workspace'])->name('workspace');
 
-    
-    
-});
-// Order-level workspace
-Route::get('/workspace/order/{orderId}', [CustomizationController::class, 'orderWorkspace'])
-->name('workspace.order');
+        Route::post('/workspace/{id}', [CustomizationController::class, 'completeRequest'])->name('submit');
+    });
+    // Order-level workspace
+    Route::get('/workspace/order/{orderId}', [CustomizationController::class, 'orderWorkspace'])
+        ->name('workspace.order');
 
     Route::post('/customization/request/{cartId}', [CartItemController::class, 'createCustomizationRequest'])->name('customization.request');
 
     Route::post('/customization/accept/{orderId}', [CustomizationController::class, 'acceptRequest'])->name('customization.accept');
 
     Route::post('/customization/reject/{orderId}', [CustomizationController::class, 'rejectRequest'])->name('customization.reject');
-    
+
     Route::post('/customization/transfer/{orderId}', [CustomizationController::class, 'transferRequest'])->name('customization.transfer');
-    
+
     Route::post('/customization/approve-image/{message}', [CustomizationController::class, 'approveImage'])
-    ->name('customization.approveImage');
-    
+        ->name('customization.approveImage');
+
     Route::post('/customization/cancel-approval/{message}', [CustomizationController::class, 'cancelApproval'])->name('customization.cancelApproval');
 
 
@@ -172,7 +169,7 @@ Route::get('/workspace/order/{orderId}', [CustomizationController::class, 'order
 
 
 
-    
+
     Route::any('/customization/{id}/approve', [CustomizationController::class, 'approveRequest'])->name('customization.approve');
 
     Route::get('/customization/workspace/{id}', [CustomizationController::class, 'workspace'])->name('customization.workspace');
@@ -293,24 +290,25 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     // Cart
     Route::get('/cart', [ProductController::class, 'cart'])->name('cart');
 
-    // Orders 
+    // Orders
     // Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
 
-    
+
     Route::get('orders/user/{orderId}', [OrderController::class, 'getUserDetails'])->name('user');
-     Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
+    Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
 
-   Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
+    Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
 
 
 
-      // Single order details
-        Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');
+    // Single order details
+    Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');
 
-        // Update per-item delivery status
-        Route::patch('orders/item/{paymentItem}/delivery-status', [OrderController::class, 'updateDeliveryStatus'])
-             ->name('orders.item.delivery_status');
+    // Update per-item delivery status
+    Route::any('orders/item/{id}/delivery_status', [OrderController::class, 'updateDeliveryStatus'])
+        ->name('orders.item.delivery_status');
+        
     Route::put('/updateStatus/{id}', [ProductController::class, 'updateStatus'])->name('update.status');
     Route::get('/ViewOrder/{id}', [OrderController::class, 'viewOrder'])->name('order.view');
 
@@ -319,6 +317,7 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
 
     Route::get('/get-subcategories/{id}', [ProductController::class, 'getSubcategories']);
     Route::get('/get-products_list/{id}', [ProductController::class, 'getProducts']);
+    Route::get('/get-sizes/{productId}', [ProductController::class, 'getSizes']);
 
 
     // Categories
