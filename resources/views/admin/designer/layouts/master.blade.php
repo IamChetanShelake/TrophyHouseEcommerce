@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ asset('admin/assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="{{ asset('website/assets/images/TH-Favicon.png') }}" type="image/png">
 
     <style>
         body {
@@ -35,6 +36,10 @@
         .main-content {
             padding: 30px;
         }
+
+        .brand-logo {
+            width: 100%;
+        }
     </style>
 </head>
 
@@ -43,7 +48,11 @@
         <div class="row">
             {{-- Sidebar --}}
             <div class="col-md-3 col-lg-2 sidebar p-3">
-                <h5 class="text-primary mb-4">🎨 Designer Panel</h5>
+
+                <img class="brand-logo" src="{{ asset('website/assets/images/TH-Logo.png') }}" alt="Logo">
+                <h5 class="text o mb-4 ">
+                    Designer Panel
+                </h5>
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('designer/requests') ? 'active' : '' }}"
@@ -54,15 +63,15 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('designer/recustomizations') ? 'active' : '' }}"
                             href="{{ route('recustomizations') }}">
-                            Completed
+                            ✅ Completed
                         </a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link {{ request()->is('designer/chats') ? 'active' : '' }}"
                             href="{{ route('chats') }}">
                             💬 Chats
                         </a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
                             @csrf

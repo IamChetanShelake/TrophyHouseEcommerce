@@ -46,8 +46,8 @@
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    
-     <style>
+
+    <style>
         #preloader {
             position: fixed;
             top: 0;
@@ -72,14 +72,14 @@
             object-fit: contain;
         }
     </style>
-     <!-- Preloader Start -->
-  <div id="preloader">
+    <!-- Preloader Start -->
+    {{-- <div id="preloader">
       <div class="spinner">
           <img src="{{ asset('website/assets/images/footer/trophy_house_logo[1] 1.png') }}" alt="Loading..."
               class="loader-image">
       </div>
-  </div>
-  <!-- Preloader End -->
+  </div> --}}
+    <!-- Preloader End -->
 </head>
 
 
@@ -102,11 +102,13 @@
                 </script>
                 <!--<div class="sidebar-user d-flex align-items-center gap-3 px-3 py-3 border-bottom">-->
                 <!--    <div class="profile-wrapper">-->
-                <!--        @if (isset(Auth::user()->image))-->
+                <!--        @if (isset(Auth::user()->image))
+-->
                 <!--            <img src="{{ asset('website/assets/images/header-menu.png') }}" alt="User">-->
-                <!--        @else-->
+            <!--        @else-->
                 <!--            <img src="{{ asset('images/profile-default.png') }}" alt="User">-->
-                <!--        @endif-->
+                <!--
+@endif-->
                 <!--        <input type="file" id="cameraInput" accept="image/*" capture="environment"-->
                 <!--            style="display: none;">-->
                 <!--        <div class="camera-icon" onclick="document.getElementById('cameraInput').click()">-->
@@ -115,76 +117,83 @@
                 <!--    </div>-->
                 <!--    <div class="user-info">-->
                 <!--        <h6 class="mb-0 fw-semibold">-->
-                <!--            @if (Auth::user())-->
+                <!--            @if (Auth::user())
+-->
                 <!--                {{ Auth::user()->name }}-->
-                <!--            @endif-->
+                <!--
+@endif-->
                 <!--        </h6>-->
                 <!--        <p class="small  mb-1">-->
-                <!--            @if (Auth::user())-->
+                <!--            @if (Auth::user())
+-->
                 <!--                {{ Auth::user()->email }}-->
-                <!--            @endif-->
+                <!--
+@endif-->
                 <!--        </p>-->
-                <!--        @if (Auth::user())-->
+                <!--        @if (Auth::user())
+-->
                 <!--            <a class="btn btn-outline-danger btn-sm" href="{{ route('profile.edit') }}">Edit-->
                 <!--                Profile</a>-->
                 <!--            {{-- <button class="btn btn-outline-danger btn-sm">Edit Profile</button> --}}-->
-                <!--        @else-->
+            <!--        @else-->
                 <!--            {{-- <a href="{{route('login')}}" class="btn btn-outline-danger btn-sm">Login</a> --}}-->
                 <!--            <a href="{{ route('login') }}" class="custom-btn btn-outline-danger btn-sm"-->
                 <!--                style="cursor:pointer;" data-form="login">Log-->
                 <!--                in</a>-->
-                <!--        @endif-->
+                <!--
+@endif-->
                 <!--    </div>-->
                 <!--</div>-->
                 <div class="sidebar-user d-flex align-items-center gap-3 px-3 py-3 border-bottom">
-    <!-- Profile Image Section -->
-  <div class="navbar-profile-wrapper" style="position: relative;">
-    @php
-        $navbarProfileImg = Auth::check() && Auth::user()->profile_img
-            ? base_path('profile_images/'.Auth::user()->profile_img)
-            : asset('images/profile-default.png');
-    @endphp
+                    <!-- Profile Image Section -->
+                    <div class="navbar-profile-wrapper" style="position: relative;">
+                        {{-- @php
+                            $navbarProfileImg =
+                                Auth::check() && Auth::user()->profile_img
+                                    ? base_path('profile_images/' . Auth::user()->profile_img)
+                                    : asset('images/profile-default.png');
+                        @endphp --}}
 
-    <img src="{{ $navbarProfileImg }}"
-         id="navbarProfilePreview"
-         class="navbar-avatar"
-         alt="Profile"
-         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #fff;">
+                        <img src="{{ Auth::user()->profile_img ?? asset('images/profile-default.png') }}"
+                            id="navbarProfilePreview" class="navbar-avatar" alt="Profile"
+                            style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #fff;">
 
-    <input type="file" id="navbarProfileInput" accept="image/*" style="display: none;">
+                        <input type="file" id="navbarProfileInput" accept="image/*" style="display: none;">
 
-    <!--<span class="camera-icon-small"-->
-    <!--      onclick="document.getElementById('navbarProfileInput').click();"-->
-    <!--      style="position: absolute; bottom: 0; right: 0; background: #e63946; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 3px rgba(0,0,0,0.3);">-->
-    <!--    <i class="fas fa-camera" style="font-size: 13px;"></i>-->
-    <!--</span>-->
-</div>
-
-
-    <!-- User Info Section -->
-    <div class="user-info">
-        <h6 class="mb-0 fw-semibold">
-            @if (Auth::user())
-                {{ Auth::user()->name }}
-            @endif
-        </h6>
-        <p class="small mb-1">
-            @if (Auth::user())
-                {{ Auth::user()->email }}
-            @endif
-        </p>
-        @if (Auth::user())
-            <a href="{{ route('profile.edit') }}" class="btn btn-outline-danger btn-sm">Edit Profile</a>
-        @else
-            <a href="{{ route('login') }}" class="custom-btn btn-outline-danger btn-sm" style="cursor:pointer;" data-form="login">
-                Log in
-            </a>
-        @endif
-    </div>
-</div>
+                        <!--<span class="camera-icon-small"-->
+                        <!--      onclick="document.getElementById('navbarProfileInput').click();"-->
+                        <!--      style="position: absolute; bottom: 0; right: 0; background: #e63946; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 3px rgba(0,0,0,0.3);">-->
+                        <!--    <i class="fas fa-camera" style="font-size: 13px;"></i>-->
+                        <!--</span>-->
+                    </div>
 
 
-<!-- JavaScript for preview -->
+                    <!-- User Info Section -->
+                    <div class="user-info">
+                        <h6 class="mb-0 fw-semibold">
+                            @if (Auth::user())
+                                {{ Auth::user()->name }}
+                            @endif
+                        </h6>
+                        <p class="small mb-1">
+                            @if (Auth::user())
+                                {{ Auth::user()->email }}
+                            @endif
+                        </p>
+                        @if (Auth::user())
+                            <a href="{{ route('profile.edit') }}" class="btn btn-outline-danger btn-sm">Edit
+                                Profile</a>
+                        @else
+                            <a href="{{ route('login') }}" class="custom-btn btn-outline-danger btn-sm"
+                                style="cursor:pointer;" data-form="login">
+                                Log in
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+
+                <!-- JavaScript for preview -->
 
                 <!--<div class="sidebar px-3">-->
                 <!--    <div class="category-section mb-3">-->
@@ -196,13 +205,15 @@
                 <!--        </h6>-->
                 <!--        <ul class="list-unstyled category-list"-->
                 <!--            style="font-family: 'Source Sans 3', sans-serif;top: 23px;position: relative;">-->
-                <!--            @foreach ($categories as $cat)-->
+                <!--            @foreach ($categories as $cat)
+-->
                 <!--                {{-- <li><a href="{{ route('view.category', $cat->id) }}">{{$cat->name}}</a></li> --}}-->
                 <!--                <li>-->
                 <!--                    <a href="{{ route('view.category', $cat->id) }}" class="category"-->
                 <!--                        data-target="#filters-trophies">{{ $cat->name }}</a>-->
                 <!--                </li>-->
-                <!--            @endforeach-->
+                <!--
+@endforeach-->
                 <!--        </ul>-->
                 <!--    </div>-->
                 <!--    <div id="filters-trophies" class="filter-block d-none"-->
@@ -309,9 +320,12 @@
                 <!--</div>-->
                 <div class="sidebar-footer mt-auto px-3">
                     <ul class="list-unstyled" style="position: relative;top: 10px;">
-                        <li><i class="fas fa-box"></i><a href="{{ route('my.orders') }}" style="text-decoration: none; color: inherit;"> My Orders</a></li>
+                        <li><i class="fas fa-box"></i><a href="{{ route('my.orders') }}"
+                                style="text-decoration: none; color: inherit;"> My Orders</a></li>
                         <li><i class="fas fa-heart"></i><a href="{{ route('wishlist') }}"> Wishlist </a></a></li>
-                        <li><i class="fas fa-cog"></i> Change Password</li>
+                        <li><i class="fas fa-cog    "></i><a href="{{ route('changePassword') }}"> Change Password
+                            </a></a></li>
+
                         <!--<li><i class="fas fa-paint-brush"></i> Customization & Support</li>-->
                         <!--<li><i class="fas fa-cog"></i> Settings</li>-->
                         @if (Auth::user())
@@ -520,7 +534,7 @@
                             <!--            style="width: 20px; height: 20px;">-->
                             <!--    </a>-->
                             <!--</li>-->
-                                
+
                             <li>
                                 <div class="cart-button d-flex align-items-center">
                                     <div class="icon">

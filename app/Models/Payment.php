@@ -47,7 +47,7 @@ class Payment extends Model
         return 'cancelled';
     }
 
-    return 'N/A';
+    return 'pending';
 }
 
 

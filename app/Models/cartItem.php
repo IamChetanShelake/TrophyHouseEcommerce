@@ -2,6 +2,9 @@
 
 namespace App\Models;
 use App\Models\PaymentItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\CustomizationRequest;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -24,5 +27,9 @@ public function paymentItems()
                 ->whereColumn('variant_id', 'variant_id')
                 ->whereColumn('user_id', 'user_id');
 }
+public function customizationRequest()
+    {
+        return $this->hasOne(CustomizationRequest::class, 'cart_item_id', 'id');
+    }
 
 }

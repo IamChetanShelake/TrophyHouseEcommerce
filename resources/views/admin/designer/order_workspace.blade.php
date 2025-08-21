@@ -1,15 +1,36 @@
 @extends('admin.designer.layouts.master')
+<style>
+    .approvaldone {
+        background-color: #d5ffdf;
+        color: #009823;
+        padding: 7px;
+        border-radius: 35px;
+        width: 85%;
+    }
 
+    .approvalfail {
+        background-color: #fdc6cb;
+        color: #ff0018;
+        padding: 7px;
+        border-radius: 35px;
+        width: 85%;
+    }
+</style>
 @section('content')
+    <a href="{{ route('requests') }}" class="btn btn-dark mb-3" style="display:inline-block; width:20%; ">
+        ← Back to Requests</a>
     <h3 class="mb-4">Workspace for Order - {{ $orderId }}</h3>
 
-    <table class="table table-bordered">
+    <table class="table table-bordered text-center">
         <thead>
             <tr>
                 <th>Product</th>
                 <th>Quantity</th>
-                <th>Description</th>
-                <th>Actions</th>
+                <th>Content</th>
+                <th>Action</th>
+                <th>CDR File</th>
+                <th>Chats</th>
+                <th>Approval Status</th>
             </tr>
         </thead>
         <tbody>
@@ -24,6 +45,28 @@
                             Open Workspace
                         </button>
                     </td>
+                    <td>
+                        @if ($req->cdr_file)
+                            <a href="{{ asset('cdr_files/' . $req->cdr_file) }}" target="_blank"
+                                class="btn btn-secondary btn-sm">View CDR</a>
+                        @else
+                            No CDR file
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('chats', $req->id) }}" class="btn btn-success btn-sm mt-1 text-black"
+                            style="background-color:#00ff65">
+                            <i class="fas fa-comments"></i> Go To Chat
+                        </a>
+                    </td>
+                    <td>
+                        @if ($req->messages->where('is_approved', 1)->count() > 0)
+                            <span class=" approvaldone ">Approved</span>
+                        @else
+                            <span class=" approvalfail">Not Approved</span>
+                        @endif
+                    </td>
+
                 </tr>
 
                 {{-- Modal for individual product workspace --}}

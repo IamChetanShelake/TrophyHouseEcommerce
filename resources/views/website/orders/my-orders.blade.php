@@ -9,10 +9,10 @@
         }
 
         .orders-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
             color: white;
             padding: 30px 0;
-            margin-bottom: 40px;
+
         }
 
         .order-card {
@@ -174,10 +174,10 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h1 class="mb-0">
+                    <h3 class="mb-0">
                         <i class="fas fa-box"></i> My Orders
-                    </h1>
-                    <p class="mb-0 mt-2">Track and manage your orders</p>
+                        </h1>
+                        <p class="mb-0 mt-2">Track and manage your orders</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a href="{{ route('Websitehome') }}" class="btn btn-light">
@@ -217,7 +217,18 @@
                                 <div class="order-header">
                                     <div class="row align-items-center">
                                         <div class="col-md-3">
-                                            <strong>Order #{{ $payment->order_id }}</strong>
+                                            <strong>Order ID - #{{ $payment->order_id }}</strong>
+                                            @if ($payment->transaction_id)
+                                                <small class="text-muted">
+                                                    <i class="fas fa-receipt"></i>
+                                                    <strong>Transaction ID:</strong> {{ $payment->transaction_id }}
+                                                </small>
+                                            @endif
+                                            <small class="text-muted">
+                                                <i class="fas fa-credit-card"></i>
+                                                <strong>Payment Method:</strong>
+                                                {{ ucfirst($payment->payment_mode ?? 'Online Payment') }}
+                                            </small>
                                         </div>
                                         <div class="col-md-2">
                                             <span class="order-status status-{{ $payment->status }}">
@@ -297,11 +308,19 @@
                                                     @if ($item->customizationRequest)
                                                         <span class="badge bg-primary">
                                                             <i class="fas fa-pencil-alt"></i>
+                                                            <span>Customization</span>
                                                             {{ ucfirst($item->customizationRequest->status) }}
                                                         </span>
                                                     @endif
-
-                                                    @if ($item->customizationRequest && $item->customizationRequest->messages->count())
+                                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                                        <a href="{{ route('customization.userchat', $item->customizationRequest->id ?? null) }}"
+                                                            class="btn btn-sm btn-success mt-1"
+                                                            style="background-color:#00ff65">
+                                                            <i class="fas fa-comments"></i> <span class="text-black">Chat
+                                                                with Designer</span>
+                                                        </a>
+                                                    </div>
+                                                    {{-- @if ($item->customizationRequest && $item->customizationRequest->messages->count())
                                                         <div class="d-flex align-items-center gap-2 mt-2">
                                                             <p class="mb-0"> </p>
                                                             <a href="{{ route('customization.userchat', $item->customizationRequest->id) }}"
@@ -311,7 +330,7 @@
                                                         </div>
                                                     @else
                                                         <p class="mt-2 mb-0">No chat messages yet.</p>
-                                                    @endif
+                                                    @endif --}}
                                                 </div>
                                             </div>
                                         @endforeach
@@ -325,19 +344,14 @@
                                     <div class="mt-3 pt-3 border-top">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <small class="text-muted">
+                                                {{-- <small class="text-muted">
                                                     <i class="fas fa-credit-card"></i>
                                                     <strong>Payment Method:</strong>
                                                     {{ ucfirst($payment->payment_mode ?? 'Online Payment') }}
-                                                </small>
+                                                </small> --}}
                                             </div>
                                             <div class="col-md-6">
-                                                @if ($payment->transaction_id)
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-receipt"></i>
-                                                        <strong>Transaction ID:</strong> {{ $payment->transaction_id }}
-                                                    </small>
-                                                @endif
+
 
                                                 {{-- Finalize Customization Button (once per order) --}}
                                                 @php
@@ -346,7 +360,7 @@
                                                     });
                                                 @endphp
 
-                                                @if ($allApproved && $payment->paymentItems->count() > 0)
+                                                {{-- @if ($allApproved && $payment->paymentItems->count() > 0)
                                                     <form
                                                         action="{{ route('customization.finalize', $payment->order_id) }}"
                                                         method="POST" class="mt-3">
@@ -355,7 +369,7 @@
                                                             Finalize Customization for Entire Order
                                                         </button>
                                                     </form>
-                                                @endif
+                                                @endif --}}
                                             </div>
                                         </div>
 

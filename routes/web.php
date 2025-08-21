@@ -178,7 +178,7 @@ Route::any('/test', function () {
 
     Route::post('/customization/{id}/send-message', [CustomizationController::class, 'sendMessage'])->name('customization.sendMessage');
 
-    Route::get('/customization/chat/{id}', [CustomizationController::class, 'userChat'])->name('customization.userchat');
+    Route::get('/customization/chat/{id?}', [CustomizationController::class, 'userChat'])->name('customization.userchat');
     Route::post('/customization/chat/send/{id}', [CustomizationController::class, 'sendUserMessage'])->name('customization.userchat.send');
 
     Route::post('/customization/{id}/request-edit', [CustomizationController::class, 'requestEdit'])->name('customization.request-edit');
@@ -194,7 +194,10 @@ Route::any('/test', function () {
 
     //profile---------------------------------
     Route::get('/edit-profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('changePassword');
+    Route::put('/update-password', [ProfileController::class, 'updatePassword'])->name('passwordUpdate');
     Route::put('/update-profile', [ProfileController::class, 'update'])->name('profile.update');
+
     Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
 
     // Orders

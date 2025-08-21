@@ -69,10 +69,10 @@
 
     <section>
         <div class="container my-5">
-            
+
 
             <!--customization-modal-->
-             <div class="modal fade" id="customizationModal" tabindex="-1"  aria-labelledby="customizationModalLabel"
+            <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -125,29 +125,43 @@
                         <p class="text-center text-danger">Your cart is empty.</p>
                     @else
                         @foreach ($cartItems as $cart)
-                        
-                        {{-- @if($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
-                        @if($customization_request)
-             <!--confirmation modal -->
-            <!-- Modal -->
-<div class="modal fade" id="customizationConfirmModal" tabindex="-1" aria-labelledby="customizationConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content border border-2" style="border: 2px solid #FBCB07;">
-      
-      <!-- Modal Header -->
-      <div class="modal-header">
-      
-        <button type="button" style="color: #DE2300;" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+                            {{-- @if ($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
+                            @php
+                                $allCustomized = $cartItems->every(function ($item) {
+                                    return $item->customizationRequest !== null;
+                                });
+                            @endphp
 
-      <!-- Modal Body -->
-      <div class="modal-body">
-          <center> <h5 class="modal-title" style="color: #DE2300;" id="customizationConfirmModalLabel">Confirmation </h5></center>
-    <b>     <center> you have customization remaning for your other cart trophy, would you like to personalize them with photos and text? </center> </b>
-      </div>
+                            @if (!$allCustomized)
+                                {{-- if all items are not customized --}}
+                                <!--confirmation modal -->
+                                <!-- Modal -->
+                                <div class="modal fade" id="customizationConfirmModal" tabindex="-1"
+                                    aria-labelledby="customizationConfirmModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content border border-2" style="border: 2px solid #FBCB07;">
 
-      <!-- Modal Footer -->
-      {{-- <div class="row">
+                                            <!-- Modal Header -->
+                                            <div class="modal-header">
+
+                                                <button type="button" style="color: #DE2300;" class="btn-close"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+
+                                            <!-- Modal Body -->
+                                            <div class="modal-body">
+                                                <center>
+                                                    <h5 class="modal-title" style="color: #DE2300;"
+                                                        id="customizationConfirmModalLabel">Confirmation </h5>
+                                                </center>
+                                                <b>
+                                                    <center> you have customization remaning for your other cart trophy,
+                                                        would you like to personalize them with photos and text? </center>
+                                                </b>
+                                            </div>
+
+                                            <!-- Modal Footer -->
+                                            {{-- <div class="row">
         
 
             <button type="button" class="btn btn-primary col-4" data-bs-dismiss="modal">Yes</button>
@@ -157,37 +171,44 @@
             <a href="{{ route('addressPage') }}" class="btn btn-secondary col-4">No</a>
         
       </div> --}}
-      <div class="modal-footer justify-content-center">
-    <div class="d-flex gap-3">
-        <button type="button" class="btn  px-5" data-bs-dismiss="modal" style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">Yes</button>
-        <a href="{{ route('addressPage') }}" class="btn px-5" style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">No</a>
-    </div>
-</div>
-      
-    </div>
-  </div>
-</div>
-    
-        @else
-        
-        <div class="modal fade" id="customizationConfirmModal" tabindex="-1" aria-labelledby="customizationConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content border border-2" style="border: 2px solid #FBCB07;">
-      
-      <!-- Modal Header -->
-      <div class="modal-header">
-      
-        <button type="button" style="color: #DE2300;" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+                                            <div class="modal-footer justify-content-center">
+                                                <div class="d-flex gap-3">
+                                                    <button type="button" class="btn  px-5" data-bs-dismiss="modal"
+                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">Yes</button>
+                                                    <a href="{{ route('addressPage') }}" class="btn px-5"
+                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">No</a>
+                                                </div>
+                                            </div>
 
-      <!-- Modal Body -->
-      <div class="modal-body">
-          <center> <h5 class="modal-title" style="color: #DE2300;" id="customizationConfirmModalLabel">Confirmation </h5></center>
-    <b>     <center> Before buying, would you like to personalize your trophy with photos and text? </center> </b>
-      </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="modal fade" id="customizationConfirmModal" tabindex="-1"
+                                    aria-labelledby="customizationConfirmModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content border border-2" style="border: 2px solid #FBCB07;">
 
-      <!-- Modal Footer -->
-      {{-- <div class="row">
+                                            <!-- Modal Header -->
+                                            <div class="modal-header">
+
+                                                <button type="button" style="color: #DE2300;" class="btn-close"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+
+                                            <!-- Modal Body -->
+                                            <div class="modal-body">
+                                                <center>
+                                                    <h5 class="modal-title" style="color: #DE2300;"
+                                                        id="customizationConfirmModalLabel"> Sure to continue ? </h5>
+                                                </center>
+                                                <b>
+                                                    {{-- <center> sure to continue ? </center> --}}
+                                                </b>
+                                            </div>
+
+                                            <!-- Modal Footer -->
+                                            {{-- <div class="row">
         
 
             <button type="button" class="btn btn-primary col-4" data-bs-dismiss="modal">Yes</button>
@@ -197,24 +218,27 @@
             <a href="{{ route('addressPage') }}" class="btn btn-secondary col-4">No</a>
         
       </div> --}}
-      <div class="modal-footer justify-content-center">
-    <div class="d-flex gap-3">
-        <button type="button" class="btn  px-5" data-bs-dismiss="modal" style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">Yes</button>
-        <a href="{{ route('addressPage') }}" class="btn px-5" style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">No</a>
-    </div>
-</div>
-      
-    </div>
-  </div>
-</div>
-        @endif
-        
+                                            <div class="modal-footer justify-content-center">
+                                                <div class="d-flex gap-3">
+
+                                                    <a href="{{ route('addressPage') }}" class="btn px-5"
+                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">Yes</a>
+                                                    <button type="button" class="btn  px-5" data-bs-dismiss="modal"
+                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">No</button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="card p-3 rounded-3 cart-item-card" data-cart-id="{{ $cart->id }}">
                                 <div class="row align-items-center">
                                     <!-- Image Column -->
                                     <div class="col-3 col-md-2 text-center">
-                                        <img src="{{ asset('product_images/' . $cart->product->image) }}" class="trophy-img"
-                                            alt="{{ $cart->product->title }}">
+                                        <img src="{{ asset('product_images/' . $cart->product->image) }}"
+                                            class="trophy-img" alt="{{ $cart->product->title }}">
                                     </div>
 
                                     <!-- Details Column -->
@@ -223,14 +247,15 @@
                                         <div class="d-flex justify-content-between align-items-center">
                                             <p class="mb-1"
                                                 style="font-family: 'Source Sans 3', sans-serif; font-weight: 500; font-size: 18px;">
-                                                 {{ $cart->product->title }}
+                                                {{ $cart->product->title }}
                                             </p>
                                             <div>
                                                 <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($cart->product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
                                                     data-product-id="{{ $cart->product->id }}"
                                                     title="{{ in_array($cart->product->id, $wishlist_product_ids ?? []) ? 'Remove from Wishlist' : 'Add to Wishlist' }}">
                                                 </i>
-                                                <i class="bi bi-trash text-danger" style="font-size: 18px; cursor: pointer;"
+                                                <i class="bi bi-trash text-danger"
+                                                    style="font-size: 18px; cursor: pointer;"
                                                     onclick="submitDeleteForm({{ $cart->id }})"></i>
                                                 <form id="delete-cart-form-{{ $cart->id }}"
                                                     action="{{ route('cart.delete', $cart->id) }}" method="POST"
@@ -246,7 +271,8 @@
                                             <select class="form-select form-select-sm variant-select"
                                                 onchange="updateCartItem({{ $cart->id }})">
                                                 @foreach ($cart->product->variants as $variant)
-                                                    <option value="{{ $variant->id }}" data-price="{{ $variant->price }}"
+                                                    <option value="{{ $variant->id }}"
+                                                        data-price="{{ $variant->price }}"
                                                         data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
                                                         {{ $cart->variant_id == $variant->id ? 'selected' : '' }}>
                                                         {{ $variant->size }} inch -
@@ -254,33 +280,33 @@
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            <div class="d-flex align-items-center px-3 py-1" style="gap: 15px;border: 1px solid rgba(255, 214, 206, 1);">
-                                    <button class="btn btn-outline me-1" type="button" onclick="changeQty({{ $cart->id }}, -1)">−</button>
-                                 <input type="number"
-                                   id="quantity-{{ $cart->id }}"
-                                   class="form-control text-center"
-                                   value="{{ $cart->quantity }}"
-                                   min="1"
-                                   max="200"
-                                   onchange="updateCartItem({{ $cart->id }})">
-                                <button class="btn btn-outline ms-1" type="button" onclick="changeQty({{ $cart->id }}, 1)">+</button>
-                                </div>
-<!-- 
-                                    <div class="input-group" style="width: 120px;">
-                                    <button class="btn btn-outline-secondary" type="button"
-                                     onclick="changeQty({{ $cart->id }}, -1)">−</button>
+                                            <div class="d-flex align-items-center px-3 py-1"
+                                                style="gap: 15px;border: 1px solid rgba(255, 214, 206, 1);">
+                                                <button class="btn btn-outline me-1" type="button"
+                                                    onclick="changeQty({{ $cart->id }}, -1)">−</button>
+                                                <input type="number" id="quantity-{{ $cart->id }}"
+                                                    class="form-control text-center" value="{{ $cart->quantity }}"
+                                                    min="1" max="200"
+                                                    onchange="updateCartItem({{ $cart->id }})">
+                                                <button class="btn btn-outline ms-1" type="button"
+                                                    onclick="changeQty({{ $cart->id }}, 1)">+</button>
+                                            </div>
+                                            <!--
+                                                                        <div class="input-group" style="width: 120px;">
+                                                                        <button class="btn btn-outline-secondary" type="button"
+                                                                         onclick="changeQty({{ $cart->id }}, -1)">−</button>
 
-                                     <input type="number"
-                                     id="quantity-{{ $cart->id }}"
-                                     class="form-control text-center"
-                                     value="{{ $cart->quantity }}"
-                                     min="1"
-                                     max="200"
-                                     onchange="updateCartItem({{ $cart->id }})">
+                                                                         <input type="number"
+                                                                         id="quantity-{{ $cart->id }}"
+                                                                         class="form-control text-center"
+                                                                         value="{{ $cart->quantity }}"
+                                                                         min="1"
+                                                                         max="200"
+                                                                         onchange="updateCartItem({{ $cart->id }})">
 
-                                      <button class="btn btn-outline-secondary" type="button"
-                                      onclick="changeQty({{ $cart->id }}, 1)">+</button>
-                                    </div> -->
+                                                                          <button class="btn btn-outline-secondary" type="button"
+                                                                          onclick="changeQty({{ $cart->id }}, 1)">+</button>
+                                                                        </div> -->
 
 
                                         </div>
@@ -288,152 +314,174 @@
                                         <!-- Price Output -->
                                         @php
                                             $variant = $cart->variant ?? $cart->product->variants->first();
-                                            $originalprice =  $variant->price;
+                                            $originalprice = $variant->price;
                                             $price = $variant->discounted_price ?? $variant->price;
-                                          
+
                                             $gst = $price * 0.18;
                                             $finalPrice = ($price + $gst) * $cart->quantity;
                                         @endphp
-                                        
+
                                         <div class="fw-bold mb-2 price-output" style="font-size: 16px;">
                                             ₹{{ number_format($price, 2) }} <small class="text-muted"></small>
                                         </div>
-                                            @if($originalprice > $price)
-                                        <div class="fw-bold mb-2 price-output" style="font-size: 16px;text-decoration: line-through;">
-                                            ₹{{ number_format($originalprice, 2) }}
-                                            
-                                            <small class="text-muted"></small>
-                                        </div>
+                                        @if ($originalprice > $price)
+                                            <div class="fw-bold mb-2 price-output"
+                                                style="font-size: 16px;text-decoration: line-through;">
+                                                ₹{{ number_format($originalprice, 2) }}
+
+                                                <small class="text-muted"></small>
+                                            </div>
                                         @endif
 
 
-                                       @php
-$custom = $customization_request->firstWhere('cart_item_id', $cart->id);
- $customization = Auth::user()
-        ->customizationRequests()
-        ->where('cart_item_id', $cart->id)
-        ->where('status', 'pending')
-        ->first();
- $customizationApproved = Auth::user()
-        ->customizationRequests()
-        ->where('cart_item_id', $cart->id)
-        ->where('status', 'approved')
-        ->first();
-        if(isset($customizationApproved)){
-        }
-        else{ $customizationApproved = null; }
-@endphp
-                                      
-                                         @if($customization_request && $custom)
-                                         {{-- @if($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
-                                         <a 
-                                           class="text-success">
-                                             @if($customization)
-                                        <i class="bi bi-check-circle-fill me-1"></i>
-                                      Customization Submitted, please wait for response!
-                                      @elseif($customizationApproved)
-                                       <i class="bi bi-check-circle-fill me-1"></i>
-                                      Customization Approved!
-                                      @endif
-                                    </a>
+                                        @php
+                                            $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
+                                            $customization = Auth::user()
+                                                ->customizationRequests()
+                                                ->where('cart_item_id', $cart->id)
+                                                ->where('status', 'pending')
+                                                ->first();
+                                            $customizationApproved = Auth::user()
+                                                ->customizationRequests()
+                                                ->where('cart_item_id', $cart->id)
+                                                ->where('status', 'approved')
+                                                ->first();
+                                            if (isset($customizationApproved)) {
+                                            } else {
+                                                $customizationApproved = null;
+                                            }
+                                        @endphp
+
+                                        @if ($customization_request && $custom)
+                                            {{-- @if ($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
+                                            <a class="text-success">
+                                                @if ($customization)
+                                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                                    Your Customization is Submitted, our Team will contact you soon!
+                                                @elseif($customizationApproved)
+                                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                                    Customization Approved!
+                                                @endif
+                                            </a>
                                         @else
-                                        <a href="javascript:void(0);"
-                                            onclick="openCustomizationModal({{ $cart->id }})"
-                                           style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
-                                           class="text-primary">
+                                            <a href="javascript:void(0);"
+                                                onclick="openCustomizationModal({{ $cart->id }})"
+                                                style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
+                                                class="text-primary">
                                                 <i class="bi bi-pencil-square me-1"></i>
                                                 Customize with your own message or name.
                                             </a>
-                                         
-                                          @endif
+                                        @endif
                                     </div>
                                 </div>
-                                
+
                                 <!--requirement start -->
-                              @php
-  $hasAcceptedCustomization = \App\Models\CustomizationRequest::where('cart_item_id', $cart->id)
-    ->where(function ($query) {
-        $query->where('status', 'accepted')
-              ->orWhere('status', 'completed');
-    })
-    ->first();
-  
-@endphp
+                                @php
+                                    $hasAcceptedCustomization = \App\Models\CustomizationRequest::where(
+                                        'cart_item_id',
+                                        $cart->id,
+                                    )
+                                        ->where(function ($query) {
+                                            $query->where('status', 'accepted')->orWhere('status', 'completed');
+                                        })
+                                        ->first();
 
-@if($hasAcceptedCustomization && $hasAcceptedCustomization->designer)
+                                @endphp
 
-                                 <!-- Completed Customizations Section -->
-<div class="container my-5 customization-section">
-    {{-- <h4>Completed Customizations</h4> --}}
-    @foreach (Auth::user()->customizationRequests()->where('status', ['accepted', 'completed'])->get() as $request)
+                                @if ($hasAcceptedCustomization && $hasAcceptedCustomization->designer)
+                                    <!-- Completed Customizations Section -->
+                                    <div class="container my-5 customization-section">
+                                        {{-- <h4>Completed Customizations</h4> --}}
+                                        @foreach (Auth::user()->customizationRequests()->where('status', ['accepted', 'completed'])->get() as $request)
+                                            @if ($request->cart_item_id === $cart->id)
+                                                <div class="card mb-3">
+                                                    <div class="card-header" data-bs-toggle="collapse"
+                                                        data-bs-target="#collapse{{ $request->id }}">
+                                                        <strong>Your request has been accepted</strong>
+                                                        <!--{{ $request->description }}-->
+                                                    </div>
+                                                    <div class="collapse show" id="collapse{{ $request->id }}">
+                                                        <div class="card-body">
+                                                            <!--@if ($request->final_image)
+    -->
+                                                            <!--    <p><strong>Final Image:</strong></p>-->
+                                                            <!--    <img src="{{ base_path('customization_images/' . $request->final_image) }}" alt="Final Image" style="max-width: 200px;">-->
+                                                        <!--@else-->
+                                                            <!--    <p>No image available.</p>-->
+                                                            <!--
+    @endif-->
+                                                            <form id="approveForm{{ $request->id }}"
+                                                                action="{{ route('customization.approve', $request->id) }}"
+                                                                method="POST" style="display:inline;">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="btn btn-success btn-sm me-2">Approve</button>
+                                                            </form>
 
-     @if ($request->cart_item_id === $cart->id)
-        <div class="card mb-3">
-            <div class="card-header" data-bs-toggle="collapse" data-bs-target="#collapse{{ $request->id }}">
-                <strong>Your request has been accepted</strong>
-                <!--{{ $request->description }}-->
-            </div>
-            <div class="collapse show" id="collapse{{ $request->id }}">
-                <div class="card-body">
-                    <!--@if ($request->final_image)-->
-                    <!--    <p><strong>Final Image:</strong></p>-->
-                    <!--    <img src="{{ base_path('customization_images/' . $request->final_image) }}" alt="Final Image" style="max-width: 200px;">-->
-                    <!--@else-->
-                    <!--    <p>No image available.</p>-->
-                    <!--@endif-->
-                    <form id="approveForm{{ $request->id }}" action="{{ route('customization.approve', $request->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn btn-success btn-sm me-2">Approve</button>
-                    </form>
-                 
-                       @if ($request->designer_id)
-                        <a href="{{ route('customization.userchat', $request->id) }}" class="btn btn-outline-primary btn-sm mt-2">
-                            💬 Chat with Assigned Designer
-                        </a>
-                  
+                                                            @if ($request->designer_id)
+                                                                <a href="{{ route('customization.userchat', $request->id) }}"
+                                                                    class="btn btn-outline-primary btn-sm mt-2">
+                                                                    💬 Chat with Assigned Designer
+                                                                </a>
 
-                    <a href="tel:{{ $customizationRequest->designer->mobile }}" class="btn btn-outline-primary btn-sm mt-2">
-                    Contact Desinger - {{ $hasAcceptedCustomization->designer->mobile }}
-                    </a>
-                      @endif
-                    <!-- Edit Modal -->
-                    <div class="modal fade" id="editModal{{ $request->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $request->id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="editModalLabel{{ $request->id }}">Request Edit for Customization</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="editForm{{ $request->id }}" action="{{ route('customization.request-edit', $request->id) }}" method="POST">
-                                        @csrf
-                                        <div class="mb-3">
-                                            <label for="user_feedback_{{ $request->id }}" class="form-label">Your Requirements</label>
-                                            <textarea class="form-control" id="user_feedback_{{ $request->id }}" name="user_feedback" rows="3" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit Edit Request</button>
-                                    </form>
-                                </div>
+
+                                                                <a href="tel:{{ $customizationRequest->designer->mobile }}"
+                                                                    class="btn btn-outline-primary btn-sm mt-2">
+                                                                    Contact Desinger -
+                                                                    {{ $hasAcceptedCustomization->designer->mobile }}
+                                                                </a>
+                                                            @endif
+                                                            <!-- Edit Modal -->
+                                                            <div class="modal fade" id="editModal{{ $request->id }}"
+                                                                tabindex="-1"
+                                                                aria-labelledby="editModalLabel{{ $request->id }}"
+                                                                aria-hidden="true">
+                                                                <div class="modal-dialog">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title"
+                                                                                id="editModalLabel{{ $request->id }}">
+                                                                                Request Edit for Customization</h5>
+                                                                            <button type="button" class="btn-close"
+                                                                                data-bs-dismiss="modal"
+                                                                                aria-label="Close"></button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            <form id="editForm{{ $request->id }}"
+                                                                                action="{{ route('customization.request-edit', $request->id) }}"
+                                                                                method="POST">
+                                                                                @csrf
+                                                                                <div class="mb-3">
+                                                                                    <label
+                                                                                        for="user_feedback_{{ $request->id }}"
+                                                                                        class="form-label">Your
+                                                                                        Requirements</label>
+                                                                                    <textarea class="form-control" id="user_feedback_{{ $request->id }}" name="user_feedback" rows="3" required></textarea>
+                                                                                </div>
+                                                                                <button type="submit"
+                                                                                    class="btn btn-primary">Submit Edit
+                                                                                    Request</button>
+                                                                            </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-    @endforeach
-</div>
-@endif
-                            </div>
-                            
                         @endforeach
                     @endif
-                    
+
                 </div>
-                
+
                 <!--requirement ed -->
-                
-               
+
+
 
                 <!-- Right Section -->
                 <div class="col-lg-5">
@@ -461,7 +509,7 @@ $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
                                         $shipping_charges;
                                 @endphp --}}
                         </p>
-                        <p class="fw-bold">Price Details </p> 
+                        <p class="fw-bold">Price Details </p>
                         <div class="d-flex justify-content-between">
                             <span> MRP </span>
                             <span id="total-mrp"> ₹00.00</span>
@@ -490,9 +538,10 @@ $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
                             <span id="total-amount">₹00.00</span>
                         </div>
 
-                        
-                            <button type="button" class="btn btn-continue mt-3" data-bs-toggle="modal" data-bs-target="#customizationConfirmModal">Continue</button>
-                       
+
+                        <button type="button" class="btn btn-continue mt-3" data-bs-toggle="modal"
+                            data-bs-target="#customizationConfirmModal">Continue</button>
+
                     </div>
                 </div>
             </div>
@@ -510,8 +559,8 @@ $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
                         @foreach ($similarProducts as $prod)
                             <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product"
                                 data-subcategory-id="{{ $prod->sub_category_id }}" style="display: block;">
-                                     <a href="{{ route('productDetail', $prod->id) }}"> 
-                                <div class="card trophy-card text-center shadow-md">
+                                <a href="{{ route('productDetail', $prod->id) }}">
+                                    <div class="card trophy-card text-center shadow-md">
                                         <div class="position-relative">
                                             <img src="{{ asset('product_images/' . $prod->image) }}" alt="Trophy"
                                                 class="img-fluid"
@@ -522,14 +571,14 @@ $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
                                                 <form action="{{ route('cart.add') }}" method="POST">
                                                     @csrf
                                                     <input type="hidden" name="product_id" value="{{ $prod->id }}">
-                                                      <input type="hidden" name="variant_id" value="{{ $prod->variants->first()->id ?? '' }}">
+                                                    <input type="hidden" name="variant_id"
+                                                        value="{{ $prod->variants->first()->id ?? '' }}">
                                                     <button type="submit" class="add-to-cart-btn">Add To Cart</button>
                                                 </form>
-                                                 <i class="fas fa-share icon-toggle share-icon"
-   data-bs-toggle="modal"
-   data-bs-target="#shareModal"
-   data-share-link="{{ route('productDetail', $prod->id) }}">
-</i>
+                                                <i class="fas fa-share icon-toggle share-icon" data-bs-toggle="modal"
+                                                    data-bs-target="#shareModal"
+                                                    data-share-link="{{ route('productDetail', $prod->id) }}">
+                                                </i>
                                                 <!-- <i class="fas fa-share icon-toggle"></i> -->
                                             </div>
                                         </div>
@@ -538,26 +587,25 @@ $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
                                             @php
                                                 $first = $prod->variants->first();
                                             @endphp
-                                            @if(isset($first))
-                                            <p class="mb-0 text-danger fw-bold">{{ $first->price }} Rs</p>
+                                            @if (isset($first))
+                                                <p class="mb-0 text-danger fw-bold">{{ $first->price }} Rs</p>
                                             @endif
                                         </div>
-                                        </a>
-                                    </a>
-                                </div>
+                                </a>
+                                </a>
                             </div>
-                        @endforeach
                     </div>
+                    @endforeach
                 </div>
             </div>
         </div>
+        </div>
     </section>
 
- <script>
-   
-    const shippingCharges = 0; // Configurable shipping charges (currently free)
-    
-     function openCustomizationModal(cartId) {
+    <script>
+        const shippingCharges = 0; // Configurable shipping charges (currently free)
+
+        function openCustomizationModal(cartId) {
             console.log('Opening modal for cartId:', cartId);
             const form = document.getElementById('customizationForm');
             form.action = '{{ route('customization.request', ':cartId') }}'.replace(':cartId', cartId);
@@ -566,194 +614,197 @@ $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
             modal.show();
         }
 
-    function submitDeleteForm(id) {
-        if (confirm('Are you sure you want to remove this item from the cart?')) {
-            document.getElementById('delete-cart-form-' + id).submit();
-        }
-    }
-
-    function updateCartItem(cartId) {
-        const card = document.querySelector(`.cart-item-card[data-cart-id="${cartId}"]`);
-        const variantSelect = card.querySelector('.variant-select');
-        const quantityInput = document.getElementById(`quantity-${cartId}`) || card.querySelector('.quantity-select');
-        const variantId = variantSelect.value;
-        const quantity = quantityInput.value;
-
-
-        fetch(`/cart/update/${cartId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                variant_id: variantId,
-                quantity: quantity
-            })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Network response was not ok');
-            return res.json();
-        })
-        .then(data => {
-            if (data.success) {
-                updateOrderSummary();
-
-                const priceOutput = card.querySelector('.price-output');
-                const selectedOption = variantSelect.options[variantSelect.selectedIndex];
-                const discountedPrice = parseFloat(selectedOption.dataset.discounted) || parseFloat(selectedOption.dataset.price);
-                const gst = discountedPrice * 0.18;
-                const finalPrice = (discountedPrice + gst) * quantity;
-
-                if (priceOutput) {
-                    priceOutput.innerHTML = `₹${discountedPrice.toFixed(2)} `;
-                }
-            } else {
-                alert(data.message || 'Failed to update cart item.');
+        function submitDeleteForm(id) {
+            if (confirm('Are you sure you want to remove this item from the cart?')) {
+                document.getElementById('delete-cart-form-' + id).submit();
             }
-        })
-        .catch(error => {
-            console.error('Error updating cart:', error);
-            alert('An error occurred while updating the cart.');
-        });
-    }
+        }
 
-    function updateOrderSummary() {
-        // const platformFee = {{ $platform_fee ?? 20 }};
-        const shippingCharges = {{ $shipping_charges ?? 0 }};
-        let totalMRP = 0;
-        let totalDiscount = 0;
-
-        document.querySelectorAll('.cart-item-card').forEach(card => {
+        function updateCartItem(cartId) {
+            const card = document.querySelector(`.cart-item-card[data-cart-id="${cartId}"]`);
             const variantSelect = card.querySelector('.variant-select');
-            const quantityInput = card.querySelector('.quantity-select') || card.querySelector('input[type="number"]');
+            const quantityInput = document.getElementById(`quantity-${cartId}`) || card.querySelector('.quantity-select');
+            const variantId = variantSelect.value;
+            const quantity = quantityInput.value;
 
-            const selectedOption = variantSelect.options[variantSelect.selectedIndex];
-            const originalPrice = parseFloat(selectedOption.dataset.price) || 0;
-            const discountedPrice = parseFloat(selectedOption.dataset.discounted) || originalPrice;
-            const quantity = parseInt(quantityInput.value) || 1;
 
-            totalMRP += originalPrice * quantity;
-            totalDiscount += (originalPrice - discountedPrice) * quantity;
-        });
+            fetch(`/cart/update/${cartId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        variant_id: variantId,
+                        quantity: quantity
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        updateOrderSummary();
 
-        const totalBase = totalMRP - totalDiscount;
-        const totalGST = totalBase * 0.18;
-        const priceWithGST = totalBase + totalGST;
-        const totalAmount = priceWithGST + shippingCharges;
+                        const priceOutput = card.querySelector('.price-output');
+                        const selectedOption = variantSelect.options[variantSelect.selectedIndex];
+                        const discountedPrice = parseFloat(selectedOption.dataset.discounted) || parseFloat(
+                            selectedOption.dataset.price);
+                        const gst = discountedPrice * 0.18;
+                        const finalPrice = (discountedPrice + gst) * quantity;
 
-        document.getElementById('total-mrp').textContent = `₹${totalMRP.toFixed(2)}`;
-        document.getElementById('discount-mrp').textContent = `- ₹${totalDiscount.toFixed(2)}`;
-        document.getElementById('discount-mrp').className = shippingCharges === 0 ? 'text-danger' : '';
-        document.getElementById('final-mrp').textContent = `₹${totalBase.toFixed(2)}`;
-        document.getElementById('shipping-charges').textContent = shippingCharges === 0 ? 'FREE' : `₹${shippingCharges.toFixed(2)}`;
-        document.getElementById('shipping-charges').className = shippingCharges === 0 ? 'text-success' : '';
-        document.getElementById('total-amount').textContent = `₹${totalAmount.toFixed(2)}`;
-    }
+                        if (priceOutput) {
+                            priceOutput.innerHTML = `₹${discountedPrice.toFixed(2)} `;
+                        }
+                    } else {
+                        alert(data.message || 'Failed to update cart item.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating cart:', error);
+                    alert('An error occurred while updating the cart.');
+                });
+        }
 
-    function changeQty(cartId, delta) {
-        const input = document.getElementById(`quantity-${cartId}`);
-        let quantity = parseInt(input.value) + delta;
-        if (quantity < 1) quantity = 1;
-        if (quantity > 200) quantity = 200;
-        input.value = quantity;
-        updateCartItem(cartId);
-    }
+        function updateOrderSummary() {
+            // const platformFee = {{ $platform_fee ?? 20 }};
+            const shippingCharges = {{ $shipping_charges ?? 0 }};
+            let totalMRP = 0;
+            let totalDiscount = 0;
 
-    document.addEventListener('DOMContentLoaded', function () {
-        updateOrderSummary();
+            document.querySelectorAll('.cart-item-card').forEach(card => {
+                const variantSelect = card.querySelector('.variant-select');
+                const quantityInput = card.querySelector('.quantity-select') || card.querySelector(
+                    'input[type="number"]');
 
-        document.querySelectorAll('.wishlist-toggle').forEach(icon => {
-            icon.addEventListener('click', function () {
-                toggleWishlist(this);
+                const selectedOption = variantSelect.options[variantSelect.selectedIndex];
+                const originalPrice = parseFloat(selectedOption.dataset.price) || 0;
+                const discountedPrice = parseFloat(selectedOption.dataset.discounted) || originalPrice;
+                const quantity = parseInt(quantityInput.value) || 1;
+
+                totalMRP += originalPrice * quantity;
+                totalDiscount += (originalPrice - discountedPrice) * quantity;
+            });
+
+            const totalBase = totalMRP - totalDiscount;
+            const totalGST = totalBase * 0.18;
+            const priceWithGST = totalBase + totalGST;
+            const totalAmount = priceWithGST + shippingCharges;
+
+            document.getElementById('total-mrp').textContent = `₹${totalMRP.toFixed(2)}`;
+            document.getElementById('discount-mrp').textContent = `- ₹${totalDiscount.toFixed(2)}`;
+            document.getElementById('discount-mrp').className = shippingCharges === 0 ? 'text-danger' : '';
+            document.getElementById('final-mrp').textContent = `₹${totalBase.toFixed(2)}`;
+            document.getElementById('shipping-charges').textContent = shippingCharges === 0 ? 'FREE' :
+                `₹${shippingCharges.toFixed(2)}`;
+            document.getElementById('shipping-charges').className = shippingCharges === 0 ? 'text-success' : '';
+            document.getElementById('total-amount').textContent = `₹${totalAmount.toFixed(2)}`;
+        }
+
+        function changeQty(cartId, delta) {
+            const input = document.getElementById(`quantity-${cartId}`);
+            let quantity = parseInt(input.value) + delta;
+            if (quantity < 1) quantity = 1;
+            if (quantity > 200) quantity = 200;
+            input.value = quantity;
+            updateCartItem(cartId);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateOrderSummary();
+
+            document.querySelectorAll('.wishlist-toggle').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    toggleWishlist(this);
+                });
             });
         });
-    });
 
-    function updateWishlistCount(count) {
-        const wishlistCountElement = document.getElementById('wishlist-count');
-        if (wishlistCountElement) {
-            wishlistCountElement.textContent = count || 0;
-        }
-    }
-
-    function toggleWishlist(icon) {
-        const productId = icon.dataset.productId;
-        const isWishlisted = icon.classList.contains('text-danger');
-
-        if (!{{ Auth::check() ? 'true' : 'false' }}) {
-            alert('Please log in to manage your wishlist.');
-            window.location.href = '{{ route('login') }}';
-            return;
+        function updateWishlistCount(count) {
+            const wishlistCountElement = document.getElementById('wishlist-count');
+            if (wishlistCountElement) {
+                wishlistCountElement.textContent = count || 0;
+            }
         }
 
-        const csrfToken = '{{ csrf_token() }}';
+        function toggleWishlist(icon) {
+            const productId = icon.dataset.productId;
+            const isWishlisted = icon.classList.contains('text-danger');
 
-        if (isWishlisted) {
-            fetch(`/wishlist/get-item/${productId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const wishlistItemId = data.wishlist_item_id;
-                    return fetch(`/wishlist/remove/${wishlistItemId}`, {
-                        method: 'DELETE',
+            if (!{{ Auth::check() ? 'true' : 'false' }}) {
+                alert('Please log in to manage your wishlist.');
+                window.location.href = '{{ route('login') }}';
+                return;
+            }
+
+            const csrfToken = '{{ csrf_token() }}';
+
+            if (isWishlisted) {
+                fetch(`/wishlist/get-item/${productId}`, {
+                        method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': csrfToken,
                         }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const wishlistItemId = data.wishlist_item_id;
+                            return fetch(`/wishlist/remove/${wishlistItemId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken,
+                                }
+                            });
+                        } else {
+                            throw new Error(data.message || 'Item not found in wishlist');
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            icon.classList.remove('text-danger');
+                            icon.setAttribute('title', 'Add to Wishlist');
+                            updateWishlistCount(data.count);
+                            alert(data.message);
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
                     });
-                } else {
-                    throw new Error(data.message || 'Item not found in wishlist');
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    icon.classList.remove('text-danger');
-                    icon.setAttribute('title', 'Add to Wishlist');
-                    updateWishlistCount(data.count);
-                    alert(data.message);
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        } else {
-            fetch(`{{ route('wishlist.add') }}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                body: JSON.stringify({
-                    product_id: productId
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    icon.classList.add('text-danger');
-                    icon.setAttribute('title', 'Remove from Wishlist');
-                    updateWishlistCount(data.count);
-                    alert(data.message);
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            } else {
+                fetch(`{{ route('wishlist.add') }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({
+                            product_id: productId
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            icon.classList.add('text-danger');
+                            icon.setAttribute('title', 'Remove from Wishlist');
+                            updateWishlistCount(data.count);
+                            alert(data.message);
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
         }
-    }
-</script>
+    </script>
 
 @endsection

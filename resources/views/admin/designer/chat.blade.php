@@ -105,16 +105,85 @@
             padding: 10px 20px;
             border-radius: 20px;
         }
+
+        /* Chat input panel */
+        .chat-input {
+            display: flex;
+            /* horizontal alignment */
+            padding: 10px 15px;
+            /* spacing */
+            background: #f9f9f9;
+            /* light background */
+            border-top: 1px solid #ccc;
+            /* separation line */
+        }
+
+        /* Textarea (message box) */
+        .chat-input textarea {
+            flex: 1;
+            /* take full remaining width */
+            resize: none;
+            /* disable resize */
+            border-radius: 25px;
+            /* pill-shaped */
+            padding: 10px 15px;
+            /* inside spacing */
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        /* Hide actual file input */
+        .chat-input input[type="file"] {
+            display: none;
+        }
+
+        /* Attachment icon */
+        .attach-label {
+            background: #eee;
+            /* grey circle */
+            padding: 8px 12px;
+            border-radius: 50%;
+            /* round button */
+            cursor: pointer;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Send button */
+        .chat-input button {
+            background: #667eea;
+            /* purple gradient */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            /* pill shape */
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        /* Hover effect */
+        .chat-input button:hover {
+            background: #556cd6;
+        }
     </style>
 
+    <a href="{{ url()->previous() }}" class="btn btn-dark mb-3" style="display:inline-block; width:20%; ">
+        ← Back</a>
     <div class="chat-container">
         {{-- Sidebar --}}
         <div class="chat-sidebar">
             <h5>💬 Product Chats</h5>
             <ul class="chat-users">
                 @foreach ($customizations as $cust)
-                    <li class="{{ $activeCustomization && $activeCustomization->id === $cust->id ? 'active' : '' }}">
-                        <a href="{{ route('chats', ['customizationRequestId' => $cust->id]) }}">
+                    <li
+                        class="{{ $activeCustomization && $activeCustomization->id === $cust->id ? 'active text-black' : '' }}">
+                        <a href="{{ route('chats', ['customizationRequestId' => $cust->id]) }}"
+                            style="    text-decoration: none;">
                             {{ $cust->cartItem?->product->title ?? ($cust->paymentItem?->product->title ?? 'Unknown Product') }}
                         </a>
                     </li>
@@ -126,6 +195,7 @@
         <div class="chat-main">
             <div class="chat-header">
                 {{ $activeCustomization->cartItem?->product->title ?? ($activeCustomization->paymentItem?->product->title ?? 'Select a product') }}
+                - {{ $orderId }}
             </div>
 
             <div class="chat-messages" id="chatBox">
@@ -149,12 +219,28 @@
                 @endforeach
             </div>
 
-            @if ($activeCustomization)
+            {{-- @if ($activeCustomization)
                 <form action="{{ route('send.message', $activeCustomization->id) }}" method="POST"
                     enctype="multipart/form-data" class="chat-input-area">
                     @csrf
                     <textarea name="message" placeholder="Type a message..." required></textarea>
                     <input type="file" name="attachment">
+                    <button type="submit">Send</button>
+                </form>
+            @endif --}}
+            @if ($activeCustomization)
+                <form action="{{ route('send.message', $activeCustomization->id) }}" method="POST"
+                    enctype="multipart/form-data" class="chat-input">
+                    @csrf
+
+                    <!-- Attachment button -->
+                    <label for="attachment" class="attach-label" title="Attach File">📎</label>
+                    <input type="file" name="attachment" id="attachment">
+
+                    <!-- Message box -->
+                    <textarea name="message" placeholder="Type a message..." rows="1"></textarea>
+
+                    <!-- Send button -->
                     <button type="submit">Send</button>
                 </form>
             @endif

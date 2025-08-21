@@ -121,13 +121,39 @@
         .chat-input button:hover {
             background: #556cd6;
         }
+
+        .zoom-image:hover {
+            transform: scale(2.5);
+            /* zoom level */
+            z-index: 999;
+            position: absolute;
+            top: -50px;
+            /* adjust so zoom doesn't push layout */
+            left: 70px;
+            /* adjust position to show enlarged image */
+            border: 2px solid #333;
+            background: #fff;
+        }
     </style>
 
     <div class="chat-container">
         <div class="chat-header">
-            Chat with Designer - {{ $customization->designer->name ?? 'Designer' }}
-            <a href="{{ route('my.orders') }}" style="color:white; text-decoration:underline; font-size:14px;">Back to My
-                Orders</a>
+
+            <a href="{{ route('my.orders') }}" style="color:white; text-decoration:none; font-size:14px;"> <- Back to My
+                    Orders</a>
+                    Chatting with - {{ $customization->designer->name ?? 'Designer' }}
+                    <small>
+                        Product:
+                        {{ $customization->cartItem?->product->title ?? ($customization->paymentItem?->product->title ?? 'Unknown Product') }}
+                        @php
+                            $product = $customization->cartItem?->product ?? $customization->paymentItem?->product;
+                        @endphp
+
+                        @if ($product && $product->image)
+                            <img src="{{ asset('product_images/' . $product->image) }}" alt="Product Image" calss="zoom-image"
+                                style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
+                        @endif
+                    </small>
         </div>
 
         <div class="chat-messages" id="chatBox">
@@ -170,7 +196,7 @@
             @csrf
             <label for="attachment" class="attach-label" title="Attach File">📎</label>
             <input type="file" name="attachment" id="attachment">
-            <textarea name="message" placeholder="Type a message..." rows="1" required></textarea>
+            <textarea name="message" placeholder="Type a message..." rows="1"></textarea>
             <button type="submit">Send</button>
         </form>
     </div>
@@ -229,13 +255,37 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        // Replace cancel button with approve button
-                        this.outerHTML =
+                        // Replace the whole parent container (badge + cancel button)
+                        let parent = this.parentElement;
+                        parent.innerHTML =
                             `<button class="btn btn-sm btn-outline-success approve-btn" data-id="${messageId}">Approve</button>`;
-                        attachCancelListener(); // reattach
+
+                        // reattach approve listener
+                        parent.querySelector('.approve-btn').addEventListener('click', function() {
+                            let messageId = this.dataset.id;
+                            if (!confirm('Are you sure you want to approve this?')) return;
+
+                            fetch(`/customization/approve-image/${messageId}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    }
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        parent.innerHTML =
+                                            `<span class="badge bg-success">Approved</span>
+                                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>`;
+                                        attachCancelListener();
+                                    }
+                                });
+                        });
                     }
                 });
         }
+
 
         // Initial attach
         attachCancelListener();

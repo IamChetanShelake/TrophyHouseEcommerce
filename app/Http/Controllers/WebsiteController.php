@@ -248,7 +248,7 @@ class WebsiteController extends Controller
     public function cart()
     {
         if (Auth::check()) {
-           $cartItems = cartItem::with('product')->where('user_id', Auth::id())->get(); // Updated to cartItem
+           $cartItems = cartItem::with('product','customizationRequest')->where('user_id', Auth::id())->get(); // Updated to cartItem
             $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem
             if ($cartItems->isEmpty()) {
                 $cart_items = 0;

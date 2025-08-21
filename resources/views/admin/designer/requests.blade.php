@@ -1,8 +1,8 @@
 @extends('admin.designer.layouts.master')
 
 @section('content')
-    <h3 class="mb-4">All Customization Requests</h3>
-    <table class="table">
+    <h3 class="mb-4">Customization Requests</h3>
+    <table class="table table-bordered ">
         <thead>
             <tr>
                 <th>ID</th>

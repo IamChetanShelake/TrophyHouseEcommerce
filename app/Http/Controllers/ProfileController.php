@@ -22,6 +22,39 @@ class ProfileController extends Controller
         return view('website.edit_profile', compact('categories', 'cart_items', 'wishlist_count', 'pages'));
     }
 
+    public function changePassword(){
+         $categories = AwardCategory::with('products')->get();
+        $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0;
+        $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
+        $pages = Page::all();
+
+         return view('website.changePassword', compact('categories', 'cart_items', 'wishlist_count', 'pages'));
+        // return view('website.changePassword');
+    }
+
+
+    public function updatePassword(Request $request){
+         // Validate input
+    $request->validate([
+        'old_pass' => 'required',
+        'new_pass' => 'required|min:8',
+        'confirm_new_pass' => 'required|same:new_pass',
+    ]);
+
+    $user = Auth::user();
+
+    // Check if old password matches
+    if (!\Hash::check($request->old_pass, $user->password)) {
+        return back()->with('error', 'old password does not match ');
+    }
+
+    // Update new password
+    $user->password = \Hash::make($request->new_pass);
+    $user->save();
+
+    return back()->with('success', 'Password changed successfully!');
+}
+
     public function update(Request $request)
     {
         $user = Auth::user();

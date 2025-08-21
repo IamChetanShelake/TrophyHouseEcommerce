@@ -29,26 +29,39 @@ class CustomizationController extends Controller
         $designerId = auth()->id();
 
        // Use transaction
-    DB::transaction(function() use ($customizationRequestId, $designerId) {
-        $customization = CustomizationRequest::with('paymentItem.payment')->findOrFail($customizationRequestId);
+    // DB::transaction(function() use ($customizationRequestId, $designerId) {
+    //     $customization = CustomizationRequest::with('paymentItem.payment')->findOrFail($customizationRequestId);
 
-        $orderId = $customization->paymentItem->payment->order_id;
+    //     $orderId = $customization->paymentItem->payment->order_id;
 
-        // Update all customization_requests under this order (your existing logic)
-        CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
-            $q->where('order_id', $orderId);
-        })->update([
-            'designer_id' => $designerId,
-            'status' => 'accepted'
-        ]);
+    //     // Update all customization_requests under this order (your existing logic)
+    //     CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
+    //         $q->where('order_id', $orderId);
+    //     })->update([
+    //         'designer_id' => $designerId,
+    //         'status' => 'accepted'
+    //     ]);
+      DB::transaction(function() use ($orderId, $designerId) {
+        // fetch all customization requests linked to this orderId
+        $customizations = CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
+                $q->where('order_id', $orderId);
+            })
+            ->get();
+
+        foreach ($customizations as $customization) {
+            $customization->update([
+                'status' => 'accepted',
+                'designer_id' => $designerId,
+            ]);
+        }
 
         // Update matching payment_items: set designer_id and customization_status
-        PaymentItem::whereHas('payment', function($q) use ($orderId) {
-            $q->where('order_id', $orderId);
-        })->update([
-            'designer_id' => $designerId,
-            'customization_status' => 'accepted'
-        ]);
+        // PaymentItem::whereHas('payment', function($q) use ($orderId) {
+        //     $q->where('order_id', $orderId);
+        // })->update([
+        //     'designer_id' => $designerId,
+        //     'customization_status' => 'accepted'
+        // ]);
     });
 
     return redirect()->route('requests');
@@ -59,20 +72,33 @@ public function designerChats($customizationRequestId = null)
 {
     $designerId = auth()->id();
 
-    // Get all customization requests assigned to this designer
-    $customizations = CustomizationRequest::with(['cartItem.product', 'paymentItem.product'])
-        ->where(function($q) use ($designerId) {
-            $q->where('designer_id', $designerId)
-              ->orWhere('transferred_from', $designerId);
+    // // Get all customization requests assigned to this designer
+    // $customizations = CustomizationRequest::with(['cartItem.product', 'paymentItem.product'])
+    //     ->where(function($q) use ($designerId) {
+    //         $q->where('designer_id', $designerId)
+    //           ->orWhere('transferred_from', $designerId);
+    //     })
+    //     ->get();
+
+    // // Selected customization
+    // $activeCustomization = $customizationRequestId ? CustomizationRequest::with(['cartItem.product', 'paymentItem.product', 'messages.sender'])->find($customizationRequestId) : null;
+
+    // $messages = $activeCustomization ? $activeCustomization->messages()->with('sender', 'cartItem.product')->orderBy('created_at')->get() : collect();
+      $activeCustomization = CustomizationRequest::with(['messages', 'paymentItem.product', 'cartItem.product'])
+        ->findOrFail($customizationRequestId);
+
+    //  Get only customizations from the same order
+    $orderId = $activeCustomization->paymentItem?->payment?->order_id;
+
+    $customizations = CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
+            $q->where('order_id', $orderId);
         })
+        ->with(['paymentItem.product', 'cartItem.product'])
         ->get();
 
-    // Selected customization
-    $activeCustomization = $customizationRequestId ? CustomizationRequest::with(['cartItem.product', 'paymentItem.product', 'messages.sender'])->find($customizationRequestId) : null;
+    $messages = $activeCustomization->messages()->with('sender')->get();
 
-    $messages = $activeCustomization ? $activeCustomization->messages()->with('sender', 'cartItem.product')->orderBy('created_at')->get() : collect();
-
-    return view('admin.designer.chat', compact('customizations', 'activeCustomization', 'messages'));
+    return view('admin.designer.chat', compact('customizations', 'activeCustomization', 'messages','orderId'));
 }
 
 
@@ -606,7 +632,7 @@ public function chatThreads()
     public function userChat($id)
     {
         $user = auth()->user();
-        $customization = CustomizationRequest::where('id', $id)
+        $customization = CustomizationRequest::where('id', $id ?? null)
             ->where('user_id', $user->id)
             ->with(['messages.sender',  'messages.cartItem.product', 'designer'])
             ->firstOrFail();
