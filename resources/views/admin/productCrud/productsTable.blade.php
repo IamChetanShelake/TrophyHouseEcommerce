@@ -163,7 +163,7 @@
                                 @php
                                     $sr = 1;
                                 @endphp
-                                @foreach ($products as $prod)
+                                {{--  @foreach ($products as $prod)
                                     <tr>
                                         <td>{{ $sr }}</td>
                                         <td>{{ $prod->title }}</td>
@@ -217,9 +217,7 @@
 
 
                                         </td>
-                                        {{-- <td>
-                                            <a href="{{ route('product.show', $prod->id) }}" class="btn btn-info">View</a>
-                                        </td> --}}
+
                                         <td>
                                             <div class="d-flex gap-1" style="justify-content: center;">
                                                 <a href="{{ route('product.show', $prod->id) }}" class="btn btn-info"
@@ -233,8 +231,7 @@
                                                 <form action="{{ route('product.destroy', $prod->id) }}" method="post">
                                                     @csrf
                                                     @method('delete')
-                                                    {{-- <input type="submit" onclick="return confirm('sure delete ?')"
-                                                        value="Delete" class="btn btn-dark" style="padding:6px 10px;"> --}}
+
                                                     <button type="submit" class="btn btn-danger"
                                                         style="padding:6px 10px;"
                                                         onclick="return confirm('Are you sure you want to delete this item?')">
@@ -248,6 +245,137 @@
                                     @php
                                         $sr++;
                                     @endphp
+                                @endforeach  --}}
+                                @foreach ($sizes as $index => $prodsize)
+                                    <tr>
+                                        @php
+                                            $prod = $prodsize->product;
+                                            $productId = $prod->id;
+                                        @endphp
+
+                                        <td>{{ $sr }}</td>
+                                        <td class="text-start"> <img src="{{ asset('product_images/' . $prod->image) }}"
+                                                alt="" style="width:30px; height:40px;border-radius:0px;">&nbsp;
+                                            {{ $prod->title }}- <b> {{ $prodsize->size }}</b></td>
+                                        <td>{{ $prod->category->name }}</td>
+                                        <td>{{ $prod->subcategory->title }}</td>
+                                        <td class="text-start"> {{ empty($prodsize->quantity) ? 0 : $prodsize->quantity }}
+                                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                                data-bs-target="#addQtyModal{{ $prodsize->id }}">
+                                                +
+                                            </button>
+                                        </td>
+
+
+                                        {{-- फक्त पहिल्या size row मध्ये product controls दाखवायचे --}}
+                                        @if ($index === 0 || $sizes[$index - 1]->product_id !== $prod->id)
+                                            <td>
+                                                <!-- Top Pick -->
+                                                <form action="{{ route('product.toggleField', $prod->id) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="field" value="is_top_pick">
+                                                    <label class="switch">
+                                                        <input type="checkbox" name="value" value="1"
+                                                            onchange="this.form.submit()"
+                                                            {{ $prod->is_top_pick ? 'checked' : '' }}>
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <!-- Best Seller -->
+                                                <form action="{{ route('product.toggleField', $prod->id) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="field" value="is_best_seller">
+                                                    <label class="switch">
+                                                        <input type="checkbox" name="value" value="1"
+                                                            onchange="this.form.submit()"
+                                                            {{ $prod->is_best_seller ? 'checked' : '' }}>
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <!-- New Arrival -->
+                                                <form action="{{ route('product.toggleField', $prod->id) }}"
+                                                    method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="field" value="is_new_arrival">
+                                                    <label class="switch">
+                                                        <input type="checkbox" name="value" value="1"
+                                                            onchange="this.form.submit()"
+                                                            {{ $prod->is_new_arrival ? 'checked' : '' }}>
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1" style="justify-content: center;">
+                                                    <a href="{{ route('product.show', $prod->id) }}" class="btn btn-info"
+                                                        style="padding:6px 10px;">
+                                                        <i class="fa fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ route('product.edit', $prod->id) }}"
+                                                        class="btn btn-success" style="padding:6px 10px;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <form action="{{ route('product.destroy', $prod->id) }}"
+                                                        method="post">
+                                                        @csrf
+                                                        @method('delete')
+                                                        <button type="submit" class="btn btn-danger"
+                                                            style="padding:6px 10px;"
+                                                            onclick="return confirm('Are you sure you want to delete this item?')">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        @else
+                                            {{-- पुढच्या size rows मध्ये रिकामे कॉलम --}}
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        @endif
+
+                                    </tr>
+                                    <div class="modal fade" id="addQtyModal{{ $prodsize->id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">
+                                                        Add Quantity - {{ $prod->title }} ({{ $prodsize->size }})
+                                                    </h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ route('product.addQuantity', $prodsize->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    <div class="modal-body">
+                                                        <p><strong>Available Quantity:</strong>
+                                                            {{ empty($prodsize->quantity) ? 0 : $prodsize->quantity }}</p>
+                                                        <div class="form-group">
+                                                            <label>Add Quantity</label>
+                                                            <input type="number" name="add_quantity"
+                                                                class="form-control" min="1" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-success">Update</button>
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Close</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @php
+                                        $sr++;
+                                    @endphp
                                 @endforeach
                             </tbody>
                         </table>
@@ -258,6 +386,9 @@
         </div>
         <!-- content-wrapper ends -->
     </div>
+
+
+
     <!-- JS for Dependent Dropdown -->
     <script>
         document.getElementById('product_cat_id').addEventListener('change', function() {

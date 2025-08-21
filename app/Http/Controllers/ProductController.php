@@ -52,7 +52,7 @@ class ProductController extends Controller
     public function getSizes($productId)
     {
         $sizes = ProductVariant::where('product_id', $productId)
-            ->select('id', 'size', 'price','discounted_price') 
+            ->select('id', 'size', 'price', 'discounted_price', 'quantity')
             ->get();
 
         return response()->json($sizes);
@@ -72,13 +72,63 @@ class ProductController extends Controller
 
         return back()->with('success', 'Products imported successfully!');
     }
+
+    // public function index()
+    // {
+    //     $products = Product::with('variants')->get();
+    //     $category = AwardCategory::all();
+    //     $sizes = ProductVariant::with('product')->whereHas('product')->get();
+
+    //     // return $products->variants;
+    //     return view('admin.productCrud.productsTable', compact('products', 'category', 'sizes'));
+    // }
+
+
+    // public function index()
+    // {
+    //     $products = Product::with('variants')
+    //         ->orderBy('title', 'asc')
+    //         ->get();
+
+    //     $category = AwardCategory::all();
+
+    //     $sizes = ProductVariant::with('product')
+    //         ->whereHas('product')
+    //         ->get()
+    //         ->sortBy(function ($variant) {
+    //             return $variant->product->title;
+    //         });
+
+    //     return view('admin.productCrud.productsTable', compact('products', 'category', 'sizes'));
+    // }
+
     public function index()
     {
-        $products = Product::with('variants')->get();
+        $products = Product::with(['variants', 'category', 'subcategory'])
+            ->whereHas('category')
+            ->whereHas('subcategory')
+            ->orderBy('category_id', 'asc')        // 1st sort: Category
+            ->orderBy('sub_category_id', 'asc')    // 2nd sort: SubCategory
+            ->orderBy('title', 'asc')              // 3rd sort: Product
+            ->get();
+
         $category = AwardCategory::all();
-            // return $products->variants;
-        return view('admin.productCrud.productsTable', compact('products', 'category'));
+
+        $sizes = ProductVariant::with(['product.category', 'product.subcategory'])
+            ->whereHas('product.category')
+            ->whereHas('product.subcategory')
+            ->get()
+            ->sortBy([
+                fn($a, $b) => $a->product->category_id <=> $b->product->category_id,       // Category ID sort
+                fn($a, $b) => $a->product->sub_category_id <=> $b->product->sub_category_id, // SubCategory ID sort
+                fn($a, $b) => strcmp($a->product->title, $b->product->title),              // Product title sort
+            ]);
+
+        return view('admin.productCrud.productsTable', compact('products', 'category', 'sizes'));
     }
+
+
+
     public function add()
     {
         $category = AwardCategory::all();
@@ -99,7 +149,7 @@ class ProductController extends Controller
             'colors' => 'nullable|array',
             'colors.*' => 'nullable|string|max:50',
             'variants.*.discount_percentage' => 'nullable|numeric|min:0|max:100',
-             'variants.*.quantity' => 'required|integer|min:0',
+            'variants.*.quantity' => 'required|integer|min:0',
         ]);
 
         $product = new Product();
@@ -374,7 +424,7 @@ class ProductController extends Controller
     public function orders()
     {
         $orders = Order::latest()->paginate(100);
-        
+
         return view('admin.Orders.index', compact('orders'));
     }
     public function updateStatus($id, Request $request)
@@ -413,5 +463,16 @@ class ProductController extends Controller
     //     }
 
 
+    public function addQuantity(Request $request, $id)
+    {
+        $request->validate([
+            'add_quantity' => 'required|integer|min:1',
+        ]);
 
+        $variant = ProductVariant::findOrFail($id);
+        $variant->quantity += $request->add_quantity; // add kela
+        $variant->save();
+
+        return redirect()->back()->with('success', 'Quantity updated successfully!');
+    }
 }

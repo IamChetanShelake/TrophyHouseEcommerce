@@ -169,7 +169,33 @@
             margin-top: 10px;
         }
     </style>
-
+    <!--customization-modal-->
+    <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customizationModalLabel">Customize Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customizationForm" method="POST" enctype="multipart/form-data" action="">
+                        @csrf
+                        <input type="hidden" id="cartId" name="cart_id">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Upload Images</label>
+                            <input type="file" class="form-control" id="image" name="images[]" multiple
+                                accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="orders-header">
         <div class="container">
             <div class="row align-items-center">
@@ -287,7 +313,47 @@
                                                             Approval</span>
                                                     @endif
 
+                                                    @php
+                                                        $custom = $customization_request->firstWhere(
+                                                            'payment_item_id',
+                                                            $payment->id,
+                                                        );
+                                                        $customization = Auth::user()
+                                                            ->customizationRequests()
+                                                            ->where('payment_item_id', $payment->id)
+                                                            ->where('status', 'pending')
+                                                            ->first();
+                                                        $customizationApproved = Auth::user()
+                                                            ->customizationRequests()
+                                                            ->where('payment_item_id', $payment->id)
+                                                            ->where('status', 'approved')
+                                                            ->first();
+                                                        if (isset($customizationApproved)) {
+                                                        } else {
+                                                            $customizationApproved = null;
+                                                        }
+                                                    @endphp
 
+                                                    @if ($customization_request && $custom)
+                                                        {{-- @if ($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
+                                                        <a class="text-success">
+                                                            @if ($customization)
+                                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                                Customization Submitted, please wait for response!
+                                                            @elseif($customizationApproved)
+                                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                                Customization Approved!
+                                                            @endif
+                                                        </a>
+                                                    @else
+                                                        <a href="javascript:void(0);"
+                                                            onclick="openCustomizationModal({{ $item->id }})"
+                                                            style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
+                                                            class="text-primary">
+                                                            <i class="bi bi-pencil-square me-1"></i>
+                                                            Customize with your own message or name.
+                                                        </a>
+                                                    @endif
                                                 </div>
 
                                                 <div class="text-end d-flex flex-column align-items-end">
@@ -311,15 +377,17 @@
                                                             <span>Customization</span>
                                                             {{ ucfirst($item->customizationRequest->status) }}
                                                         </span>
+
+                                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                                            <a href="{{ route('customization.userchat', $item->customizationRequest->id ?? null) }}"
+                                                                class="btn btn-sm btn-success mt-1"
+                                                                style="background-color:#00ff65">
+                                                                <i class="fas fa-comments"></i> <span
+                                                                    class="text-black">Chat
+                                                                    with Designer</span>
+                                                            </a>
+                                                        </div>
                                                     @endif
-                                                    <div class="d-flex align-items-center gap-2 mt-2">
-                                                        <a href="{{ route('customization.userchat', $item->customizationRequest->id ?? null) }}"
-                                                            class="btn btn-sm btn-success mt-1"
-                                                            style="background-color:#00ff65">
-                                                            <i class="fas fa-comments"></i> <span class="text-black">Chat
-                                                                with Designer</span>
-                                                        </a>
-                                                    </div>
                                                     {{-- @if ($item->customizationRequest && $item->customizationRequest->messages->count())
                                                         <div class="d-flex align-items-center gap-2 mt-2">
                                                             <p class="mb-0"> </p>
@@ -386,7 +454,7 @@
                         <i class="fas fa-shopping-bag"></i>
                     </div>
                     <h3>No Orders Yet</h3>
-                    <p class="text-muted mb-4">You haven't placed any orders yet. Start shopping to see your orders here!
+                    <p class="text-muted mb-4">You have not placed any orders yet. Start shopping to see your orders here!
                     </p>
                     <a href="{{ route('Websitehome') }}" class="btn-shop-now">
                         <i class="fas fa-shopping-cart"></i> Start Shopping
@@ -397,6 +465,15 @@
     </div>
 
     <script>
+        function openCustomizationModal(itemId) {
+            console.log('Opening modal for cartId:', itemId);
+            const form = document.getElementById('customizationForm');
+            form.action = '{{ route('customization.request.orders', ':itemId') }}'.replace(':itemId', itemId);
+            document.getElementById('cartId').value = itemId;
+            const modal = new bootstrap.Modal(document.getElementById('customizationModal'));
+            modal.show();
+        }
+
         function filterOrders(status) {
             const orderCards = document.querySelectorAll('.order-card');
             orderCards.forEach(card => {

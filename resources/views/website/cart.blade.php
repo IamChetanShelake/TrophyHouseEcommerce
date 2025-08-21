@@ -71,7 +71,9 @@
         <div class="container my-5">
 
 
+
             <!--customization-modal-->
+            <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel"
             <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
@@ -159,6 +161,17 @@
                                                         would you like to personalize them with photos and text? </center>
                                                 </b>
                                             </div>
+                                            <!-- Modal Body -->
+                                            <div class="modal-body">
+                                                <center>
+                                                    <h5 class="modal-title" style="color: #DE2300;"
+                                                        id="customizationConfirmModalLabel">Confirmation </h5>
+                                                </center>
+                                                <b>
+                                                    <center> you have customization remaning for your other cart trophy,
+                                                        would you like to personalize them with photos and text? </center>
+                                                </b>
+                                            </div>
 
                                             <!-- Modal Footer -->
                                             {{-- <div class="row">
@@ -171,6 +184,30 @@
             <a href="{{ route('addressPage') }}" class="btn btn-secondary col-4">No</a>
         
       </div> --}}
+                                            <div class="modal-footer justify-content-center">
+                                                <div class="d-flex gap-3">
+                                                    <button type="button" class="btn  px-5" data-bs-dismiss="modal"
+                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">Yes</button>
+                                                    <a href="{{ route('addressPage') }}" class="btn px-5"
+                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">No</a>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="modal fade" id="customizationConfirmModal" tabindex="-1"
+                                    aria-labelledby="customizationConfirmModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content border border-2" style="border: 2px solid #FBCB07;">
+
+                                            <!-- Modal Header -->
+                                            <div class="modal-header">
+
+                                                <button type="button" style="color: #DE2300;" class="btn-close"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
                                             <div class="modal-footer justify-content-center">
                                                 <div class="d-flex gap-3">
                                                     <button type="button" class="btn  px-5" data-bs-dismiss="modal"
@@ -239,6 +276,8 @@
                                     <div class="col-3 col-md-2 text-center">
                                         <img src="{{ asset('product_images/' . $cart->product->image) }}"
                                             class="trophy-img" alt="{{ $cart->product->title }}">
+                                        <img src="{{ asset('product_images/' . $cart->product->image) }}"
+                                            class="trophy-img" alt="{{ $cart->product->title }}">
                                     </div>
 
                                     <!-- Details Column -->
@@ -256,6 +295,8 @@
                                                 </i>
                                                 <i class="bi bi-trash text-danger"
                                                     style="font-size: 18px; cursor: pointer;"
+                                                <i class="bi bi-trash text-danger"
+                                                    style="font-size: 18px; cursor: pointer;"
                                                     onclick="submitDeleteForm({{ $cart->id }})"></i>
                                                 <form id="delete-cart-form-{{ $cart->id }}"
                                                     action="{{ route('cart.delete', $cart->id) }}" method="POST"
@@ -271,6 +312,8 @@
                                             <select class="form-select form-select-sm variant-select"
                                                 onchange="updateCartItem({{ $cart->id }})">
                                                 @foreach ($cart->product->variants as $variant)
+                                                    <option value="{{ $variant->id }}"
+                                                        data-price="{{ $variant->price }}"
                                                     <option value="{{ $variant->id }}"
                                                         data-price="{{ $variant->price }}"
                                                         data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
@@ -315,15 +358,25 @@
                                         @php
                                             $variant = $cart->variant ?? $cart->product->variants->first();
                                             $originalprice = $variant->price;
+                                            $originalprice = $variant->price;
                                             $price = $variant->discounted_price ?? $variant->price;
+
 
                                             $gst = $price * 0.18;
                                             $finalPrice = ($price + $gst) * $cart->quantity;
                                         @endphp
 
+
                                         <div class="fw-bold mb-2 price-output" style="font-size: 16px;">
                                             ₹{{ number_format($price, 2) }} <small class="text-muted"></small>
                                         </div>
+                                        @if ($originalprice > $price)
+                                            <div class="fw-bold mb-2 price-output"
+                                                style="font-size: 16px;text-decoration: line-through;">
+                                                ₹{{ number_format($originalprice, 2) }}
+
+                                                <small class="text-muted"></small>
+                                            </div>
                                         @if ($originalprice > $price)
                                             <div class="fw-bold mb-2 price-output"
                                                 style="font-size: 16px;text-decoration: line-through;">
@@ -368,12 +421,18 @@
                                                 onclick="openCustomizationModal({{ $cart->id }})"
                                                 style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
                                                 class="text-primary">
+                                            <a href="javascript:void(0);"
+                                                onclick="openCustomizationModal({{ $cart->id }})"
+                                                style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
+                                                class="text-primary">
                                                 <i class="bi bi-pencil-square me-1"></i>
                                                 Customize with your own message or name.
                                             </a>
                                         @endif
+                                        @endif
                                     </div>
                                 </div>
+
 
                                 <!--requirement start -->
                                 @php
@@ -387,6 +446,53 @@
                                         ->first();
 
                                 @endphp
+                                @php
+                                    $hasAcceptedCustomization = \App\Models\CustomizationRequest::where(
+                                        'cart_item_id',
+                                        $cart->id,
+                                    )
+                                        ->where(function ($query) {
+                                            $query->where('status', 'accepted')->orWhere('status', 'completed');
+                                        })
+                                        ->first();
+
+                                @endphp
+
+                                @if ($hasAcceptedCustomization && $hasAcceptedCustomization->designer)
+                                    <!-- Completed Customizations Section -->
+                                    <div class="container my-5 customization-section">
+                                        {{-- <h4>Completed Customizations</h4> --}}
+                                        @foreach (Auth::user()->customizationRequests()->where('status', ['accepted', 'completed'])->get() as $request)
+                                            @if ($request->cart_item_id === $cart->id)
+                                                <div class="card mb-3">
+                                                    <div class="card-header" data-bs-toggle="collapse"
+                                                        data-bs-target="#collapse{{ $request->id }}">
+                                                        <strong>Your request has been accepted</strong>
+                                                        <!--{{ $request->description }}-->
+                                                    </div>
+                                                    <div class="collapse show" id="collapse{{ $request->id }}">
+                                                        <div class="card-body">
+                                                            <!--@if ($request->final_image)
+    -->
+                                                            <!--    <p><strong>Final Image:</strong></p>-->
+                                                            <!--    <img src="{{ base_path('customization_images/' . $request->final_image) }}" alt="Final Image" style="max-width: 200px;">-->
+                                                        <!--@else-->
+                                                            <!--    <p>No image available.</p>-->
+                                                            <!--
+    @endif-->
+                                                            <form id="approveForm{{ $request->id }}"
+                                                                action="{{ route('customization.approve', $request->id) }}"
+                                                                method="POST" style="display:inline;">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="btn btn-success btn-sm me-2">Approve</button>
+                                                            </form>
+
+                                                            @if ($request->designer_id)
+                                                                <a href="{{ route('customization.userchat', $request->id) }}"
+                                                                    class="btn btn-outline-primary btn-sm mt-2">
+                                                                    💬 Chat with Assigned Designer
+                                                                </a>
 
                                 @if ($hasAcceptedCustomization && $hasAcceptedCustomization->designer)
                                     <!-- Completed Customizations Section -->
@@ -477,9 +583,13 @@
                         @endforeach
                     @endif
 
+
                 </div>
 
+
                 <!--requirement ed -->
+
+
 
 
 
