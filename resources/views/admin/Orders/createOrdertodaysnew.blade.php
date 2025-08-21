@@ -9,6 +9,32 @@
                 </a> Create Order
             </h3>
         </div>
+        <style>
+            .table td {
+                vertical-align: middle;
+                font-size: 0.875rem;
+                line-height: 1;
+                white-space: wrap;
+                padding: -1rem !important;
+            }
+
+            .form-control {
+                display: block;
+                width: 100%;
+                padding: 0.94rem 0rem !important;
+                font-size: 0.8125rem;
+                font-weight: 400;
+                line-height: 1;
+                color: var(--bs-body-color);
+                appearance: none;
+                background-color: #ffffff;
+                background-clip: padding-box;
+                border: var(--bs-border-width) solid var(--bs-border-color);
+                border-radius: 2px;
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            }
+        </style>
+
 
         <div class="card">
             <div class="card-body">
@@ -17,8 +43,8 @@
 
                     <!-- Customer Info -->
                     <div class="row">
-                     
-                     
+
+
                         <!-- Name -->
                         <div class="form-group col-lg-12 col-sm-12">
                             <label for="name">Name</label> <span style="color:red;">*</span>
@@ -115,7 +141,7 @@
                                         <option value="">Select</option>
                                     </select>
                                 </td>
-                                <td><input type="number" name="avqty[]" class="form-control avqty"></td>
+                                <td style=" padding: 0rem !important;"><input type="number" name="avqty[]" class="form-control avqty"></td>
                                 <td><input type="number" name="qty[]" class="form-control qty"></td>
                                 <td><input type="number" name="rate[]" class="form-control rate" readonly></td>
                                 <td><input type="number" name="disc_rate[]" class="form-control disc-rate" readonly></td>

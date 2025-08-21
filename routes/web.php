@@ -129,9 +129,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Route::post('/chat/{userId}', [CustomizationController::class, 'sendDesignerMessage'])->name('send.message');
 
-Route::any('/test', function () {
-    return "Server is working!";
-})->name('test');
+        Route::any('/test', function () {
+            return "Server is working!";
+        })->name('test');
 
 
         Route::post('/designer/chats/send/{customizationRequestId}', [CustomizationController::class, 'sendMessage'])
@@ -149,6 +149,7 @@ Route::any('/test', function () {
         ->name('workspace.order');
 
     Route::post('/customization/request/{cartId}', [CartItemController::class, 'createCustomizationRequest'])->name('customization.request');
+    Route::post('/customization/request/myorders/{itemId}', [CartItemController::class, 'createCustomizationRequestforOfflineOrders'])->name('customization.request.orders');
 
     Route::post('/customization/accept/{orderId}', [CustomizationController::class, 'acceptRequest'])->name('customization.accept');
 
@@ -282,6 +283,8 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::delete('/destroy-products/{id?}', [ProductController::class, 'destroy'])->name('product.destroy');
     Route::post('/product/toggle/{id}', [ProductController::class, 'toggleField'])->name('product.toggleField');
     Route::any('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('deleteProductImages');
+    Route::post('/productsize/{id}/add-quantity', [ProductController::class, 'addQuantity'])->name('product.addQuantity');
+
 
     //excel upload------------------------------------------------------------------
     Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
@@ -312,11 +315,15 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/ViewOrder/{id}', [OrderController::class, 'viewOrder'])->name('order.view');
 
 
-    Route::get('/createorder', [ProductController::class, 'createorder'])->name('createorder');
+    Route::get('/createorder', [OrderController::class, 'createorder'])->name('createorder');
+    Route::post('/offlineorderstore', [OrderController::class, 'offlineorderstore'])->name('offlineorder.store');
 
-    Route::get('/get-subcategories/{id}', [ProductController::class, 'getSubcategories']);
-    Route::get('/get-products_list/{id}', [ProductController::class, 'getProducts']);
-    Route::get('/get-sizes/{productId}', [ProductController::class, 'getSizes']);
+    Route::get('/get-subcategories/{id}', [OrderController::class, 'getSubcategories']);
+    Route::get('/get-products_list/{id}', [OrderController::class, 'getProducts']);
+    Route::get('/get-sizes/{productId}', [OrderController::class, 'getSizes']);
+    // web.php
+    Route::post('/check-user', [OrderController::class, 'checkUser'])->name('checkUser');
+
 
 
     // Categories

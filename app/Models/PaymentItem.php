@@ -5,7 +5,6 @@ use App\Models\User;
 use App\Models\Product; 
 use App\Models\ProductVariant;
 use App\Models\CustomizationRequest;
-use App\Models\PaymentItem;
 use App\Models\PaymentItemMessage;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

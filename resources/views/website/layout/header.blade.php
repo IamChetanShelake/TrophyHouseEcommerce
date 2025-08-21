@@ -73,12 +73,12 @@
         }
     </style>
      <!-- Preloader Start -->
-  <div id="preloader">
+  {{--  <div id="preloader">
       <div class="spinner">
           <img src="{{ asset('website/assets/images/footer/trophy_house_logo[1] 1.png') }}" alt="Loading..."
               class="loader-image">
       </div>
-  </div>
+  </div>  --}}
   <!-- Preloader End -->
 </head>
 

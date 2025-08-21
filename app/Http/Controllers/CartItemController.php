@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\AwardCategory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\PaymentItem;
 
 
 class CartItemController extends Controller
@@ -272,6 +273,67 @@ if (is_file($imagePath)) {
         $customization->user_id = Auth::id();
         
         $customization->cart_item_id = $cartId;
+        
+        $customization->designer_id = null;
+        
+        $customization->description = $request->description;
+        
+        $customization->status = 'pending';
+        
+        
+        $customization->save();
+        // Loop through images and store each
+        
+        foreach ($request->file('images') as $image) {
+            
+            $imageName = time() . rand(1, 1000) . '.' . $image->extension();
+            
+            // Move the file to the public directory
+            $image->move('customization_images', $imageName);
+            
+            // Store each image using model instance
+            $customization_image = new Customization_image();
+            
+            $customization_image->user_id = Auth::id();
+            
+            $customization_image->customization_request_id = $customization->id;
+            
+            $customization_image->image = $imageName;
+            
+            $customization_image->save();
+            
+        }
+        
+        // return response()->json(['success' => true, 'message' => 'Request sent to designers']);
+        return redirect()->back()->with('success', 'Your Customization Request has been sent, please wait for our  response');
+    }
+    public function createCustomizationRequestforOfflineOrders(Request $request, $orderId)
+    {
+        // Validation
+        $request->validate([
+            
+            'description' => 'required|string',
+            
+            'images' => 'required|array',
+            
+            'images.*' => 'image', 
+            
+        ]);
+        
+        
+        // Check if cart item exists and belongs to current user
+        
+        $orderItem = PaymentItem::where('id', $orderId)->where('user_id', Auth::id())->firstOrFail();
+        
+        
+        
+        // Store customization request using model instance
+        
+        $customization = new CustomizationRequest();
+        
+        $customization->user_id = Auth::id();
+        
+        $customization->cart_item_id = $orderId;
         
         $customization->designer_id = null;
         
