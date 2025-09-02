@@ -72,13 +72,26 @@
                     </td>
                     <td>
                         @if ($p->customizationRequest)
-                            {{-- <span class="badge 
-                        @if ($status === 'Approved') bg-success 
-                        @elseif ($status === 'Rejected') bg-danger 
-                        @else bg-warning text-dark @endif">
-                        {{ $status }}
-                    </span> --}}
-                            {{ $p->customizationRequest->status }}
+                            @php
+                                $isApproved = $p->customizationRequest->messages->where('is_approved', 1)->count() > 0;
+                                // echo $isApproved;
+                            @endphp
+
+                            @if ($p->customizationRequest->status == 'accepted')
+                                @if ($isApproved)
+                                    <span class="badge bg-success">Approved</span>
+                                @else
+                                    <span class="badge bg-warning text-dark">Accepted</span>
+                                @endif
+                            @elseif ($p->customizationRequest->status == 'pending')
+                                <span class="badge bg-secondary">Pending</span>
+                            @elseif ($p->customizationRequest->status == 'approved')
+                                <span class="badge bg-success">Approved</span>
+                            @elseif ($p->customizationRequest->status == 'completed')
+                                <span class="badge bg-info">Completed</span>
+                            @elseif ($p->customizationRequest->status == 'rejected')
+                                <span class="badge bg-danger">Rejected</span>
+                            @endif
                         @endif
                     </td>
                 </tr>

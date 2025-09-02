@@ -191,6 +191,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/address/update/{id}', [WebsiteController::class, 'updateAddress'])->name('address.update');
     Route::delete('/address/delete/{id}', [WebsiteController::class, 'deleteAddress'])->name('address.delete');
     Route::post('/address/set-default/{id}', [WebsiteController::class, 'setDefaultAddress'])->name('address.setDefault');
+    Route::get('/filter-products', [WebsiteController::class, 'filterProducts']);
+
 
     //profile---------------------------------
     Route::get('/edit-profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -287,6 +289,11 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::post('/product/toggle/{id}', [ProductController::class, 'toggleField'])->name('product.toggleField');
     Route::any('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('deleteProductImages');
     Route::post('/productsize/{id}/add-quantity', [ProductController::class, 'addQuantity'])->name('product.addQuantity');
+    // Route::get('/filterProducts', [ProductController::class, 'filterProduct'])->name('filter.products');
+    Route::get('/filterProducts', [ProductController::class, 'filterProducts'])->name('filterProducts');
+
+    
+
 
 
     //excel upload------------------------------------------------------------------

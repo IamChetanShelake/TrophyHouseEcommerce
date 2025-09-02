@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zxx">
+{{-- <html lang="zxx"> --}}
 
 <head>
     <!--====== Required meta tags ======-->
@@ -46,6 +46,11 @@
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- add to master layout head -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.1/nouislider.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.1/nouislider.min.js" defer></script>
+
 
     <style>
         #preloader {

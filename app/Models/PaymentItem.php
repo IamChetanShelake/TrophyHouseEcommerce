@@ -41,7 +41,7 @@ class PaymentItem extends Model
 
 public function customizationRequest()
 {
-    return $this->hasOne(CustomizationRequest::class);
+    return $this->hasOne(CustomizationRequest::class,'payment_item_id', 'id');
 }
 
 public function designer()

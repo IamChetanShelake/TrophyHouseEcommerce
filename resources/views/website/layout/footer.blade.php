@@ -50,7 +50,7 @@
                   </ul>
 
               </div>
-         
+
 
               <!-- Address -->
               <div class="col-lg-2 col-md-6 col-sm-12">
@@ -60,11 +60,13 @@
                   <ul class="list-unstyled mt-3">
                       <li class="mb-3 d-flex align-items-start">
                           <i class="fas fa-map-marker-alt me-2 mt-1"></i>
-                          <span class="text-black">Space cosmos, old Mumbai Agra Road, Beside Canara Bank, opp. Meher Bus Stop, Ashok Stambh, Nashik 422002</span>
+                          <span class="text-black">Space cosmos, old Mumbai Agra Road, Beside Canara Bank, opp. Meher
+                              Bus Stop, Ashok Stambh, Nashik 422002</span>
                       </li>
                       <li class="mb-3 d-flex align-items-start">
                           <i class="fas fa-envelope me-2 mt-1"></i>
-                          <a href="mailto:Trophyhouse@gmail.com" class="text-black text-decoration-none">trophyhousensk1@gmail.com </a>
+                          <a href="mailto:Trophyhouse@gmail.com"
+                              class="text-black text-decoration-none">trophyhousensk1@gmail.com </a>
                       </li>
                       <li class="d-flex align-items-start">
                           <i class="fas fa-phone me-2 mt-1"></i>
@@ -73,7 +75,7 @@
                   </ul>
               </div>
 
-                   {{-- pages --}}
+              {{-- pages --}}
               <div class="col-lg-3 col-md-6 col-sm-12">
                   <h5 class="fw-bold position-relative pb-2">Pages
                       <span class="position-absolute bottom-0 start-0 w-25 border-bottom border-2 border-danger"></span>
@@ -81,8 +83,8 @@
                   <ul>
                       @foreach ($pages as $page)
                           <li class="mb-2 mt-3">
-                              <a href="{{ route('pageDetail', $page->id) }}"
-                                  class="text-black text-decoration-none"><i class="fas fa-caret-right me-2"></i>{{ strtoupper($page->title) }}</a>
+                              <a href="{{ route('pageDetail', $page->id) }}" class="text-black text-decoration-none"><i
+                                      class="fas fa-caret-right me-2"></i>{{ strtoupper($page->title) }}</a>
                           </li>
                       @endforeach
                   </ul>
@@ -120,7 +122,7 @@
   </footer>
 
 
-
+  @include('website.shareModal');
 
   <!--====== Back To Top  ======-->
   {{-- <div class="back-to-top" ><i class="far fa-angle-up"></i></div> --}}
@@ -144,7 +146,7 @@
   <script src="{{ asset('website/assets/vendor/aos/aos.js') }}"></script>
   <!--====== Main js ======-->
   <script src="{{ asset('website/assets/js/theme.js') }}"></script>
-  
+
   <script>
       window.addEventListener('load', function() {
           const preloader = document.getElementById('preloader');
@@ -159,13 +161,30 @@
       });
   </script>
   <script>
-    // Force page reload on back/forward cache navigation
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted || (window.performance && performance.navigation.type === 2)) {
-            window.location.reload();
-        }
-    });
-</script>
+      // Force page reload on back/forward cache navigation
+      window.addEventListener("pageshow", function(event) {
+          if (event.persisted || (window.performance && performance.navigation.type === 2)) {
+              window.location.reload();
+          }
+      });
+  </script>
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          document.querySelectorAll('.share-icon').forEach(icon => {
+              icon.addEventListener('click', function(e) {
+                  e.preventDefault(); // stop navigation
+                  let link = this.dataset.shareLink;
+
+                  // Populate your modal's link input/text
+                  document.getElementById('shareLinkInput').value = link;
+
+                  // Show modal (Bootstrap 5)
+                  let modal = new bootstrap.Modal(document.getElementById('shareModal'));
+                  modal.show();
+              });
+          });
+      });
+  </script>
   </body>
 
   </html>

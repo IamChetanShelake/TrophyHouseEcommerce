@@ -28,19 +28,7 @@ class CustomizationController extends Controller
         
         $designerId = auth()->id();
 
-       // Use transaction
-    // DB::transaction(function() use ($customizationRequestId, $designerId) {
-    //     $customization = CustomizationRequest::with('paymentItem.payment')->findOrFail($customizationRequestId);
 
-    //     $orderId = $customization->paymentItem->payment->order_id;
-
-    //     // Update all customization_requests under this order (your existing logic)
-    //     CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
-    //         $q->where('order_id', $orderId);
-    //     })->update([
-    //         'designer_id' => $designerId,
-    //         'status' => 'accepted'
-    //     ]);
       DB::transaction(function() use ($orderId, $designerId) {
         // fetch all customization requests linked to this orderId
         $customizations = CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
@@ -55,13 +43,17 @@ class CustomizationController extends Controller
             ]);
         }
 
-        // Update matching payment_items: set designer_id and customization_status
-        // PaymentItem::whereHas('payment', function($q) use ($orderId) {
-        //     $q->where('order_id', $orderId);
-        // })->update([
-        //     'designer_id' => $designerId,
-        //     'customization_status' => 'accepted'
-        // ]);
+        // Update the delivery_status of the related payment to 'accepted'
+         $payment = Payment::where('order_id', $orderId)->first();
+
+         
+        if ($payment) {
+            $payment->update([
+                'delivery_status' => 'accepted'  // delivery_status will now reflect customization status
+            ]);
+        }
+
+
     });
 
     return redirect()->route('requests');
@@ -106,23 +98,47 @@ public function designerChats($customizationRequestId = null)
     /**
      * Reject a customization request
      */
-    public function rejectRequest(Request $request, $id)
-    {
+    // public function rejectRequest(Request $request, $id)
+    // {
 
-        $customization = CustomizationRequest::findOrFail($id);
+    //     $customization = CustomizationRequest::findOrFail($id);
 
-        if ($customization->status != 'pending') {
-            //   return redirect()->route('requests')with('error','');
-            return response()->json(['success' => false, 'message' => 'Request cannot be rejected.'], 403);
+    //     if ($customization->status != 'pending') {
+    //         //   return redirect()->route('requests')with('error','');
+    //         return response()->json(['success' => false, 'message' => 'Request cannot be rejected.'], 403);
+    //     }
+
+    //     $customization->status = 'rejected';
+    //     $customization->save();
+
+
+    //     // return response()->json(['success' => true, 'message' => 'Request rejected.']);
+    //      return redirect()->route('requests')->with('success','request rejected');
+    // }
+    public function rejectRequest(Request $request, $orderId)
+{
+    $designerId = auth()->id();
+
+    DB::transaction(function() use ($orderId, $designerId) {
+        // fetch all customization requests linked to this orderId
+        $customizations = CustomizationRequest::whereHas('paymentItem.payment', function($q) use ($orderId) {
+                $q->where('order_id', $orderId);
+            })
+            ->get();
+
+        foreach ($customizations as $customization) {
+            if ($customization->status == 'pending') {
+                $customization->update([
+                    'status' => 'rejected',
+                    'designer_id' => $designerId,
+                ]);
+            }
         }
+    });
 
-        $customization->status = 'rejected';
-        $customization->save();
+    return redirect()->route('requests')->with('success', 'Request rejected successfully.');
+}
 
-
-        // return response()->json(['success' => true, 'message' => 'Request rejected.']);
-         return redirect()->route('requests')->with('success','request rejected');
-    }
 
     /**
      * Display the workspace for an accepted request
@@ -175,36 +191,7 @@ public function orderWorkspace($orderId)
         return view('designer.workspace', compact('customization','custImg'));
     }
 
-
-
-
-    /**
-     * Mark a customization request as completed with a final image
-     */
-    //     public function completeRequest(Request $request, $id)
-    // {
-    //     $customization = CustomizationRequest::findOrFail($id);
-
-    //     if ($customization->status !== 'accepted' || $customization->designer_id !== Auth::id()) {
-    //         return redirect()->back()->with('error', 'Unauthorized action.');
-    //     }
-
-    //     $request->validate([
-    //         'final_image' => 'required|image|max:2048',
-    //     ]);
-
-    //     $finalImagePath = $request->file('final_image')->store('customizations', 'public');
-    //     $customization->final_image = $finalImagePath;
-    //     $customization->status = 'completed';
-    //     $customization->save();
-
-    //     // Trigger the notification to the user
-    //     $customization->user->notify(new \App\Notifications\CustomizationCompleted($customization));
-
-    //     return redirect()->route('home')->with('success', 'Request completed successfully.');
-    // }
-
-    public function approveImage(CustomizationMessage $message)
+public function approveImage(CustomizationMessage $message)
 {
     $user = auth()->user();
 
@@ -213,8 +200,33 @@ public function orderWorkspace($orderId)
         abort(403);
     }
 
+    $request = $message->customizationRequest;
+
+    // 🔑 Unapprove all other messages of this request
+    $request->messages()
+        ->where('id', '!=', $message->id)
+        ->update(['is_approved' => 0]);
+
+    // Approve the selected one
     $message->is_approved = 1;
     $message->save();
+
+    // --- Keep your existing request & order update logic ---
+    $allApproved = $request->messages()->where('is_approved', 0)->count() === 0;
+    if ($allApproved && $request->status !== 'approved') {
+        $request->status = 'approved';
+        $request->save();
+    }
+
+    $payment = $request->paymentItem->payment;
+    $allRequestsApproved = $payment->paymentItems->every(function ($item) {
+        return $item->customizationRequest && $item->customizationRequest->status === 'approved';
+    });
+
+    if ($allRequestsApproved && $payment->order_status !== 'approved') {
+        $payment->order_status = 'approved';
+        $payment->save();
+    }
 
     return response()->json([
         'success' => true,
@@ -222,18 +234,84 @@ public function orderWorkspace($orderId)
     ]);
 }
 
-//cancel approve 
 public function cancelApproval(CustomizationMessage $message)
 {
     $user = auth()->user();
     if ($message->customizationRequest->user_id !== $user->id) abort(403);
 
     $message->is_approved = 0;
-   
     $message->save();
+
+    $request = $message->customizationRequest;
+
+    // If no other images are approved → rollback request status
+    if ($request->messages()->where('is_approved', 1)->count() === 0) {
+        $request->status = 'accepted'; 
+        $request->save();
+    }
 
     return response()->json(['success' => true]);
 }
+
+
+//old approve and cancel approve
+//     public function approveImage(CustomizationMessage $message)
+// {
+//     $user = auth()->user();
+
+//     // Ensure the user owns this customization request
+//     if ($message->customizationRequest->user_id !== $user->id) {
+//         abort(403);
+//     }
+
+//     $message->is_approved = 1;
+//     $message->save();
+
+    
+//     $request = $message->customizationRequest;
+
+//     // 2. If all messages for this request are approved → mark request as "approved"
+//     $allApproved = $request->messages()->where('is_approved', 0)->count() === 0;
+//     if ($allApproved && $request->status !== 'approved') {
+//         $request->status = 'approved';
+//         $request->save();
+//     }
+
+//     // 3. If all requests under this order are approved → mark the order as "approved"
+//     $payment = $request->paymentItem->payment;
+//     $allRequestsApproved = $payment->paymentItems->every(function ($item) {
+//         return $item->customizationRequest && $item->customizationRequest->status === 'approved';
+//     });
+
+//     if ($allRequestsApproved && $payment->order_status !== 'approved') {
+//         $payment->order_status = 'approved';
+//         $payment->save();
+//     }
+
+//     if ($allApprovedForOrder) {
+//         Payment::where('order_id', $orderId)->update([
+//             'order_status' => 'approved'
+//         ]);
+//     }
+
+//     return response()->json([
+//         'success' => true,
+//         'message' => 'Image approved successfully',
+//     ]);
+// }
+
+// //cancel approve 
+// public function cancelApproval(CustomizationMessage $message)
+// {
+//     $user = auth()->user();
+//     if ($message->customizationRequest->user_id !== $user->id) abort(403);
+
+//     $message->is_approved = 0;
+   
+//     $message->save();
+
+//     return response()->json(['success' => true]);
+// }
 
 public function finalize($paymentId)
 {
@@ -554,7 +632,6 @@ public function finalize($paymentId)
 {
     $designerId = auth()->id();
 
-    $designerId = auth()->id();
 
 // Get all order IDs where requests are already accepted by other designers
 $blockedOrderIds = CustomizationRequest::where('status', 'accepted')
@@ -584,15 +661,18 @@ $requests = CustomizationRequest::with([
         $query->where(function ($sub) {
             $sub->where('status', 'pending')->whereNull('designer_id');
         })->orWhere(function ($sub) use ($designerId) {
-            $sub->where('status', 'accepted')->where('designer_id', $designerId);
+            $sub->where('status', 'accepted')->where('designer_id', $designerId);    
         })->orWhere(function ($sub) use ($designerId) {
         $sub->where('status', 'completed')->where('designer_id', $designerId);
+        })->orWhere(function ($sub) use ($designerId) {
+        $sub->where('status', 'rejected')->where('designer_id','!=', $designerId);
     });
     })
     ->get()
-    ->filter(function ($request) use ($blockedOrderIds) {
+    ->filter(function ($request) use ($designerId, $blockedOrderIds) {
         return $request->paymentItem && $request->paymentItem->payment
-            && !in_array($request->paymentItem->payment->order_id, $blockedOrderIds);
+            && !in_array($request->paymentItem->payment->order_id, $blockedOrderIds)
+            && $request->status !== 'rejected' || $request->designer_id !== $designerId; 
     })
     ->groupBy(function($request) {
         return $request->paymentItem->payment->order_id;

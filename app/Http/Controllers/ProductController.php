@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Occasion;
+use App\Models\OccasionProduct;
 use App\Models\SubCategory;
 use App\Models\productImage;
 use Illuminate\Http\Request;
@@ -475,4 +476,68 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Quantity updated successfully!');
     }
+
+//     public function filterProducts(Request $req)
+// {
+//     $query = Product::with('variants');
+
+//     if ($req->has('category_id')) {
+//         $query->where('category_id', $req->category_id);
+//     }
+
+//     if ($req->has('color')) {
+//         $query->whereHas('variants', function($q) use ($req) {
+//             $q->where('color', $req->color);
+//         });
+//     }
+
+//     if ($req->has('size')) {
+//         $query->whereHas('variants', function($q) use ($req) {
+//             $q->where('size', $req->size);
+//         });
+//     }
+
+//     if ($req->has('price_range')) {
+//         $ranges = (array) $req->price_range; // multiple ho to array me convert karlo
+//         $query->whereHas('variants', function($q) use ($ranges) {
+//             foreach ($ranges as $range) {
+//                 [$min, $max] = explode('-', $range);
+//                 $q->orWhereBetween('price', [(int) $min, (int) $max]);
+//             }
+//         });
+//     }
+
+//     $products = $query->get();
+
+//     if ($products->isEmpty()) {
+//     return response()->json([
+//         'status' => false,
+//         'status_code' => 404,
+//         'message' => 'Products not found'
+//     ], 404);
+// }
+
+//     return response()->json([
+//         'status' => true,
+//         'status_code' => 200,
+//         'products' => $products
+//     ]);
+// }
+
+public function filterProducts(Request $request)
+{
+    $minPrice = $request->query('min_price', 0);
+    $maxPrice = $request->query('max_price', 10000);
+
+    $products = Product::whereHas('variants', function ($query) use ($minPrice, $maxPrice) {
+        $query->where(function ($q) use ($minPrice, $maxPrice) {
+            $q->whereBetween('discounted_price', [$minPrice, $maxPrice])
+              ->orWhereBetween('price', [$minPrice, $maxPrice]);
+        });
+    })->with('variants')->get();
+
+    return response()->json(['products' => $products]);
+}
+
+
 }

@@ -9,6 +9,10 @@ use App\Models\Gallery;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
+
+
 
 class ProductApiController extends Controller
 {
@@ -361,4 +365,223 @@ class ProductApiController extends Controller
         }
         
     }
+
+    public function filterProducts(Request $req)
+{
+    $query = Product::query()->with(['variants' => function ($q) use ($req) {
+        // also filter variants in eager load so we don’t return unrelated ones
+        if ($req->has('size')) {
+            $sizes = $req->input('size');
+            $sizes = is_array($sizes) ? $sizes : [$sizes];
+            $sizes = array_map(fn($s) => strtolower(str_replace(' ', '', trim($s))), $sizes);
+
+            $q->whereIn(
+                DB::raw("LOWER(REPLACE(size, ' ', ''))"),
+                $sizes
+            );
+        }
+    }]);
+
+    // Category / Subcategory
+    if ($req->filled('category_id')) {
+        $query->where('category_id', (int) $req->input('category_id'));
+    }
+    if ($req->filled('sub_category_id')) {
+        $query->where('sub_category_id', (int) $req->input('sub_category_id'));
+    }
+
+    // COLORS
+    if ($req->has('color')) {
+        $colors = $req->input('color');
+        $colors = is_array($colors) ? $colors : [$colors];
+        $colors = array_values(array_filter(array_map(fn($c) => mb_strtolower(trim($c)), $colors)));
+
+        if (!empty($colors)) {
+            $query->whereHas('variants', function ($vq) use ($colors) {
+                $vq->where(function ($w) use ($colors) {
+                    foreach ($colors as $c) {
+                        $w->orWhereRaw('LOWER(color) LIKE ?', ["%{$c}%"]);
+                    }
+                });
+            });
+        }
+    }
+
+    // SIZES
+    if ($req->has('size')) {
+        $sizes = $req->input('size');
+        $sizes = is_array($sizes) ? $sizes : [$sizes];
+        $sizes = array_map(fn($s) => strtolower(str_replace(' ', '', trim($s))), $sizes);
+
+        if (!empty($sizes)) {
+            $query->whereHas('variants', function ($vq) use ($sizes) {
+                $vq->whereIn(
+                    DB::raw("LOWER(REPLACE(size, ' ', ''))"),
+                    $sizes
+                );
+            });
+        }
+    }
+
+    // PRICE FILTERS
+    $min = $req->input('min_price');
+    $max = $req->input('max_price');
+
+    if ($min !== null || $max !== null) {
+        $min = $min !== null ? (int) $min : 0;
+        $max = $max !== null ? (int) $max : PHP_INT_MAX;
+
+        $query->whereHas('variants', function ($vq) use ($min, $max) {
+            $vq->whereBetween('discounted_price', [$min, $max]);
+        });
+    } elseif ($req->has('price_range')) {
+        $ranges = (array) $req->input('price_range');
+        $cleanRanges = [];
+
+        foreach ($ranges as $range) {
+            if (is_string($range) && str_contains($range, '-')) {
+                [$rmin, $rmax] = array_map('trim', explode('-', $range, 2));
+                $rmin = (int) $rmin;
+                $rmax = (int) $rmax;
+                if ($rmax >= $rmin) {
+                    $cleanRanges[] = [$rmin, $rmax];
+                }
+            }
+        }
+
+        if (!empty($cleanRanges)) {
+            $query->whereHas('variants', function ($vq) use ($cleanRanges) {
+                $vq->where(function ($w) use ($cleanRanges) {
+                    foreach ($cleanRanges as [$a, $b]) {
+                        $w->orWhereBetween('discounted_price', [$a, $b]);
+                    }
+                });
+            });
+        }
+    }
+
+    $products = $query->get();
+
+    if ($products->isEmpty()) {
+        return response()->json([
+            'status' => false,
+            'status_code' => 404,
+            'message' => 'Products not found',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'status_code' => 200,
+        'products' => $products,
+    ]);
+}
+
+
+
+//     public function filterProducts(Request $req)
+// {
+//     $query = Product::query()->with(['variants' => function ($q) {
+//         $q->select('id', 'product_id', 'color', 'size', 'price', 'discounted_price');
+//     }]);
+
+//     // Category / Subcategory
+//     if ($req->filled('category_id')) {
+//         $query->where('category_id', (int) $req->input('category_id'));
+//     }
+//     if ($req->filled('sub_category_id')) {
+//         $query->where('sub_category_id', (int) $req->input('sub_category_id'));
+//     }
+
+//     // COLORS (case-insensitive, partial match, supports array or single)
+//     if ($req->has('color')) {
+//         $colors = $req->input('color');
+//         $colors = is_array($colors) ? $colors : [$colors];
+//         $colors = array_values(array_filter(array_map(fn($c) => mb_strtolower(trim($c)), $colors)));
+
+//         if (!empty($colors)) {
+//             $query->whereHas('variants', function ($vq) use ($colors) {
+//                 $vq->where(function ($w) use ($colors) {
+//                     foreach ($colors as $c) {
+//                         // partial match, case-insensitive
+//                         $w->orWhereRaw('LOWER(color) LIKE ?', ["%{$c}%"]);
+//                     }
+//                 });
+//             });
+//         }
+//     }
+
+//     // SIZES (case-insensitive, supports array or single; use exact or partial as you prefer)
+//     if ($req->has('size')) {
+//         $sizes = $req->input('size');
+//         $sizes = is_array($sizes) ? $sizes : [$sizes];
+//         $sizes = array_values(array_filter(array_map(fn($s) => mb_strtolower(trim($s)), $sizes)));
+
+//         if (!empty($sizes)) {
+//             $query->whereHas('variants', function ($vq) use ($sizes) {
+//                 $vq->where(function ($w) use ($sizes) {
+//                     foreach ($sizes as $s) {
+//                         // exact-ish: LOWER(size) = value; switch to LIKE for partials
+//                         $w->orWhereRaw('LOWER(size) = ?', [$s]);
+//                         // or partial: $w->orWhereRaw('LOWER(size) LIKE ?', ["%{$s}%"]);
+//                     }
+//                 });
+//             });
+//         }
+//     }
+
+//     // PRICE (prefer min_price/max_price; else price_range[]= "min-max")
+//     $min = $req->input('min_price');
+//     $max = $req->input('max_price');
+
+//     if ($min !== null || $max !== null) {
+//         $min = $min !== null ? (int) $min : 0;
+//         $max = $max !== null ? (int) $max : PHP_INT_MAX;
+
+//         $query->whereHas('variants', function ($vq) use ($min, $max) {
+//             $vq->whereBetween(DB::raw('COALESCE(discounted_price, price)'), [$min, $max]);
+//         });
+//     } elseif ($req->has('price_range')) {
+//         $ranges = (array) $req->input('price_range');
+//         $cleanRanges = [];
+
+//         foreach ($ranges as $range) {
+//             if (is_string($range) && str_contains($range, '-')) {
+//                 [$rmin, $rmax] = array_map('trim', explode('-', $range, 2));
+//                 $rmin = (int) $rmin;
+//                 $rmax = (int) $rmax;
+//                 if ($rmax >= $rmin) {
+//                     $cleanRanges[] = [$rmin, $rmax];
+//                 }
+//             }
+//         }
+
+//         if (!empty($cleanRanges)) {
+//             $query->whereHas('variants', function ($vq) use ($cleanRanges) {
+//                 $vq->where(function ($w) use ($cleanRanges) {
+//                     foreach ($cleanRanges as [$a, $b]) {
+//                         $w->orWhereBetween(DB::raw('COALESCE(discounted_price, price)'), [$a, $b]);
+//                     }
+//                 });
+//             });
+//         }
+//     }
+
+//     $products = $query->get();
+
+//     if ($products->isEmpty()) {
+//         return response()->json([
+//             'status' => false,
+//             'status_code' => 404,
+//             'message' => 'Products not found',
+//         ], 404);
+//     }
+
+//     return response()->json([
+//         'status' => true,
+//         'status_code' => 200,
+//         'products' => $products,
+//     ]);
+// }
+
 }

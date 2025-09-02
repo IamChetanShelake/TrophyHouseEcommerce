@@ -6,6 +6,7 @@
         padding: 7px;
         border-radius: 35px;
         width: 85%;
+        display: flex;
     }
 
     .approvalfail {
@@ -14,6 +15,7 @@
         padding: 7px;
         border-radius: 35px;
         width: 85%;
+        display: flex;
     }
 </style>
 @section('content')

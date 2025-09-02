@@ -316,16 +316,17 @@
                                                     @php
                                                         $custom = $customization_request->firstWhere(
                                                             'payment_item_id',
-                                                            $payment->id,
+                                                            $item->id,
                                                         );
+
                                                         $customization = Auth::user()
                                                             ->customizationRequests()
-                                                            ->where('payment_item_id', $payment->id)
+                                                            ->where('payment_item_id', $item->id)
                                                             ->where('status', 'pending')
                                                             ->first();
                                                         $customizationApproved = Auth::user()
                                                             ->customizationRequests()
-                                                            ->where('payment_item_id', $payment->id)
+                                                            ->where('payment_item_id', $item->id)
                                                             ->where('status', 'approved')
                                                             ->first();
                                                         if (isset($customizationApproved)) {
@@ -335,14 +336,15 @@
                                                     @endphp
 
                                                     @if ($customization_request && $custom)
-                                                        {{-- @if ($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
+                                                      
                                                         <a class="text-success">
                                                             @if ($customization)
                                                                 <i class="bi bi-check-circle-fill me-1"></i>
-                                                                Customization Submitted, please wait for response!
+                                                                Your Customization is Submitted, our Team will contact you
+                                                                soon!
                                                             @elseif($customizationApproved)
                                                                 <i class="bi bi-check-circle-fill me-1"></i>
-                                                                Customization Approved!
+                                                                 Approved!
                                                             @endif
                                                         </a>
                                                     @else
@@ -372,11 +374,15 @@
                                                     @endif
 
                                                     @if ($item->customizationRequest)
-                                                        <span class="badge bg-primary">
+                                                        {{-- <span class="badge bg-primary">
                                                             <i class="fas fa-pencil-alt"></i>
                                                             <span>Customization</span>
-                                                            {{ ucfirst($item->customizationRequest->status) }}
-                                                        </span>
+                                                            @if ($item->customizationRequest->status == 'rejected')
+                                                                {{ 'pending' }}
+                                                            @else
+                                                                {{ ucfirst($item->customizationRequest->status) }}
+                                                            @endif
+                                                        </span> --}}
 
                                                         <div class="d-flex align-items-center gap-2 mt-2">
                                                             <a href="{{ route('customization.userchat', $item->customizationRequest->id ?? null) }}"

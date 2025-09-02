@@ -131,4 +131,6 @@ class ProfileController extends Controller
     return redirect()->back()->with('success', 'Profile image updated successfully.');
 }
 
+
+
 }

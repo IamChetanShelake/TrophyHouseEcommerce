@@ -23,6 +23,9 @@ use App\Http\Controllers\api\CategoryApiController;
 use App\Http\Controllers\api\wishlistApiController;
 use App\Http\Controllers\api\occProductApiController;
 use App\Http\Controllers\api\subCategoryApiController;
+use App\Http\Controllers\api\orderApiController;
+use App\Http\Controllers\api\customizationApiController;
+
 
 
 Route::get('/testapi', function () {
@@ -47,6 +50,7 @@ Route::get('/product/{id}', [ProductApiController::class, 'showproduct']);
 Route::put('/updateProduct/{id}', [ProductApiController::class, 'updateproduct']);
 Route::delete('/deleteProduct/{id}', [ProductApiController::class, 'deleteProduct']);
 Route::get('/searchProduct', [ProductApiController::class, 'search']);
+Route::get('/products/filter', [ProductApiController::class, 'filterProducts']);
 
 // getProductsByCategoryAndSubcategory-------------------------------------------------
 Route::any('/getProductsByCategoryAndSubcategory', [ProductApiController::class, 'getProductsByCategoryAndSubcategory']);
@@ -77,6 +81,9 @@ Route::post('/getsubcategories', [subCategoryApiController::class, 'getsubcatego
 
 
 
+// orders api----------------------------------------------------------------
+  Route::post('/my-orders', [orderApiController::class, 'myOrders']);
+
 // gallery api----------------------------------------------------------------
 
 Route::get('/gallery', [galleryApicontroller::class, 'gallery']);
@@ -90,6 +97,9 @@ Route::post('/wishlist/remove', [wishlistApiController::class, 'removeFromWishli
 
     Route::post('/editprofile', [ProfileController::class, 'editProfile']);
     Route::post('/getProfile', [ProfileController::class, 'getProfile']);
+    Route::post('/getProfile', [ProfileController::class, 'getProfile']);
+  
+
 //cart-----------------------------------------------------------------------
 // Route::middleware('auth')->group(function () {
 
@@ -143,6 +153,10 @@ Route::post('/wishlist/remove', [wishlistApiController::class, 'removeFromWishli
     Route::post('/addresses/show', [addressApiController::class, 'show']);
     Route::post('/addresses/update', [addressApiController::class, 'update']);
     Route::delete('/addresses/{id}', [addressApiController::class, 'destroy']);
+
+
+    // customizations-------------------------------------------------------- 
+    Route::post('customization/store',[customizationApiController::class,'store']);
     
     
     

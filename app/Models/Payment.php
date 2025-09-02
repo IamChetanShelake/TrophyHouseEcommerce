@@ -17,40 +17,6 @@ class Payment extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function getOrderStatusAttribute()
-    {
-        $statuses = $this->items->pluck('customizationRequest.status')->filter()->toArray();
-
-        if (empty($statuses)) {
-            return 'N/A';
-        }
-
-        if (count(array_unique($statuses)) === 1 && $statuses[0] === 'approved') {
-            return 'approved';
-        }
-
-        if (in_array('pending', $statuses)) {
-            return 'pending';
-        }
-
-        if (in_array('accepted', $statuses)) {
-            return 'accepted';
-        }
-        if (in_array('ready_to_pickup', $statuses)) {
-            return 'ready_to_pickup';
-        }
-        if (in_array('delivered', $statuses)) {
-            return 'delivered';
-        }
-        if (in_array('cancelled', $statuses)) {
-            return 'cancelled';
-        }
-
-    return 'pending';
-
-    }
-
-
     public function paymentItems()
     {
         return $this->hasMany(PaymentItem::class, 'payment_order_id', 'order_id');

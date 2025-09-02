@@ -334,7 +334,7 @@
                 input.setAttribute('name', `colors[]`);
 
                 // Replace + button with − button
-                const buttonCol = newRow.querySelector('.col-1');
+                const buttonCol = newRow.querySelector('.col-2:last-child');
                 buttonCol.innerHTML = `<button type="button" class="btn btn-danger remove-color">−</button>`;
 
                 document.querySelector('.color-wrapper').appendChild(newRow);

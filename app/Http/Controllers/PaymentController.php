@@ -428,6 +428,7 @@ class PaymentController extends Controller
                     'user_id' => $user->id,
                     'product_id' => $cartItem->product_id,
                     'variant_id' => $cartItem->variant_id,
+                    'color' => $cartItem->color,
                     'quantity' => $cartItem->quantity,
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice
@@ -438,6 +439,7 @@ class PaymentController extends Controller
                 'payment_order_id' => $paymentOrderId,
                 'product_id' => $cartItem->product_id,
                 'variant_id' => $cartItem->variant_id,
+                 'color' => $cartItem->color,
                 'quantity' => $cartItem->quantity,
                 'unit_price' => $unitPrice,
                 'total_price' => $totalPrice

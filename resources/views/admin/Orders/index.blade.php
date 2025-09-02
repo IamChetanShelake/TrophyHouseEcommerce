@@ -144,18 +144,18 @@
                                     <td>{{ $p->updated_at?->format('d M Y') ?? $p->created_at?->format('d M Y') }}</td>
                                     {{-- <td>{{ $p->updated_at?->format('d M Y, h:i A') ?? $p->created_at?->format('d M Y, h:i A') }}</td> --}}
                                     <td>
-                                        @if ($p->order_status == 'pending')
+                                        @if ($p->delivery_status == 'pending')
                                             <span class="badge"
-                                                style="background-color: #dcbf00">{{ $p->order_status }}</span>
-                                        @elseif($p->order_status == 'accepted')
+                                                style="background-color: #dcbf00">{{ $p->delivery_status }}</span>
+                                        @elseif($p->delivery_status == 'accepted')
                                             <span class="badge"
-                                                style="background-color: #008616">{{ $p->order_status }}</span>
-                                        @elseif ($p->order_status == 'approved')
+                                                style="background-color: #008616">{{ $p->delivery_status }}</span>
+                                        @elseif ($p->delivery_status == 'approved')
                                             @if ($p->delivery_status === null)
                                                 <button class="badge" style="background-color: #003fab"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#statusModal{{ $p->id }}">
-                                                    {{ $p->order_status }}
+                                                    {{ $p->delivery_status }}
                                                 </button>
                                             @elseif ($p->delivery_status == 'ready_to_pickup')
                                                 {{-- <span class="badge" style="background-color: #a4ffae">{{ $p->delivery_status }}</span> --}}
@@ -192,7 +192,7 @@
                         </tbody>
                     </table>
 
-                    {{ $payments->links() }}
+                    {{-- {{ $payments->links() }} --}}
                 @else
                     <p>No paid orders yet.</p>
                 @endif

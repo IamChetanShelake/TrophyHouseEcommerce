@@ -10,8 +10,7 @@ class CartApiController extends Controller
 {
     public function index(Request $req)
 {
-         public function index(Request $request)
-    {
+
         $user = auth()->user();
 
         // Eager load product, category, subcategory, and variant
@@ -40,7 +39,7 @@ class CartApiController extends Controller
             'cart' => $cartItems
         ]);
     }
-}
+
 
 // public function addToCart()
 // {
