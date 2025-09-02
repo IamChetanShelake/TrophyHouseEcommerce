@@ -85,8 +85,8 @@ Route::post('/getintouch', [WebsiteController::class, 'sendGetintouch'])->name('
 
 Route::any('/PageDetail/{id}', [WebsiteController::class, 'pageDetail'])->name('pageDetail');
 
-
-
+// Public filter for home page price filter
+Route::get('/filterProducts', [ProductController::class, 'filterProducts'])->name('filterProducts');
 
 Route::get('/', [WebsiteController::class, 'Websiteindex'])->name('Websitehome');
 Route::middleware(['auth'])->group(function () {
@@ -289,10 +289,8 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::post('/product/toggle/{id}', [ProductController::class, 'toggleField'])->name('product.toggleField');
     Route::any('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('deleteProductImages');
     Route::post('/productsize/{id}/add-quantity', [ProductController::class, 'addQuantity'])->name('product.addQuantity');
-    // Route::get('/filterProducts', [ProductController::class, 'filterProduct'])->name('filter.products');
-    Route::get('/filterProducts', [ProductController::class, 'filterProducts'])->name('filterProducts');
 
-    
+
 
 
 

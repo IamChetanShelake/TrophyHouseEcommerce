@@ -16,6 +16,88 @@ use Illuminate\Support\Facades\DB;
 
 class ProductApiController extends Controller
 {
+    private function filterProductsByParams(Request $req)
+{
+    $query = Product::query();  // or OccasionProduct if needed
+
+    // Category / Subcategory
+    if ($req->filled('category_id')) {
+        $query->where('category_id', (int) $req->input('category_id'));
+    }
+    if ($req->filled('sub_category_id')) {
+        $query->where('sub_category_id', (int) $req->input('sub_category_id'));
+    }
+
+    // COLORS
+    if ($req->has('color')) {
+        $colors = (array) $req->input('color');
+        $colors = array_values(array_filter(array_map(function ($c) {
+            return mb_strtolower(trim($c));
+        }, $colors)));
+
+        if (!empty($colors)) {
+            $query->whereHas('variants', function ($vq) use ($colors) {
+                $vq->where(function ($w) use ($colors) {
+                    foreach ($colors as $c) {
+                        $w->orWhereRaw('LOWER(color) LIKE ?', ["%{$c}%"]);
+                    }
+                });
+            });
+        }
+    }
+
+    // SIZES
+    if ($req->filled('size')) {
+        $normalizedSize = strtolower(str_replace(' ', '', $req->size));
+        $query->whereHas('variants', function ($q) use ($normalizedSize) {
+            $q->whereRaw("LOWER(REPLACE(size, ' ', '')) = ?", [$normalizedSize]);
+        });
+    }
+
+    // PRICE FILTERS
+    if ($req->filled('min_price') || $req->filled('max_price')) {
+        $min = $req->input('min_price', 0);
+        $max = $req->input('max_price', PHP_INT_MAX);
+
+        $query->whereHas('variants', function ($q) use ($min, $max) {
+            $q->whereBetween('discounted_price', [$min, $max]);
+        });
+    } elseif ($req->has('price_range')) {
+        $ranges = (array) $req->input('price_range');
+        $cleanRanges = [];
+
+        foreach ($ranges as $range) {
+            if (is_string($range) && str_contains($range, '-')) {
+                [$rmin, $rmax] = array_map('trim', explode('-', $range, 2));
+                $rmin = (int) $rmin;
+                $rmax = (int) $rmax;
+                if ($rmax >= $rmin) {
+                    $cleanRanges[] = [$rmin, $rmax];
+                }
+            }
+        }
+
+        if (!empty($cleanRanges)) {
+            $query->whereHas('variants', function ($q) use ($cleanRanges) {
+                $q->where(function ($sub) use ($cleanRanges) {
+                    foreach ($cleanRanges as [$rmin, $rmax]) {
+                        $sub->orWhereBetween('discounted_price', [$rmin, $rmax]);
+                    }
+                });
+            });
+        }
+    }
+
+    // Eager load variants
+    $products = $query->with(['variants'])->get();
+
+    return response()->json([
+        'status' => true,
+        'status_code' => 200,
+        'products' => $products
+    ]);
+}
+
     public function allproducts()
     {
         $allproducts = Product::with('images')->get();
@@ -366,115 +448,147 @@ class ProductApiController extends Controller
         
     }
 
-    public function filterProducts(Request $req)
+   public function filterProducts(Request $req)
 {
-    $query = Product::query()->with(['variants' => function ($q) use ($req) {
-        // also filter variants in eager load so we don’t return unrelated ones
-        if ($req->has('size')) {
-            $sizes = $req->input('size');
-            $sizes = is_array($sizes) ? $sizes : [$sizes];
-            $sizes = array_map(fn($s) => strtolower(str_replace(' ', '', trim($s))), $sizes);
+    // If request has filters, return products
+    if ($req->filled('category_id') || $req->filled('sub_category_id') || $req->filled('color') || $req->filled('size') || $req->filled('min_price') || $req->filled('max_price') || $req->filled('price_range')) {
+        return $this->filterProductsByParams($req);
+    }
+  $categories = \App\Models\AwardCategory::with(['subcategories.products.variants'])
+    ->get()
+    ->map(function ($category) {
+        return [
+            'id' => $category->id,
+            'category' => $category->name,
+            'subcategories' => $category->subcategories->map(function ($sub) {
+                
+                // Collect prices & colors from all products under this subcategory
+                $prices = $sub->products->flatMap(function ($prod) {
+                    return $prod->variants->pluck('price');
+                })->unique()->values();
 
-            $q->whereIn(
-                DB::raw("LOWER(REPLACE(size, ' ', ''))"),
-                $sizes
-            );
-        }
-    }]);
+                $colors = $sub->products->flatMap(function ($prod) {
+                    return $prod->variants->pluck('color')->map(function ($c) {
+                        if (is_string($c)) {
+                            $decoded = json_decode($c, true);
+                            if (json_last_error() === JSON_ERROR_NONE) {
+                                return is_array($decoded) ? $decoded : [$decoded];
+                            }
+                            return [$c]; // fallback if plain string
+                        }
+                        return [$c];
+                    });
+                })->flatten()->filter()->unique()->values();
+
+                return [
+                    'id' => $sub->id,
+                    'subcategory' => $sub->title,
+                    'prices' => $prices,
+                    'colors' => $colors
+                ];
+            })->values()
+        ];
+    });
+
+return response()->json([
+    'status' => true,
+    'status_code' => 200,
+    'categories' => $categories
+]);
+
+    // $query = Product::query();
 
     // Category / Subcategory
-    if ($req->filled('category_id')) {
-        $query->where('category_id', (int) $req->input('category_id'));
-    }
-    if ($req->filled('sub_category_id')) {
-        $query->where('sub_category_id', (int) $req->input('sub_category_id'));
-    }
+    // if ($req->filled('category_id')) {
+    //     $query->where('category_id', (int) $req->input('category_id'));
+    // }
+    // if ($req->filled('sub_category_id')) {
+    //     $query->where('sub_category_id', (int) $req->input('sub_category_id'));
+    // }
 
-    // COLORS
-    if ($req->has('color')) {
-        $colors = $req->input('color');
-        $colors = is_array($colors) ? $colors : [$colors];
-        $colors = array_values(array_filter(array_map(fn($c) => mb_strtolower(trim($c)), $colors)));
+    // // COLORS
+    // if ($req->has('color')) {
+    //     $colors = (array) $req->input('color');
+    //     $colors = array_values(array_filter(array_map(function ($c) {
+    //         return mb_strtolower(trim($c));
+    //     }, $colors)));
 
-        if (!empty($colors)) {
-            $query->whereHas('variants', function ($vq) use ($colors) {
-                $vq->where(function ($w) use ($colors) {
-                    foreach ($colors as $c) {
-                        $w->orWhereRaw('LOWER(color) LIKE ?', ["%{$c}%"]);
-                    }
-                });
-            });
-        }
-    }
+    //     if (!empty($colors)) {
+    //         $query->whereHas('variants', function ($vq) use ($colors) {
+    //             $vq->where(function ($w) use ($colors) {
+    //                 foreach ($colors as $c) {
+    //                     $w->orWhereRaw('LOWER(color) LIKE ?', ["%{$c}%"]);
+    //                 }
+    //             });
+    //         });
+    //     }
+    // }
 
-    // SIZES
-    if ($req->has('size')) {
-        $sizes = $req->input('size');
-        $sizes = is_array($sizes) ? $sizes : [$sizes];
-        $sizes = array_map(fn($s) => strtolower(str_replace(' ', '', trim($s))), $sizes);
+    // // SIZES
+    // $normalizedSize = null;
+    // if ($req->filled('size')) {
+    //     $normalizedSize = strtolower(str_replace(' ', '', $req->size));
 
-        if (!empty($sizes)) {
-            $query->whereHas('variants', function ($vq) use ($sizes) {
-                $vq->whereIn(
-                    DB::raw("LOWER(REPLACE(size, ' ', ''))"),
-                    $sizes
-                );
-            });
-        }
-    }
+    //     // Ensure products have at least one matching variant
+    //     $query->whereHas('variants', function ($q) use ($normalizedSize) {
+    //         $q->whereRaw("LOWER(REPLACE(size, ' ', '')) = ?", [$normalizedSize]);
+    //     });
+    // }
 
-    // PRICE FILTERS
-    $min = $req->input('min_price');
-    $max = $req->input('max_price');
+    // // PRICE FILTERS
+    // $priceFilter = null;
 
-    if ($min !== null || $max !== null) {
-        $min = $min !== null ? (int) $min : 0;
-        $max = $max !== null ? (int) $max : PHP_INT_MAX;
+    // if ($req->filled('min_price') || $req->filled('max_price')) {
+    //     $min = $req->input('min_price', 0);
+    //     $max = $req->input('max_price', PHP_INT_MAX);
 
-        $query->whereHas('variants', function ($vq) use ($min, $max) {
-            $vq->whereBetween('discounted_price', [$min, $max]);
-        });
-    } elseif ($req->has('price_range')) {
-        $ranges = (array) $req->input('price_range');
-        $cleanRanges = [];
+    //     $priceFilter = function ($q) use ($min, $max) {
+    //         return $q->whereBetween('discounted_price', [$min, $max]);
+    //     };
 
-        foreach ($ranges as $range) {
-            if (is_string($range) && str_contains($range, '-')) {
-                [$rmin, $rmax] = array_map('trim', explode('-', $range, 2));
-                $rmin = (int) $rmin;
-                $rmax = (int) $rmax;
-                if ($rmax >= $rmin) {
-                    $cleanRanges[] = [$rmin, $rmax];
-                }
-            }
-        }
+    //     $query->whereHas('variants', $priceFilter);
 
-        if (!empty($cleanRanges)) {
-            $query->whereHas('variants', function ($vq) use ($cleanRanges) {
-                $vq->where(function ($w) use ($cleanRanges) {
-                    foreach ($cleanRanges as [$a, $b]) {
-                        $w->orWhereBetween('discounted_price', [$a, $b]);
-                    }
-                });
-            });
-        }
-    }
+    // } elseif ($req->has('price_range')) {
+    //     $ranges = (array) $req->input('price_range');
+    //     $cleanRanges = [];
 
-    $products = $query->get();
+    //     foreach ($ranges as $range) {
+    //         if (is_string($range) && str_contains($range, '-')) {
+    //             [$rmin, $rmax] = array_map('trim', explode('-', $range, 2));
+    //             $rmin = (int) $rmin;
+    //             $rmax = (int) $rmax;
+    //             if ($rmax >= $rmin) {
+    //                 $cleanRanges[] = [$rmin, $rmax];
+    //             }
+    //         }
+    //     }
 
-    if ($products->isEmpty()) {
-        return response()->json([
-            'status' => false,
-            'status_code' => 404,
-            'message' => 'Products not found',
-        ], 404);
-    }
+    //     if (!empty($cleanRanges)) {
+    //         $priceFilter = function ($q) use ($cleanRanges) {
+    //             $q->where(function ($sub) use ($cleanRanges) {
+    //                 foreach ($cleanRanges as [$rmin, $rmax]) {
+    //                     $sub->orWhereBetween('discounted_price', [$rmin, $rmax]);
+    //                 }
+    //             });
+    //         };
 
-    return response()->json([
-        'status' => true,
-        'status_code' => 200,
-        'products' => $products,
-    ]);
+    //         $query->whereHas('variants', $priceFilter);
+    //     }
+    // }
+
+    // Eager load variants with filters applied
+    // $query->with(['variants' => function ($q) use ($priceFilter, $normalizedSize) {
+    //     $q->select('id', 'product_id', 'color', 'size', 'price', 'discounted_price');
+
+    //     if ($priceFilter) {
+    //         $priceFilter($q);
+    //     }
+    //     if ($normalizedSize) {
+    //         $q->whereRaw("LOWER(REPLACE(size, ' ', '')) = ?", [$normalizedSize]);
+    //     }
+    // }]);
+
+   
 }
 
 

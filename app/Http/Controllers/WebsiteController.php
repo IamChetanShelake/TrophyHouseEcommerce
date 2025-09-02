@@ -48,7 +48,10 @@ class WebsiteController extends Controller
 
     $products = Product::with('variants')
         ->whereHas('variants', function($q) use ($min, $max) {
-            $q->whereBetween('price', [$min, $max]);
+            $q->where(function ($query) use ($min, $max) {
+                $query->whereBetween('discounted_price', [$min, $max])
+                      ->orWhereBetween('price', [$min, $max]);
+            });
         })
         ->get();
 
