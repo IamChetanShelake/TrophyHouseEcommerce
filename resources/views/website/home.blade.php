@@ -726,7 +726,8 @@
                         // Filter & Show Max 6 for Best Sellers
                         let bestCount = 0;
                         bestSellers.forEach(p => {
-                            if (p.dataset.categoryId === selectedCategoryId && p.dataset.isBestSeller === '1' && bestCount < 6) {
+                            if (p.dataset.categoryId === selectedCategoryId && p.dataset.isBestSeller === '1' && bestCount <
+                                6) {
                                 p.style.display = 'block';
                                 bestCount++;
                             }
@@ -781,6 +782,10 @@
                             if (p.dataset.isTopPick === '1' && topCount < 6) {
                                 p.style.display = 'block';
                                 topCount++;
+                                console.log("top pick has products ");
+                            } else {
+                                console.log("top pick dont  have products ");
+
                             }
                         });
 
@@ -790,6 +795,7 @@
                             if (p.dataset.isBestSeller === '1' && bestCount < 6) {
                                 p.style.display = 'block';
                                 bestCount++;
+
                             }
                         });
 
@@ -799,6 +805,7 @@
                             if (p.dataset.isNewArrival === '1' && newCount < 6) {
                                 p.style.display = 'block';
                                 newCount++;
+
                             }
                         });
 
@@ -837,7 +844,7 @@
                     // Show all products on page load
                     window.addEventListener('DOMContentLoaded', () => {
                         showAllProducts();
-                        
+
                         // Show first category subcategories by default
                         const firstTab = document.querySelector('.category-tab');
                         if (firstTab) {
@@ -1053,7 +1060,7 @@
                             <div class="hover-yellow-bg d-none d-sm-block"></div>
                             <div class="row justify-content-center text-center position-relative">
                                 <!-- <div class="row justify-content-center text-center py-5"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
 
                                 <!-- Product Not Found Message -->
                                 <p class="text-center text-danger fw-bold d-none" id="no-products-msg">
@@ -1063,7 +1070,7 @@
 
                                 <!-- Product Card Wrapper -->
                                 <!-- <div class="trophy-card-wrapper position-relative">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
                                 @php $hasTopPick = false; @endphp
                                 @foreach ($products as $prod)
                                     @php
@@ -1078,7 +1085,7 @@
                                             : null;
                                     @endphp
                                     <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product"
-                                        data-category="{{ $prod->category_id }}"
+                                        data-category-id="{{ $prod->category_id }}"
                                         data-subcategory-id="{{ $prod->sub_category_id }}"
                                         data-is-top-pick="{{ $prod->is_top_pick }}"
                                         data-is-best-seller="{{ $prod->is_best_seller }}"
@@ -1143,7 +1150,7 @@
                                 @endforeach
 
                                 <!--
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @if (!$hasTopPick)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @if (!$hasTopPick)
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('no-products-msg').classList.remove('d-none');
@@ -1171,88 +1178,7 @@
                                 }
                             });
                         </script>
-                        <script>
-                            document.addEventListener("DOMContentLoaded", () => {
-                                const categories = document.querySelectorAll(".category-tab");
-                                const subcategories = document.querySelectorAll(".subcategory-tab");
 
-                                const topPicks = document.querySelectorAll(".product-card[data-is-top-pick='1']");
-                                const bestSellers = document.querySelectorAll(".product-card[data-is-best-seller='1']");
-                                const newArrivals = document.querySelectorAll(".product-card[data-is-new-arrival='1']");
-
-
-                                function filterProducts(selectedCategoryId = null, selectedSubcategoryId = null) {
-                                    let topCount = 0,
-                                        bestCount = 0,
-                                        newCount = 0;
-
-                                    // Top Picks
-                                    topPicks.forEach(p => {
-                                        if (
-                                            (!selectedCategoryId || p.dataset.categoryId === selectedCategoryId) &&
-                                            (!selectedSubcategoryId || p.dataset.subcategoryId === selectedSubcategoryId) &&
-                                            topCount < 6
-                                        ) {
-                                            p.style.display = "block";
-                                            topCount++;
-                                        } else {
-                                            p.style.display = "none";
-                                        }
-                                    });
-
-                                    // Best Sellers
-                                    bestSellers.forEach(p => {
-                                        if (
-                                            (!selectedCategoryId || p.dataset.categoryId === selectedCategoryId) &&
-                                            (!selectedSubcategoryId || p.dataset.subcategoryId === selectedSubcategoryId) &&
-                                            bestCount < 6
-                                        ) {
-                                            p.style.display = "block";
-                                            bestCount++;
-                                        } else {
-                                            p.style.display = "none";
-                                        }
-                                    });
-
-                                    // New Arrivals
-                                    newArrivals.forEach(p => {
-                                        if (
-                                            (!selectedCategoryId || p.dataset.categoryId === selectedCategoryId) &&
-                                            (!selectedSubcategoryId || p.dataset.subcategoryId === selectedSubcategoryId) &&
-                                            newCount < 6
-                                        ) {
-                                            p.style.display = "block";
-                                            newCount++;
-                                        } else {
-                                            p.style.display = "none";
-                                        }
-                                    });
-                                }
-
-                                // Handle category click
-                                categories.forEach(cat => {
-                                    cat.addEventListener("click", () => {
-                                        const categoryId = cat.dataset.categoryId;
-                                        filterProducts(categoryId, null);
-                                    });
-                                });
-
-                                // Handle subcategory click
-                                subcategories.forEach(sub => {
-                                    sub.addEventListener("click", () => {
-                                        const categoryId = sub.dataset.categoryId;
-                                        const subcategoryId = sub.dataset.subcategoryId;
-                                        filterProducts(categoryId, subcategoryId);
-                                    });
-                                });
-
-                                // On page load → Show first category products
-                                if (categories.length > 0) {
-                                    const firstCategoryId = categories[0].dataset.categoryId;
-                                    filterProducts(firstCategoryId, null);
-                                }
-                            });
-                        </script>
                         {{-- script to fetch products according to subcat --}}
                         {{-- <script>
                             document.addEventListener('DOMContentLoaded', function() {
@@ -1697,158 +1623,6 @@
         <!--====== End Celebrate the momentss Sections  ======-->
 
 
-        <!--====== Start New Arrivals Section ======-->
-        <section class="trophy-section py-5" style="font-family: 'Times New Roman', serif; background-color:white;">
-            <div class="container-fluid">
-                <p class="text-center mb-5"
-                    style="color: #e63946;font-family: 'Source Sans 3', sans-serif;font-weight: bold;font-size: 24px;">
-                    "New Arrivals"
-                </p>
-
-                <div class="row justify-content-center text-center">
-                    <div class="trophy-card-wrapper position-relative py-5">
-                        <div class="hover-yellow-bg d-none d-sm-block"></div>
-                        <div class="row justify-content-center text-center position-relative">
-                            <!-- <div class="row justify-content-center text-center py-5"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
-
-                            <!-- No Products Message -->
-                            <p class="text-center text-danger fw-bold d-none" id="new-arrival-no-products">
-                                <img src="{{ asset('images/dummyTrophy.jpg') }}" style="width:60px;" alt="">
-                                No Products Found.
-                            </p>
-
-                            <!-- <div class="trophy-card-wrapper position-relative">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="row justify-content-center text-center position-relative" id="new-arrival-wrapper"> -->
-                            @php $hasNewArrivals = false; @endphp
-                            @foreach ($products as $prod)
-                                @php $hasNewArrivals = true; @endphp
-                                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 new-arrival-product"
-                                    data-subcategory-id="{{ $prod->sub_category_id }}"
-                                    data-is-top-pick="{{ $prod->is_top_pick }}"
-                                    data-is-best-seller="{{ $prod->is_best_seller }}"
-                                    data-is-new-arrival="{{ $prod->is_new_arrival }}" style="display: none;">
-                                    <div class="card trophy-card text-center shadow-md" style="height: 100%;">
-                                        <a href="{{ route('productDetail', $prod->id) }}">
-                                            <div class="position-relative">
-                                                <img src="{{ asset('product_images/' . $prod->image) }}" alt="Trophy"
-                                                    class="img-fluid"
-                                                    style="height: 150px; width: 100%; object-fit: contain;padding:10px;" />
-                                                <div class="trophy-hover-bar mt-1 d-flex justify-content-around">
-                                                    <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($prod->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                        data-product-id="{{ $prod->id }}"
-                                                        title="Toggle Wishlist"></i>
-                                                    <form action="{{ route('cart.add') }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="product_id"
-                                                            value="{{ $prod->id }}">
-                                                        <input type="hidden" name="variant_id"
-                                                            value="{{ $prod->variants->first()->id ?? '' }}">
-                                                        <button type="submit" class="add-to-cart-btn">Add To
-
-                                                            Cart</button>
-                                                    </form>
-                                                    <!--<i class="fas fa-share icon-toggle"></i>-->
-                                                    <i class="fas fa-share icon-toggle share-icon"
-                                                        data-share-link="{{ route('productDetail', $prod->id) }}"></i>
-                                                </div>
-                                            </div>
-                                            <div class="card-body pt-2 pb-1">
-                                                <p class="mb-1 product-id">
-                                                    {{ Str::limit($prod->title, 25) }}</p>
-                                                <p class="text-danger fw-bold mb-0">
-                                                    {{ $prod->variants->first()?->price ?? 'No price disclosed' }}
-                                                    Rs
-                                                </p>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-
-                            <!-- @if (!$hasNewArrivals)
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('new-arrival-no-products').classList.remove('d-none');
-        });
-    </script>
-    @endif -->
-                        </div>
-                    </div>
-
-                    <!-- See More Button -->
-                    <div class="text-center mt-4 w-100">
-                        <a href="{{ route('viewproducts') }}" class="see-more-btn">See More</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- <section class="trophy-section py-5" style="font-family: 'Times New Roman', serif; background-color:white">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="container-fluid">
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <p class="text-center mb-5"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               style="color: #e63946;font-family: 'Source Sans 3', sans-serif;font-weight: bold;font-size: 24px;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "New Arrivals"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </p>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="row justify-content-center text-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="trophy-card-wrapper position-relative py-5">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="hover-yellow-bg d-none d-sm-block"></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="row justify-content-center text-center position-relative">
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @foreach ($products as $prod)
-    @if ($prod->is_new_arrival == 1 && $loop->index + 1 <= 6)
-    <div class="col-12 d-flex justify-content-center d-sm-block col-sm-4 col-md-3 col-lg-2 mb-4 new-arrival-product"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     data-subcategory-id="{{ $prod->sub_category_id }}" style="display: none;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="card trophy-card text-center shadow-md" style="height: 100%;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <a href="{{ route('productDetail', $prod->id) }}">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="position-relative">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <img src="{{ asset('product_images/' . $prod->image) }}"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     alt="Trophy" class="img-fluid"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     style="height: 150px; width: 100%; object-fit: contain; margin-bottom: 0;" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="trophy-hover-bar mt-1 d-flex justify-content-around">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($prod->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       data-product-id="{{ $prod->id }}"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       title="Toggle Wishlist"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <form action="{{ route('cart.add') }}" method="POST">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @csrf
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <input type="hidden" name="product_id" value="{{ $prod->id }}">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="submit" class="add-to-cart-btn">Add To Cart</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </form>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-share icon-toggle"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="card-body pt-2 pb-1">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <p class="mb-1 product-id">{{ Str::limit($prod->title, 25) }}</p>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @php
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    $first = $prod->variants->first();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @endphp
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <p class="text-danger fw-bold mb-0">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {{ $first ? $first->price . ' Rs' : 'No price disclosed' }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </p>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </a>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-    @endif
-    @endforeach
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div id="new-arrival-no-products" class="no-products" style="display: none;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            No New Arrival products found for this subcategory.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="text-center mt-4 w-100">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <a href="{{ route('viewproducts') }}" class="see-more-btn">See More</a>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </section> -->
-
-        <!--====== End New Arrivals Section ======-->
 
         <!-- How it Works === -->
         <section class="how-it-works-section">
@@ -1864,28 +1638,7 @@
         <!-- How it Works === -->
 
         <!--====== Start Clients List Section ======-->
-        {{-- <section class="animated-headline-area pt-25" id="about-us"
-            style="background-color: white;padding-bottom: 75px;">
-            <div class="headline-wrap style-one text-center mb-3">
-                <p
-                    style="font-size: 36px; font-weight: 700; color: #e03c3c; font-family: 'Times New Roman', serif; text-transform: none;">
-                    Client List
-                </p>
-            </div>
-            <div class="headline-wrap style-one">
-                <div class="marquee-wrap">
-                    <div class="marquee-inner left d-flex align-items-center">
-                        @foreach ($clients as $client)
-                            <div class="logo-item">
-                                <img src="{{ asset('client_images/' . $client->image) }}" alt="himalaya"
-                                    style="width: 120px; height: 60px;">
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </section> --}}
-        <!--====== Start Clients List Section ======-->
+
         <section class="animated-headline-area pt-25" id="about-us"
             style="background-color: white; padding-bottom: 75px;">
             <div class="headline-wrap style-one text-center mb-3">
@@ -2373,6 +2126,88 @@
 
         <!-- Swiper JS -->
         <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const categories = document.querySelectorAll(".category-tab");
+                const subcategories = document.querySelectorAll(".subcategory-tab");
+
+                const topPicks = document.querySelectorAll(".top-pick-product[data-is-top-pick='1']");
+                const bestSellers = document.querySelectorAll(".best-seller-product[data-is-best-seller='1']");
+                const newArrivals = document.querySelectorAll(".new-arrival-product[data-is-new-arrival='1']");
+
+
+                function filterProducts(selectedCategoryId = null, selectedSubcategoryId = null) {
+                    let topCount = 0,
+                        bestCount = 0,
+                        newCount = 0;
+
+                    // Top Picks
+                    topPicks.forEach(p => {
+                        if (
+                            (!selectedCategoryId || p.dataset.categoryId === selectedCategoryId) &&
+                            (!selectedSubcategoryId || p.dataset.subcategoryId === selectedSubcategoryId) &&
+                            topCount < 6
+                        ) {
+                            p.style.display = "block";
+                            topCount++;
+                        } else {
+                            p.style.display = "none";
+                        }
+                    });
+
+                    // Best Sellers
+                    bestSellers.forEach(p => {
+                        if (
+                            (!selectedCategoryId || p.dataset.categoryId === selectedCategoryId) &&
+                            (!selectedSubcategoryId || p.dataset.subcategoryId === selectedSubcategoryId) &&
+                            bestCount < 6
+                        ) {
+                            p.style.display = "block";
+                            bestCount++;
+                        } else {
+                            p.style.display = "none";
+                        }
+                    });
+
+                    // New Arrivals
+                    newArrivals.forEach(p => {
+                        if (
+                            (!selectedCategoryId || p.dataset.categoryId === selectedCategoryId) &&
+                            (!selectedSubcategoryId || p.dataset.subcategoryId === selectedSubcategoryId) &&
+                            newCount < 6
+                        ) {
+                            p.style.display = "block";
+                            newCount++;
+                        } else {
+                            p.style.display = "none";
+                        }
+                    });
+                }
+
+                // Handle category click
+                categories.forEach(cat => {
+                    cat.addEventListener("click", () => {
+                        const categoryId = cat.dataset.categoryId;
+                        filterProducts(categoryId, null);
+                    });
+                });
+
+                // Handle subcategory click
+                subcategories.forEach(sub => {
+                    sub.addEventListener("click", () => {
+                        const categoryId = sub.dataset.categoryId;
+                        const subcategoryId = sub.dataset.subcategoryId;
+                        filterProducts(categoryId, subcategoryId);
+                    });
+                });
+
+                // On page load → Show first category products
+                if (categories.length > 0) {
+                    const firstCategoryId = categories[0].dataset.categoryId;
+                    filterProducts(firstCategoryId, null);
+                }
+            });
+        </script>
 
         <script>
             document.addEventListener("DOMContentLoaded", function() {
@@ -2696,7 +2531,7 @@
                             let limitedTitle = p.title.substring(0, 25);
                             container.innerHTML += `
                         <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 allProducts"
-                            data-category="${p.category_id}"
+                            data-category-id="${p.category_id}"
                             data-subcategory-id="${p.sub_category_id}"
                             data-price-min="${minPrice}"
                             data-price-max="${maxPrice}"
