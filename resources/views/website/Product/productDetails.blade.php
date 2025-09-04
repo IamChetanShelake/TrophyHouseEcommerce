@@ -2,17 +2,19 @@
 @section('content')
     <section class="container py-4">
         <a href="{{ url()->previous() }}">
-            <p class="text-danger mb-4" style="font-family: 'Times New Roman', Times, serif; font-size:36px; font-weight:700;">
-                < Product details
-            </p>
+            <p class="text-danger mb-4"
+                style="font-family: 'Times New Roman', Times, serif; font-size:36px; font-weight:700;">
+                < Product details </p>
         </a>
 
         <div class="row gy-4">
             <div class="col-md-5 d-flex justify-content-center align-items-start">
                 @if ($product->image)
-                    <img src="{{ asset('product_images/' . $product->image) }}" alt="{{ $product->title }}" class="product-image img-fluid">
+                    <img src="{{ asset('product_images/' . $product->image) }}" alt="{{ $product->title }}"
+                        class="product-image img-fluid">
                 @else
-                    <img src="{{ asset('images/dummyTrophy.jpg') }}" alt="{{ $product->title }}" class="product-image img-fluid">
+                    <img src="{{ asset('images/dummyTrophy.jpg') }}" alt="{{ $product->title }}"
+                        class="product-image img-fluid">
                 @endif
             </div>
 
@@ -21,25 +23,48 @@
                     @php
                         $variants = $product->variants;
                         $firstVariant = $variants->first();
-                        $basePrice = $firstVariant->price ?? 0;
-                        $gst = $basePrice * 0.18;
-                        $finalPrice = $basePrice + $gst;
+
+                        // values we show
+                        $discounted_price = $firstVariant->discounted_price ?? ($firstVariant->price ?? 0); // price shown (excl GST)
+                        $basePrice = $firstVariant->price ?? $discounted_price; // old/original price
+                        $discount = $firstVariant->discount_percentage ?? 0;
+
+                        // tax computed on the discounted price
+                        $gst = $discounted_price * 0.18;
+                        $finalPrice = $discounted_price + $gst;
                     @endphp
 
+
                     <div class="col-md-6">
-                        <p class="fw-bold mb-3" style="font-family: 'Times New Roman', Times, serif; font-size:32px; font-weight:700;">
-                             {{ $product->title }}
+                        <p class="fw-bold mb-3"
+                            style="font-family: 'Times New Roman', Times, serif; font-size:32px; font-weight:700;">
+                            {{ $product->title }}
                         </p>
-                        <p class="text-success mb-4" style="font-family:'Source Sans 3', sans-serif; font-size:16px;">In Stock</p>
+                        <p class="text-success mb-4" style="font-family:'Source Sans 3', sans-serif; font-size:16px;">In
+                            Stock</p>
+
+
+                        <div id="strikeBlock" class="fw-bold mb-2"
+                            style="font-size:16px;  {{ $discount > 0 ? '' : 'display:none;' }}">
+                            ₹<span id="oldPrice"
+                                style="text-decoration:line-through;">{{ number_format($basePrice, 2) }}</span>
+                            &nbsp;
+                            <span id="discountPercent" style="color:red;">(- {{ $discount }} % )</span>
+                        </div>
+
+
+
 
                         <!-- Price + GST Display -->
                         <p class="mb-0" style="font-family:'Source Sans 3', sans-serif; font-size:20px;">
-                            <strong>₹<span id="basePrice">{{ number_format($basePrice, 2) }}</span></strong>
+                            <strong>₹<span id="basePrice">{{ number_format($discounted_price, 2) }}</span></strong>
                             <small class="text-muted">(excl. 18% GST)</small>
                         </p>
+
                         <p class="mb-3" style="font-family:'Source Sans 3', sans-serif; font-size:20px;">
                             ₹<span id="finalPrice">{{ number_format($finalPrice, 2) }}</span>
-                            <small class="text-muted">(incl. ₹<span id="gstAmount">{{ number_format($gst, 2) }}</span> GST @18%)</small>
+                            <small class="text-muted">(incl. ₹<span id="gstAmount">{{ number_format($gst, 2) }}</span> GST
+                                @18%)</small>
                         </p>
 
                         <!-- Sizes -->
@@ -47,18 +72,59 @@
                         <div class="d-flex flex-wrap mb-3" id="sizeOptions">
                             @foreach ($variants as $variant)
                                 <div class="size-option {{ $loop->first ? 'active' : '' }}"
-                                    onclick="selectSize(this, '{{ $variant->size }}', {{ $variant->price }}, {{ $variant->id }})">
+                                    onclick="selectSize(
+         this,
+         '{{ $variant->size }}',
+         {{ $variant->discounted_price ?? ($variant->price ?? 0) }},   // discountedPrice (shown)
+         {{ $variant->discount_percentage ?? 0 }},                    // discountPercent
+         {{ $variant->price ?? 0 }},                                  // originalPrice (old price)
+         {{ $variant->id }}
+     )">
                                     {{ $variant->size }} - inch
                                 </div>
                             @endforeach
                         </div>
+
+
+
+
+                        <!-- Colors -->
+                        @php
+                            $colors = $product->variants
+                                ->pluck('color') // take color column from all variants
+                                ->map(function ($c) {
+                                    // decode JSON if stored like ["silver","gold"]
+                                    return is_string($c) && str_starts_with($c, '[') ? json_decode($c, true) : $c;
+                                })
+                                ->flatten() // flatten arrays if any
+                                ->unique() // remove duplicates
+                                ->filter() // remove null/empty
+                                ->values(); // reset keys
+                        @endphp
+
+                        @if ($colors->isNotEmpty())
+                            <p class="mb-3"><strong>Colors</strong></p>
+                            <div class="d-flex flex-wrap mb-3" id="colorOptions">
+                                @foreach ($colors as $color)
+                                    <div class="color-option {{ $loop->first ? 'active' : '' }} p-2"
+                                        onclick="selectColor(this, '{{ $color }}')">
+                                        {{ $color }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+
+
+
                     </div>
 
                     <!-- Quantity & Cart -->
                     <div class="col-md-6">
                         <div class="price-box position-relative">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <p class="mb-0"><strong>Size: <span id="selectedSize">{{ $firstVariant->size ?? 'N/A' }}</span> - inch</strong></p>
+                                <p class="mb-0"><strong>Size: <span
+                                            id="selectedSize">{{ $firstVariant->size ?? 'N/A' }}</span> - inch</strong></p>
                             </div>
 
                             <div class="d-flex align-items-center justify-content-start mb-3">
@@ -67,9 +133,12 @@
                                 <!--    <span id="quantity">1</span>-->
                                 <!--    <button class="btn btn-outline ms-1" type="button" onclick="changeQty(1)">+</button>-->
                                 <!--</div>-->
-                                <button class="btn wishlist-btn"  data-product-id="{{ $product->id }}">
-                                    <span class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"  data-product-id="{{ $product->id }}" title="Toggle Wishlist" onclick="toggleWishlist(this)"></span>
-                                   
+                                <button class="btn wishlist-btn" data-product-id="{{ $product->id }}">
+                                    <span
+                                        class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
+                                        data-product-id="{{ $product->id }}" title="Toggle Wishlist"
+                                        onclick="toggleWishlist(this)"></span>
+
                                     Add to Wishlist
                                 </button>
                             </div>
@@ -86,7 +155,22 @@
                                 <form action="{{ route('cart.add') }}" method="POST" id="cartForm">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <input type="hidden" name="variant_id" id="selectedVariantId" value="{{ $firstVariant->id ?? '' }}">
+                                    <input type="hidden" name="variant_id" id="selectedVariantId"
+                                        value="{{ $firstVariant->id ?? '' }}">
+                                    @php
+                                        $firstVariant = $product->variants->first();
+                                        $firstColor = '';
+
+                                        if ($firstVariant && $firstVariant->color) {
+                                            $decoded = is_string($firstVariant->color)
+                                                ? json_decode($firstVariant->color, true)
+                                                : $firstVariant->color;
+                                            $firstColor = is_array($decoded) ? $decoded[0] ?? '' : $decoded;
+                                        }
+                                    @endphp
+
+                                    <input type="hidden" name="color" id="selectedColor" value="{{ $firstColor }}">
+
                                     <input type="hidden" name="quantity" id="cartQuantity" value="1">
                                     <button type="submit" class="btn-size-style">Add to Cart</button>
                                 </form>
@@ -113,9 +197,28 @@
         </div>
     </section>
 
+    <section class="images-section py-5" style="font-family: 'Times New Roman', serif;">
+        <div class="container">
+
+            <div class="d-flex justify-content-start">
+                @forelse ($product->images as $img)
+                    <div class=" mx-3">
+                        <a href="{{ asset('product_images/' . $img->image) }}" target="_blank">
+                            <img src="{{ asset('product_images/' . $img->image) }}" class="img-fluid image-thumb"
+                                style="height:100px;">
+                        </a>
+                    </div>
+                @empty
+                    <p class="ms-3">No additional images found.</p>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
     <section class="trophy-section py-5" style="font-family: 'Times New Roman', serif;">
         <div class="container-fluid">
-            <h3 class="mb-4" style="font-family: 'Source Sans 3', sans-serif; font-size: 24px; font-weight: bold; color: #333;padding-left:40px">
+            <h3 class="mb-4"
+                style="font-family: 'Source Sans 3', sans-serif; font-size: 24px; font-weight: bold; color: #333;padding-left:40px">
                 Similar products you might like</h3>
             <div class="row justify-content-center text-center">
                 <div class="trophy-card-wrapper position-relative" style="padding: 0px 50px 0px 50px;">
@@ -128,28 +231,52 @@
                                             <div class="card trophy-card zoom-on-hover text-center shadow-sm">
                                                 <a href="{{ route('productDetail', $similarProduct->id) }}">
                                                     <div class="position-relative">
-                                                        <img src="{{ asset('product_images/' . $similarProduct->image) }}" alt="{{ $similarProduct->title }}"
-                                                            class="img-fluid" style="max-height: 150px; width: 100%; object-fit: contain;padding:10px;" />
+                                                        <img src="{{ asset('product_images/' . $similarProduct->image) }}"
+                                                            alt="{{ $similarProduct->title }}" class="img-fluid"
+                                                            style="max-height: 150px; width: 100%; object-fit: contain;padding:10px;" />
                                                         <div class="trophy-hover-bar">
-                                                            
+
                                                             <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($similarProduct->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                            data-product-id="{{ $similarProduct->id }}"
-                                                            title="Toggle Wishlist"></i>
-                                                            
-                                                    
+                                                                data-product-id="{{ $similarProduct->id }}"
+                                                                title="Toggle Wishlist"></i>
+
+
                                                             <form action="{{ route('cart.add') }}" method="POST">
                                                                 @csrf
-                                                                <input type="hidden" name="product_id" value="{{ $similarProduct->id }}">
-                                                                 <input type="hidden" name="variant_id" value="{{ $similarProduct->variants->first()->id ?? '' }}">
-                                                                <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                                <input type="hidden" name="product_id"
+                                                                    value="{{ $similarProduct->id }}">
+                                                                <input type="hidden" name="variant_id"
+                                                                    value="{{ $similarProduct->variants->first()->id ?? '' }}">
+                                                                @php
+                                                                    $firstVariant = $product->variants->first();
+                                                                    $firstColor = '';
+
+                                                                    if ($firstVariant && $firstVariant->color) {
+                                                                        $decoded = is_string($firstVariant->color)
+                                                                            ? json_decode($firstVariant->color, true)
+                                                                            : $firstVariant->color;
+                                                                        $firstColor = is_array($decoded)
+                                                                            ? $decoded[0] ?? ''
+                                                                            : $decoded;
+                                                                    }
+                                                                @endphp
+
+                                                                <input type="hidden" name="color" id="selectedColor"
+                                                                    value="{{ $firstColor }}">
+                                                                <button type="submit" class="add-to-cart-btn">Add To
+                                                                    Cart</button>
                                                             </form>
-                                                            <i class="fas fa-share icon-toggle"></i>
+                                                            {{-- <i class="fas fa-share icon-toggle"></i> --}}
+                                                            <i class="fas fa-share icon-toggle share-icon"
+                                                                data-share-link="{{ route('productDetail', $similarProduct->id) }}"
+                                                                style="cursor: pointer;">
                                                         </div>
                                                     </div>
                                                     <div class="card-body py-2">
                                                         <p class="mb-1 product-id">{{ $similarProduct->title }}</p>
                                                         <p class="mb-0 text-danger fw-bold">
-                                                            {{ $similarProduct->variants->first()->discounted_price ?? 'N/A' }} Rs
+                                                            {{ $similarProduct->variants->first()->discounted_price ?? 'N/A' }}
+                                                            Rs
                                                         </p>
                                                     </div>
                                                 </a>
@@ -170,17 +297,41 @@
                                     <div class="card trophy-card zoom-on-hover text-center shadow-sm">
                                         <a href="{{ route('productDetail', $similarProduct->id) }}">
                                             <div class="position-relative">
-                                                <img src="{{ asset('product_images/' . $similarProduct->image) }}" alt="{{ $similarProduct->title }}"
-                                                    class="img-fluid" style="max-height: 150px; width: 100%; object-fit: contain;padding:10px;" />
+                                                <img src="{{ asset('product_images/' . $similarProduct->image) }}"
+                                                    alt="{{ $similarProduct->title }}" class="img-fluid"
+                                                    style="max-height: 150px; width: 100%; object-fit: contain;padding:10px;" />
                                                 <div class="trophy-hover-bar">
                                                     <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($similarProduct->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                        data-product-id="{{ $similarProduct->id }}" title="Toggle Wishlist"></i>
+                                                        data-product-id="{{ $similarProduct->id }}"
+                                                        title="Toggle Wishlist"></i>
                                                     <form action="{{ route('cart.add') }}" method="POST">
                                                         @csrf
-                                                        <input type="hidden" name="product_id" value="{{ $similarProduct->id }}">
-                                                        <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                        <input type="hidden" name="product_id"
+                                                            value="{{ $similarProduct->id }}">
+                                                        @php
+                                                            $firstVariant = $product->variants->first();
+                                                            $firstColor = '';
+
+                                                            if ($firstVariant && $firstVariant->color) {
+                                                                $decoded = is_string($firstVariant->color)
+                                                                    ? json_decode($firstVariant->color, true)
+                                                                    : $firstVariant->color;
+                                                                $firstColor = is_array($decoded)
+                                                                    ? $decoded[0] ?? ''
+                                                                    : $decoded;
+                                                            }
+                                                        @endphp
+
+                                                        <input type="hidden" name="color" id="selectedColor"
+                                                            value="{{ $firstColor }}">
+                                                        <button type="submit" class="add-to-cart-btn">Add To
+                                                            Cart</button>
                                                     </form>
-                                                    <i class="fas fa-share icon-toggle"></i>
+                                                    {{-- <i class="fas fa-share icon-toggle"></i> --}}
+                                                    <i class="fas fa-share icon-toggle share-icon"
+                                                        data-share-link="{{ route('productDetail', $similarProduct->id) }}"
+                                                        style="cursor: pointer;">
+                                                    </i>
                                                 </div>
                                             </div>
                                             <div class="card-body py-2">
@@ -204,24 +355,64 @@
 
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
-        let currentBasePrice = parseFloat("{{ $firstVariant->price ?? 0 }}");
+        let currentBasePrice = parseFloat("{{ $discounted_price ?? 0 }}");
+
         let currentQuantity = 1;
 
-        function selectSize(element, size, price, variantId) {
+        function selectSize(element, size, discountedPrice, discountPercent, originalPrice, variantId) {
             document.querySelectorAll('.size-option').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
-            currentBasePrice = parseFloat(price);
+            // price we show is the discounted price (excl GST)
+            currentBasePrice = parseFloat(discountedPrice) || 0;
+
             const gst = currentBasePrice * 0.18;
             const finalPrice = currentBasePrice + gst;
 
+            // update visible numbers
             document.getElementById('selectedSize').innerText = size;
             document.getElementById('basePrice').innerText = currentBasePrice.toFixed(2);
             document.getElementById('gstAmount').innerText = gst.toFixed(2);
             document.getElementById('finalPrice').innerText = finalPrice.toFixed(2);
-            document.getElementById('totalPrice').innerText = (finalPrice * currentQuantity).toFixed(2);
+            document.getElementById('totalPrice').innerText = finalPrice.toFixed(2);
+
+            // update hidden variant
             document.getElementById('selectedVariantId').value = variantId;
+
+            // update strike-through block
+            const strikeBlock = document.getElementById('strikeBlock');
+            const oldPriceEl = document.getElementById('oldPrice');
+            const discountEl = document.getElementById('discountPercent');
+
+            if (discountPercent > 0) {
+                if (strikeBlock) strikeBlock.style.display = '';
+                if (oldPriceEl) oldPriceEl.innerText = (parseFloat(originalPrice) || 0).toFixed(2);
+                if (discountEl) discountEl.innerText = `(- ${discountPercent} % )`;
+            } else {
+                if (strikeBlock) strikeBlock.style.display = 'none';
+            }
         }
+
+
+        function selectColor(element, color) {
+            // remove active from all color buttons
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('active'));
+
+            // set active on the clicked one
+            element.classList.add('active');
+
+            // optional: store selected color in hidden input (if you want to send to cart)
+            let colorInput = document.getElementById('selectedColor');
+            if (!colorInput) {
+                colorInput = document.createElement('input');
+                colorInput.type = 'hidden';
+                colorInput.name = 'color';
+                colorInput.id = 'selectedColor';
+                document.getElementById('cartForm').appendChild(colorInput);
+            }
+            colorInput.value = color;
+        }
+
 
         function changeQty(delta) {
             currentQuantity = Math.max(1, currentQuantity + delta);
@@ -233,7 +424,7 @@
             document.getElementById('totalPrice').innerText = (finalPrice * currentQuantity).toFixed(2);
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const wishlistButtons = document.querySelectorAll('.wishlist-toggle');
             const wishlistCountElement = document.querySelector('.wishlist-count');
 
@@ -250,54 +441,58 @@
                         return;
                     }
 
-                    const url = isWishlisted ? '/wishlist/get-item/' + productId : '{{ route('wishlist.add') }}';
+                    const url = isWishlisted ? '/wishlist/get-item/' + productId :
+                        '{{ route('wishlist.add') }}';
                     const method = isWishlisted ? 'GET' : 'POST';
-                    const body = isWishlisted ? null : JSON.stringify({ product_id: productId });
+                    const body = isWishlisted ? null : JSON.stringify({
+                        product_id: productId
+                    });
 
                     fetch(url, {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        },
-                        body: body,
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.success) {
-                            alert(data.message || 'An error occurred.');
-                            return Promise.reject(new Error('Request failed'));
-                        }
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: body,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert(data.message || 'An error occurred.');
+                                return Promise.reject(new Error('Request failed'));
+                            }
 
-                        if (isWishlisted) {
-                            const wishlistItemId = data.wishlist_item_id;
-                            return fetch('{{ route('wishlist.remove', ['id' => ':id']) }}'.replace(':id', wishlistItemId), {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                },
-                            }).then(response => response.json());
-                        } else {
-                            this.classList.add('text-danger');
-                            updateWishlistCount(data.count);
-                            alert(data.message);
-                            return Promise.resolve(data);
-                        }
-                    })
-                    .then(data => {
-                        if (isWishlisted && data.success) {
-                            this.classList.remove('text-danger');
-                            updateWishlistCount(data.count);
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        if (error.message !== 'Request failed') {
-                            console.error('Error:', error);
-                            alert('An error occurred while updating your wishlist.');
-                        }
-                    });
+                            if (isWishlisted) {
+                                const wishlistItemId = data.wishlist_item_id;
+                                return fetch('{{ route('wishlist.remove', ['id' => ':id']) }}'
+                                    .replace(':id', wishlistItemId), {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        },
+                                    }).then(response => response.json());
+                            } else {
+                                this.classList.add('text-danger');
+                                updateWishlistCount(data.count);
+                                alert(data.message);
+                                return Promise.resolve(data);
+                            }
+                        })
+                        .then(data => {
+                            if (isWishlisted && data.success) {
+                                this.classList.remove('text-danger');
+                                updateWishlistCount(data.count);
+                                alert(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            if (error.message !== 'Request failed') {
+                                console.error('Error:', error);
+                                alert('An error occurred while updating your wishlist.');
+                            }
+                        });
                 });
             });
 
@@ -318,10 +513,26 @@
                         prevEl: '.swiper-button-prev',
                     },
                     breakpoints: {
-                        320: { slidesPerView: 2, spaceBetween: 10, slidesPerGroup: 1 },
-                        576: { slidesPerView: 3, spaceBetween: 15, slidesPerGroup: 1 },
-                        768: { slidesPerView: 3, spaceBetween: 20, slidesPerGroup: 1 },
-                        992: { slidesPerView: 4, spaceBetween: 20, slidesPerGroup: 1 }
+                        320: {
+                            slidesPerView: 2,
+                            spaceBetween: 10,
+                            slidesPerGroup: 1
+                        },
+                        576: {
+                            slidesPerView: 3,
+                            spaceBetween: 15,
+                            slidesPerGroup: 1
+                        },
+                        768: {
+                            slidesPerView: 3,
+                            spaceBetween: 20,
+                            slidesPerGroup: 1
+                        },
+                        992: {
+                            slidesPerView: 4,
+                            spaceBetween: 20,
+                            slidesPerGroup: 1
+                        }
                     }
                 });
             }
@@ -329,7 +540,8 @@
     </script>
 
     <style>
-        .size-option {
+        .size-option,
+        .color-option {
             cursor: pointer;
             padding: 4px 1px;
             /*padding: 8px 16px;*/
@@ -338,11 +550,14 @@
             border-radius: 11px;
             transition: all 0.3s;
         }
-        .size-option.active {
+
+        .size-option.active,
+        .color-option.active {
             background-color: rgba(255, 197, 197, 0.5);
             color: #e63946;
             border-color: #e63946;
         }
+
         .btn-outline {
             border: 1px solid #ddd;
             background: rgba(235, 234, 234, 1);
@@ -350,6 +565,7 @@
             cursor: pointer;
             border-radius: 20px;
         }
+
         .btn-size-style {
             background-color: white;
             color: rgba(222, 35, 0, 1);
@@ -358,6 +574,7 @@
             border-radius: 10px;
             cursor: pointer;
         }
+
         .cart-toast {
             display: none;
             position: fixed;
@@ -369,15 +586,18 @@
             border-radius: 4px;
             z-index: 1000;
         }
+
         .cart-toast.show {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .cart-toast img {
             width: 24px;
             height: 24px;
         }
+
         .swiper-button-prev,
         .swiper-button-next {
             background-size: contain;
@@ -386,12 +606,15 @@
             width: 40px;
             height: 40px;
         }
+
         .swiper-button-prev {
             background-image: url('{{ asset('website/assets/images/homePage/carousal-left.png') }}');
         }
+
         .swiper-button-next {
             background-image: url('{{ asset('website/assets/images/homePage/carousal-right.png') }}');
         }
+
         .swiper-button-prev::after,
         .swiper-button-next::after {
             content: '';

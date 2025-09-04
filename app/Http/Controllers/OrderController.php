@@ -48,7 +48,7 @@ class OrderController extends Controller
         $payments = $q->latest('updated_at')->paginate(20);
         // return $payments;
         // foreach ($payments as $p) {
-        //     echo $p->delivery_status;
+        //      $p->order_status;
         // }
         return view('admin.Orders.index', compact('payments'));
     }
@@ -138,7 +138,7 @@ class OrderController extends Controller
             ->where('customer_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         //approval checks
         // Add is_approved property dynamically
         foreach ($payments as $payment) {
@@ -163,7 +163,28 @@ class OrderController extends Controller
         $customizationRequest = CustomizationRequest::with('designer')
             ->where('user_id', Auth::id())
             ->first();
-          
+                                                        $custom = $customization_request->firstWhere(
+                                                            'payment_item_id',
+                                                            $payment->id,
+                                                        );
+
+                                                        $customization = Auth::user()
+                                                            ->customizationRequests()
+                                                            ->where('payment_item_id', $payment->id)
+                                                            ->where('status', 'pending')
+                                                            ->first();
+                                                        
+                                                        $customizationApproved = Auth::user()
+                                                            ->customizationRequests()
+                                                            ->where('payment_item_id', $payment->id)
+                                                            ->where('status', 'approved')
+                                                            ->first();
+                                                        if (isset($customizationApproved)) {
+                                                        } else {
+                                                            $customizationApproved = null;
+                                                        }
+                                                
+       
         return view('website.orders.my-orders', array_merge($commonData, [
             'payments' => $payments,
             'customization_request' => $customization_request,
@@ -317,7 +338,7 @@ class OrderController extends Controller
             'items.designer',
             'items.customizationRequest.messages',
         ])->where('order_id', $orderId)->firstOrFail();
-
+            // return $payment;
         // Get designer IDs who have already accepted this order
         $acceptedDesignerIds = $payment->items
             ->pluck('customizationRequest')

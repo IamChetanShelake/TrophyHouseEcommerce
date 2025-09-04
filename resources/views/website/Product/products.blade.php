@@ -333,6 +333,22 @@
                                                     <input type="hidden" name="product_id" value="{{ $prod->id }}">
                                                     <input type="hidden" name="variant_id"
                                                         value="{{ $prod->variants->first()->id ?? '' }}">
+                                                    @php
+                                                        $firstVariant = $prod->variants->first();
+                                                        $firstColor = '';
+
+                                                        if ($firstVariant && $firstVariant->color) {
+                                                            $decoded = is_string($firstVariant->color)
+                                                                ? json_decode($firstVariant->color, true)
+                                                                : $firstVariant->color;
+                                                            $firstColor = is_array($decoded)
+                                                                ? $decoded[0] ?? ''
+                                                                : $decoded;
+                                                        }
+                                                    @endphp
+
+                                                    <input type="hidden" name="color" id="selectedColor"
+                                                        value="{{ $firstColor }}">
                                                     <button type="submit" class="add-to-cart-btn">Add To Cart</button>
                                                 </form>
                                                 <i class="fas fa-share icon-toggle"></i>
@@ -373,7 +389,7 @@
 
             let selectedSubcategory = null;
 
-            // ✅ पेज लोड वर active बटण ओळखा
+            // पेज लोड वर active बटण ओळखा
             const activeButton = document.querySelector('.subcategory-btn.active');
             if (activeButton) {
                 selectedSubcategory = activeButton.getAttribute('data-subcategory-id');
@@ -585,107 +601,7 @@
             }
         });
     </script>
-    {{--  <script>
-        let currentPage = 1;
-        let itemsPerPage = 16;
 
-        function getVisibleProducts() {
-            return Array.from(document.querySelectorAll('.product-box'))
-                .filter(p => p.style.display !== 'none');
-        }
-
-        function showPage(page) {
-            const products = getVisibleProducts();
-            const start = (page - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-
-            products.forEach((prod, index) => {
-                prod.style.display = (index >= start && index < end) ? 'block' : 'none';
-            });
-        }
-
-        function createPagination() {
-            const products = getVisibleProducts();
-            const totalPages = Math.ceil(products.length / itemsPerPage);
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-
-            if (totalPages <= 1) return;
-
-            for (let i = 1; i <= totalPages; i++) {
-                let btn = document.createElement('button');
-                btn.textContent = i;
-                btn.classList.add('page-btn');
-                if (i === currentPage) btn.classList.add('active');
-                btn.addEventListener('click', () => {
-                    currentPage = i;
-                    showPage(currentPage);
-                    document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                });
-                pagination.appendChild(btn);
-            }
-        }
-
-        function filterProducts() {
-            const selectedCategories = Array.from(categoryInputs).filter(cb => cb.checked).map(cb => cb.value);
-            const selectedPrices = Array.from(priceInputs).filter(cb => cb.checked).map(cb => cb.value);
-            const selectedColors = Array.from(colorInputs).filter(cb => cb.checked).map(cb => cb.value.toLowerCase());
-            const selectedSizes = Array.from(sizeInputs).filter(cb => cb.checked).map(cb => cb.value.toLowerCase());
-
-            let anyVisible = false;
-
-            products.forEach(prod => {
-                const catId = prod.getAttribute('data-category-id');
-                const subcatId = prod.getAttribute('data-subcategory-id');
-                const price = parseFloat(prod.getAttribute('data-price'));
-                const colors = prod.getAttribute('data-colors').toLowerCase().split(',');
-                const sizes = prod.getAttribute('data-sizes').toLowerCase().split(',');
-
-                const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(catId);
-                const matchSubcategory = !selectedSubcategory || selectedSubcategory === subcatId;
-                const matchPrice = selectedPrices.length === 0 || selectedPrices.some(range => {
-                    const [min, max] = parsePriceRange(range);
-                    return price >= min && price <= max;
-                });
-                const matchColor = selectedColors.length === 0 || selectedColors.some(c => colors.includes(c));
-                const matchSize = selectedSizes.length === 0 || selectedSizes.some(selectedLabel => {
-                    return sizes.some(actualSize => {
-                        const sizeNum = parseFloat(actualSize);
-                        if (selectedLabel === 'below 5 inch') return sizeNum < 5;
-                        if (selectedLabel === '5-8 inch') return sizeNum >= 5 && sizeNum <= 8;
-                        if (selectedLabel === '8-10 inch') return sizeNum > 8 && sizeNum <= 10;
-                        if (selectedLabel === '10-12 inch') return sizeNum > 10 && sizeNum <= 12;
-                        if (selectedLabel === '12-15 inch') return sizeNum > 12 && sizeNum <= 15;
-                        if (selectedLabel === '15-18 inch') return sizeNum > 15 && sizeNum <= 18;
-                        if (selectedLabel === '18-24 inch') return sizeNum > 18 && sizeNum <= 24;
-                        if (selectedLabel === '24-36 inch') return sizeNum > 24 && sizeNum <= 36;
-                        if (selectedLabel === '36 inch and above') return sizeNum > 36;
-                        return false;
-                    });
-                });
-
-                if (matchCategory && matchSubcategory && matchPrice && matchColor && matchSize) {
-                    prod.style.display = 'block';
-                    anyVisible = true;
-                } else {
-                    prod.style.display = 'none';
-                }
-            });
-
-            document.getElementById('no-products-msg').classList.toggle('d-none', anyVisible);
-
-            // ✅ Filter झाल्यावर pagination refresh करा
-            currentPage = 1;
-            createPagination();
-            showPage(currentPage);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            createPagination();
-            showPage(currentPage);
-        });
-    </script>  --}}
     <script>
         let products = Array.from(document.querySelectorAll('.product-item'));
         let perPage = 16;

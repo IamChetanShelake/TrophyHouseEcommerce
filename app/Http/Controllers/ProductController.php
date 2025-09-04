@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Occasion;
+use App\Models\OccasionProduct;
 use App\Models\SubCategory;
 use App\Models\productImage;
 use Illuminate\Http\Request;
@@ -475,4 +476,132 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Quantity updated successfully!');
     }
+
+    public function filterProducts(Request $req)
+{
+    $query = Product::with('variants');
+
+    if ($req->has('category_id')) {
+        $query->where('category_id', $req->category_id);
+    }
+
+    if ($req->has('color')) {
+        $query->whereHas('variants', function($q) use ($req) {
+            $q->where('color', $req->color);
+        });
+    }
+
+    if ($req->has('size')) {
+        $query->whereHas('variants', function($q) use ($req) {
+            $q->where('size', $req->size);
+        });
+    }
+
+    if ($req->has('price_range')) {
+        $ranges = (array) $req->price_range; // multiple ho to array me convert karlo
+        $query->whereHas('variants', function($q) use ($ranges) {
+            foreach ($ranges as $range) {
+                [$min, $max] = explode('-', $range);
+                $q->orWhereBetween('price', [(int) $min, (int) $max]);
+            }
+        });
+    }
+
+    $products = $query->get();
+
+    if ($products->isEmpty()) {
+    return response()->json([
+        'status' => false,
+        'status_code' => 404,
+        'message' => 'Products not found'
+    ], 404);
+}
+
+    return response()->json([
+        'status' => true,
+        'status_code' => 200,
+        'products' => $products
+    ]);
+}
+
+public function filterProduct(Request $req)
+{
+    $query = Product::with('variants');
+
+    // Category filter
+    if ($req->filled('category_id')) {
+        $query->where('category_id', $req->category_id);
+    }
+
+    // Subcategory filter
+    if ($req->filled('subcategory_id')) {
+        $query->where('sub_category_id', $req->subcategory_id);
+    }
+
+    // Color filter
+    if ($req->filled('color')) {
+        $colors = (array) $req->color;
+        $query->whereHas('variants', function ($q) use ($colors) {
+            foreach ($colors as $color) {
+                $q->orWhere('color', 'LIKE', "%$color%");
+            }
+        });
+    }
+
+    // Size filter
+    if ($req->filled('size')) {
+        $query->whereHas('variants', function ($q) use ($req) {
+            $q->where('size', $req->size);
+        });
+    }
+
+    // Price range filter
+    if ($req->filled('price_range')) {
+        $ranges = (array) $req->price_range;
+        $query->whereHas('variants', function ($q) use ($ranges) {
+            foreach ($ranges as $range) {
+                [$min, $max] = explode('-', $range);
+                $q->orWhereBetween('price', [(int) $min, (int) $max]);
+            }
+        });
+    }
+
+    $products = $query->get();
+
+    if ($products->isEmpty()) {
+        return response()->json([
+            'status' => false,
+            'status_code' => 404,
+            'message' => 'Products not found'
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'status_code' => 200,
+        'products' => $products
+    ]);
+}
+
+public function filterByPrice(Request $request)
+{
+    $min = (int) $request->get('min', 0);
+    $max = (int) $request->get('max', 100000);
+
+    // Saare products jinke kisi bhi variant ka discounted_price is range me hai
+    $products = Product::whereHas('variants', function($q) use ($min, $max) {
+            $q->whereBetween('price', [$min, $max]);
+        })
+        ->with(['variants' => function($q) use ($min, $max) {
+            $q->whereBetween('price', [$min, $max]);
+        }])
+        ->get();
+
+    $html = view('partials.top_picks_cards', compact('products'))->render();
+
+    return response()->json(['html' => $html]);
+}
+
+
+
 }

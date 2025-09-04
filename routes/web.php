@@ -1,10 +1,21 @@
 <?php
 
+use App\Models\User;
+use App\Models\PaymentItem;
 use App\Models\SubCategory;
+use Illuminate\Http\Request;
 use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\ValidUser;
+use Illuminate\Support\Facades\DB;
+use App\Models\Customization_image;
+use App\Models\CustomizationMessage;
+use App\Models\CustomizationRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TeamController;
@@ -12,35 +23,27 @@ use App\Http\Controllers\AboutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\WebsiteController;
+
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DesignerController;
+
+use App\Http\Controllers\MaterialController;
+
 use App\Http\Controllers\OccasionController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\MaterialTypeController;
 use App\Http\Controllers\CustomizationController;
 use App\Http\Controllers\OccasionProductController;
-use App\Http\Controllers\PaymentController;
-
 use App\Http\Controllers\Admin\PaymentAdminController;
-
-use App\Models\CustomizationRequest;
-use App\Models\PaymentItem;
-use App\Models\CustomizationMessage;
-
-use App\Models\Customization_image;
-
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 
 
 
@@ -85,7 +88,10 @@ Route::post('/getintouch', [WebsiteController::class, 'sendGetintouch'])->name('
 
 Route::any('/PageDetail/{id}', [WebsiteController::class, 'pageDetail'])->name('pageDetail');
 
-
+// Public filter for home page price filter
+Route::get('/filterProducts', [ProductController::class, 'filterProducts'])->name('filterProducts');
+// route for price dropdown in home blade
+Route::get('/products/filter', [ProductController::class, 'filterByPrice'])->name('products.filter');
 
 Route::get('/', [WebsiteController::class, 'Websiteindex'])->name('Websitehome');
 Route::middleware(['auth'])->group(function () {
@@ -190,6 +196,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/address/update/{id}', [WebsiteController::class, 'updateAddress'])->name('address.update');
     Route::delete('/address/delete/{id}', [WebsiteController::class, 'deleteAddress'])->name('address.delete');
     Route::post('/address/set-default/{id}', [WebsiteController::class, 'setDefaultAddress'])->name('address.setDefault');
+    Route::get('/filter-products', [WebsiteController::class, 'filterProducts']);
+
 
     //profile---------------------------------
     Route::get('/edit-profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -290,6 +298,9 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::post('/productsize/{id}/add-quantity', [ProductController::class, 'addQuantity'])->name('product.addQuantity');
 
 
+
+
+
     //excel upload------------------------------------------------------------------
     Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
 
@@ -382,6 +393,23 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('editGallery/{id?}', [GalleryController::class, 'edit'])->name('gallery.edit');
     Route::put('update-Gallery/{id?}', [GalleryController::class, 'update'])->name('gallery.update');
     Route::delete('delete-Gallery/{id?}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
+
+    //material type
+    Route::get('/materialtype', [MaterialTypeController::class, 'index'])->name('admin.materialtype.index');
+    Route::get('/materialtype/create', [MaterialTypeController::class, 'create'])->name('admin.materialtype.create');
+    Route::post('/materialtype/store', [MaterialTypeController::class, 'store'])->name('admin.materialtype.store');
+    Route::get('/materialtype/{id}/edit', [MaterialTypeController::class, 'edit'])->name('admin.materialtype.edit');
+    Route::put('/materialtype/{id}', [MaterialTypeController::class, 'update'])->name('admin.materialtype.update');
+    Route::delete('/materialtype/{id}', [MaterialTypeController::class, 'destroy'])->name('admin.materialtype.destroy');
+
+
+    //material
+    Route::get('/material', [MaterialController::class, 'index'])->name('admin.material.index');
+    Route::get('/material/create', [MaterialController::class, 'create'])->name('admin.material.create');
+    Route::post('/material/store', [MaterialController::class, 'store'])->name('admin.material.store');
+    Route::get('/material/{id}/edit', [MaterialController::class, 'edit'])->name('admin.material.edit');
+    Route::put('/material/{id}', [MaterialController::class, 'update'])->name('admin.material.update');
+    Route::delete('/material/{id}', [MaterialController::class, 'destroy'])->name('admin.material.destroy');
 });
 
 Route::get('/clean-cache', function () {

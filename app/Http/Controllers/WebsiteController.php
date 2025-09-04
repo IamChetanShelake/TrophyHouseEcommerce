@@ -41,6 +41,24 @@ class WebsiteController extends Controller
             '36 inch and above',
         ];
     }
+    public function filterProducts(Request $req)
+{
+    $min = $req->min_price ?? 0;
+    $max = $req->max_price ?? 100000;
+
+    $products = Product::with('variants')
+        ->whereHas('variants', function($q) use ($min, $max) {
+            $q->where(function ($query) use ($min, $max) {
+                $query->whereBetween('discounted_price', [$min, $max])
+                      ->orWhereBetween('price', [$min, $max]);
+            });
+        })
+        ->get();
+
+    return response()->json(['products' => $products]);
+}
+
+
     public function Websiteindex()
     {
         $products = Product::with('variants')->get();
@@ -55,8 +73,13 @@ class WebsiteController extends Controller
         $aboutus = About::all();
         $pages = Page::all();
         
+        $minPrice = ProductVariant::whereNotNull('discounted_price')->min('discounted_price') ?? 0;
+$maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_price') ?? 5000;
+        // foreach($products as $prod){
+        //    echo $prod->variants->count()."<br>";
+        // }
 
-        return view('website.home', compact('pages', 'testimonials', 'aboutus', 'clients', 'products','occasions', 'occProducts', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count'));
+         return view('website.home', compact('pages', 'testimonials', 'aboutus', 'clients', 'products','occasions', 'occProducts', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count','minPrice','maxPrice'));
     }
 
     public function contact()
@@ -230,17 +253,6 @@ class WebsiteController extends Controller
             ->values()
             ->toArray();
 
-
-        // For sizes
-        // $sizes = ProductVariant::pluck('size') // Get all size values (DECIMAL)
-        //     ->map(function ($size) {
-        //         // Format with 2 decimal places and append 'inch'
-        //         return number_format($size, 2, '.', '') . ' inch';
-        //     })
-        //     ->filter() // Remove nulls
-        //     ->unique() // Remove duplicates
-        //     ->sort()   // Sort ascending
-        //     ->values();
         $sizes = $this->getSizeLabels();
         return view('website.Product.products', compact('wishlist_count', 'cart_items', 'pages', 'products', 'wishlist_count', 'categories', 'allPrices', 'priceRanges', 'allColors', 'sizes', 'subcategoryId'));
     }
@@ -298,26 +310,18 @@ class WebsiteController extends Controller
     {
          $request->validate([
             'quantity' => 'required|integer|min:1|max:200',
-            'variant_id' => 'required|exists:product_variants,id'
+            'variant_id' => 'required|exists:product_variants,id',
+            'color'=>'nullable|string',
         ]);
 
         $cartItem = cartItem::where('id', $id)->where('user_id', Auth::id())->firstOrFail(); // Updated to cartItem
         $cartItem->update([
             'quantity' => $request->quantity,
             'variant_id' => $request->variant_id,
+            'color' => $request->color,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Cart updated successfully']);
-        // $request->validate([
-        //     'quantity' => 'required|integer|min:1|max:10'
-        // ]);
-
-        // $cartItem = cartItem::where('id', $id)->where('user_id', Auth::id())->firstOrFail(); // Updated to cartItem
-        // $cartItem->update([
-        //     'quantity' => $request->quantity
-        // ]);
-
-        // return response()->json(['success' => true, 'message' => 'Cart updated successfully']);
     }
 
     public function address()

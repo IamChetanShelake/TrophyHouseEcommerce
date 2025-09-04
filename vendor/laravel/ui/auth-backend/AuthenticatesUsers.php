@@ -70,7 +70,7 @@ trait AuthenticatesUsers
     protected function validateLogin(Request $request)
     {
         $request->validate([
-            $this->username() => 'required|string',
+            'mobile' => 'required',
             'password' => 'required|string',
         ]);
     }
@@ -144,7 +144,7 @@ trait AuthenticatesUsers
     {
         throw ValidationException::withMessages([
             $this->username() => [trans('auth.failed')],
-        ]);
+        ]);     
     }
 
     /**
@@ -154,7 +154,7 @@ trait AuthenticatesUsers
      */
     public function username()
     {
-        return 'email';
+        return 'mobile';
     }
 
     /**

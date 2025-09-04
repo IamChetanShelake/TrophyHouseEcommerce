@@ -57,16 +57,17 @@
 
 
                         <div class="variant-wrapper">
+                           
                             <div class="variant-row row gx-2 mb-2 align-items-center">
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input type="number" name="variants[0][size]" class="form-control" placeholder="Size"
                                         min="0" step="0.01" required>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input type="number" name="variants[0][price]" class="form-control price"
                                         min="0" step="0.01" placeholder="Price" required>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input type="number" name="variants[0][discount_percentage]"
                                         class="form-control discount" min="0" max="100" step="0.01"
                                         placeholder="Discount %" value="">
@@ -75,17 +76,22 @@
                                     <input type="number" name="variants[0][discounted_price]"
                                         class="form-control discounted_price" placeholder="Final Price" readonly>
                                 </div>
-                                <div class="col-1">
+                                <div class="col-2">
+                                    <input type="number" name="variants[0][quantity]" class="form-control" min="0"
+                                        step="1" placeholder="Quantity" value="{{ old('variants.0.quantity') }}"
+                                        required>
+                                </div>
+                                <div class="col-2">
                                     <button type="button" class="btn btn-success add-variant">+</button>
                                 </div>
                             </div>
                         </div>
                         <div class="color-wrapper">
                             <div class="color-row row gx-2 mb-2 align-items-center">
-                                <div class="col-11">
+                                <div class="col-10">
                                     <input type="text" name="colors[]" class="form-control color" placeholder="color">
                                 </div>
-                                <div class="col-1">
+                                <div class="col-2">
                                     <button type="button" class="btn btn-success add-color">+</button>
                                 </div>
                             </div>
@@ -161,9 +167,17 @@
                                 </span>
                             </div>
                         </div>
+                        
+                         <div class="form-group">
+                              <label for="cdr_file">Upload CDR File</label>
+                             <input type="file" name="cdr_file"  class="form-control">
+                             
+                              
+                             @error('cdr_file')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
                         <div class="col-4">
-
-
                             <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
                             {{-- <button class="btn btn-light">Cancel</button> --}}
                         </div>
@@ -246,7 +260,7 @@
                 });
 
                 // Replace the add button with remove button
-                const buttonCol = newRow.querySelector('.col-1');
+                const buttonCol = newRow.querySelector('.col-2:last-child');
                 buttonCol.innerHTML = `<button type="button" class="btn btn-danger remove-variant">−</button>`;
 
                 document.querySelector('.variant-wrapper').appendChild(newRow);
@@ -281,7 +295,7 @@
                 input.setAttribute('name', `colors[]`);
 
                 // Replace + button with − button
-                const buttonCol = newRow.querySelector('.col-1');
+                const buttonCol = newRow.querySelector('.col-2');
                 buttonCol.innerHTML = `<button type="button" class="btn btn-danger remove-color">−</button>`;
 
                 document.querySelector('.color-wrapper').appendChild(newRow);

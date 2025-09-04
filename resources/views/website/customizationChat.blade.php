@@ -2,7 +2,6 @@
 
 @section('content')
     <style>
-        /* Container for the chat page */
         .chat-container {
             max-width: 800px;
             margin: 50px auto;
@@ -15,7 +14,6 @@
             overflow: hidden;
         }
 
-        /* Chat header */
         .chat-header {
             background: #667eea;
             color: white;
@@ -26,7 +24,6 @@
             justify-content: space-between;
         }
 
-        /* Chat messages panel */
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -38,7 +35,6 @@
             display: flex;
             flex-direction: column;
             margin-bottom: 15px;
-            /* max-width: 70%; */
         }
 
         .message.user {
@@ -74,7 +70,6 @@
             margin-top: 3px;
         }
 
-        /* Chat input panel */
         .chat-input {
             display: flex;
             padding: 10px 15px;
@@ -124,13 +119,10 @@
 
         .zoom-image:hover {
             transform: scale(2.5);
-            /* zoom level */
             z-index: 999;
             position: absolute;
             top: -50px;
-            /* adjust so zoom doesn't push layout */
             left: 70px;
-            /* adjust position to show enlarged image */
             border: 2px solid #333;
             background: #fff;
         }
@@ -138,9 +130,8 @@
 
     <div class="chat-container">
         <div class="chat-header">
-
-            <a href="{{ route('my.orders') }}" style="color:white; text-decoration:none; font-size:14px;"> <- Back to My
-                    Orders</a>
+            <a href="{{ route('my.orders') }}" style="color:white; text-decoration:none; font-size:14px;">
+                <- Back to My Orders </a>
                     Chatting with - {{ $customization->designer->name ?? 'Designer' }}
                     <small>
                         Product:
@@ -148,9 +139,8 @@
                         @php
                             $product = $customization->cartItem?->product ?? $customization->paymentItem?->product;
                         @endphp
-
                         @if ($product && $product->image)
-                            <img src="{{ asset('product_images/' . $product->image) }}" alt="Product Image" calss="zoom-image"
+                            <img src="{{ asset('product_images/' . $product->image) }}" alt="Product Image" class="zoom-image"
                                 style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
                         @endif
                     </small>
@@ -166,12 +156,12 @@
                                 <img src="{{ asset('customizations/' . $msg->attachment) }}" alt="Attachment"
                                     width="120">
                             </a>
-                            <div class="mt-1">
+                            <div class="mt-1 approval-actions" id="actions-{{ $msg->id }}">
                                 @if ($msg->is_approved == 1)
                                     <span class="badge bg-success">Approved</span>
                                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn"
                                         data-id="{{ $msg->id }}">Cancel</button>
-                                @elseif($msg->is_approved == 0)
+                                @else
                                     <button class="btn btn-sm btn-outline-success approve-btn"
                                         data-id="{{ $msg->id }}">Approve</button>
                                 @endif
@@ -180,7 +170,6 @@
                     </div>
                     <div class="message-info">
                         {{ $msg->sender->name ?? 'Designer' }}
-                        {{-- {{ $msg->sent_at->format('d M, h:i A') }} --}}
                         @if ($msg->cartItem && $msg->cartItem->product)
                             <br><strong>Product:</strong> {{ $msg->cartItem->product->title }}
                         @endif
@@ -202,15 +191,14 @@
     </div>
 
     <script>
-        // Scroll to bottom
         var chatBox = document.getElementById("chatBox");
-        if (chatBox) {
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
 
-        document.querySelectorAll('.approve-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                let messageId = this.dataset.id;
+        // Event delegation: one listener for approve & cancel
+        document.getElementById("chatBox").addEventListener("click", function(e) {
+            // Approve
+            if (e.target.classList.contains("approve-btn")) {
+                let messageId = e.target.dataset.id;
                 if (!confirm('Are you sure you want to approve this image?')) return;
 
                 fetch(`/customization/approve-image/${messageId}`, {
@@ -223,71 +211,44 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            // Replace button with approved badge + cancel button
-                            this.outerHTML =
-                                `<span class="badge bg-success">Approved</span>
-                                  <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>`;
-                            attachCancelListener(); // reattach cancel listener
+                            // Reset ALL other approvals to "Approve" button
+                            document.querySelectorAll(".approval-actions").forEach(div => {
+                                div.innerHTML =
+                                    `<button class="btn btn-sm btn-outline-success approve-btn" data-id="${div.id.replace('actions-','')}">Approve</button>`;
+                            });
+
+                            // Set THIS one as approved
+                            let container = document.getElementById(`actions-${messageId}`);
+                            container.innerHTML = `
+                                <span class="badge bg-success">Approved</span>
+                                <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>
+                            `;
                         }
                     });
-            });
+            }
+
+            // Cancel
+            if (e.target.classList.contains("cancel-approve-btn")) {
+                let messageId = e.target.dataset.id;
+                if (!confirm('Are you sure you want to cancel approval?')) return;
+
+                fetch(`/customization/cancel-approval/${messageId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            let container = document.getElementById(`actions-${messageId}`);
+                            container.innerHTML = `
+                                <button class="btn btn-sm btn-outline-success approve-btn" data-id="${messageId}">Approve</button>
+                            `;
+                        }
+                    });
+            }
         });
-
-        // Attach cancel button listener
-        function attachCancelListener() {
-            document.querySelectorAll('.cancel-approve-btn').forEach(btn => {
-                btn.removeEventListener('click', cancelHandler); // avoid duplicates
-                btn.addEventListener('click', cancelHandler);
-            });
-        }
-
-        function cancelHandler() {
-            let messageId = this.dataset.id;
-            if (!confirm('Are you sure you want to cancel approval?')) return;
-
-            fetch(`/customization/cancel-approval/${messageId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        // Replace the whole parent container (badge + cancel button)
-                        let parent = this.parentElement;
-                        parent.innerHTML =
-                            `<button class="btn btn-sm btn-outline-success approve-btn" data-id="${messageId}">Approve</button>`;
-
-                        // reattach approve listener
-                        parent.querySelector('.approve-btn').addEventListener('click', function() {
-                            let messageId = this.dataset.id;
-                            if (!confirm('Are you sure you want to approve this?')) return;
-
-                            fetch(`/customization/approve-image/${messageId}`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                        'Accept': 'application/json'
-                                    }
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        parent.innerHTML =
-                                            `<span class="badge bg-success">Approved</span>
-                                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>`;
-                                        attachCancelListener();
-                                    }
-                                });
-                        });
-                    }
-                });
-        }
-
-
-        // Initial attach
-        attachCancelListener();
     </script>
 @endsection

@@ -19,21 +19,26 @@ class CartItemController extends Controller
 {
     public function addToCart(Request $request)
     {
+        
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'variant_id' => 'required|exists:product_variants,id',
+            'color' => 'nullable|string',
         ]);
 
         $userId = auth()->id();
         $productId = $request->product_id;
         $variantId = $request->variant_id;
+         $color = $request->color;
 
         // Check if the same product + variant already exists in the cart
         $cartItem = CartItem::where('user_id', $userId)
             ->where('product_id', $productId)
             ->where('variant_id', $variantId)
+              ->when($color, fn($q) => $q->where('color', $color)) 
             ->first();
-
+      
         if ($cartItem) {
             // If already in cart with same size, just increment quantity
             $cartItem->quantity += 1;
@@ -48,9 +53,10 @@ class CartItemController extends Controller
                 'user_id' => $userId,
                 'product_id' => $productId,
                 'variant_id' => $variantId,
+                'color' => $color,
                 'quantity' => 1
             ]);
-
+            
             if ($addedToCart) {
                 return redirect()->back()->with('success', 'Product added to cart!');
             } else {
@@ -59,53 +65,17 @@ class CartItemController extends Controller
         }
     }
 
-// public function addToCart(Request $request)
-//     {
-//         $request->validate([
-//             'product_id' => 'required|exists:products,id',
-            
-//         ]);
 
-
-//         $userId = auth()->id();
-//         $productId = $request->product_id;
-//         $product = Product::with('variants')->find($productId);
-//         $variantId =  $product->variants()->first()->id;
-//         // Check if item already exists in the cart
-//         $cartItem = CartItem::where('user_id', $userId)
-//             ->where('product_id', $productId)
-//             ->first();
-
-//         if ($cartItem) {
-//             // Increment quantity if already in cart
-//             $cartItem->quantity += 1;
-//             if ($cartItem->save()) {
-
-//                 return redirect()->back()->with('success', 'Product added to cart!');
-//             } else {
-//                 return redirect()->back()->with('error', 'Something went wrong, please add Product to cart again!');
-//             }
-//         } else {
-//             // Create new cart item
-//             $addedToCart = CartItem::create([
-//                 'user_id' => $userId,
-//                 'product_id' => $productId,
-//                 'variant_id' => $variantId,
-//                 'quantity' => 1
-//             ]);
-//             if ($addedToCart) {
-
-//                 return redirect()->back()->with('success', 'Product added to cart!');
-//             } else {
-//                 return redirect()->back()->with('error', 'Something went wrong, please add Product to cart again!');
-//             }
-//         }
-
-//     }
 
     public function productDetail($id)
     {
         $product = Product::with('variants')->find($id);
+      // Decode colors for each variant
+$product->variants->map(function ($variant) {
+    $variant->color = is_string($variant->color) ? json_decode($variant->color, true) : $variant->color;
+    return $variant;
+});
+
         $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
         $similarProducts = Product::where('category_id', $product->category_id)
             ->where('sub_category_id', $product->sub_category_id)
@@ -113,7 +83,8 @@ class CartItemController extends Controller
             ->get();
              $categories = AwardCategory::with('products')->get();
          $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem  
-          $pages = Page::all();   
+          $pages = Page::all();  
+          
         return view('website.Product.productDetails', compact('pages','product','wishlist_count','similarProducts','categories','cart_items'));
 
     }
@@ -343,8 +314,10 @@ if (is_file($imagePath)) {
         
         
         $customization->save();
+
+        //delivery status 
+        $orderItem->delivery_status = 'pending';
         // Loop through images and store each
-        
         foreach ($request->file('images') as $image) {
             
             $imageName = time() . rand(1, 1000) . '.' . $image->extension();

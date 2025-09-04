@@ -28,9 +28,15 @@
                             View Products
                         </button>
                     </td>
-                    <td>{{ ucfirst($firstReq->status) }}</td>
                     <td>
-                        @if ($firstReq->status == 'pending')
+                        @if ($firstReq->status == 'rejected')
+                            {{ 'pending' }}
+                        @else
+                            {{ ucfirst($firstReq->status) }}
+                        @endif
+                    </td>
+                    <td>
+                        @if ($firstReq->status == 'pending' || ($firstReq->status == 'rejected' && $firstReq->designer_id != Auth::id()))
                             <div style="display: flex; gap: 5px;">
                                 <form method="POST" action="{{ route('customization.accept', $orderId) }}"
                                     style="display: inline;">

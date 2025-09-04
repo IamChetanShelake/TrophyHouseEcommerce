@@ -48,7 +48,8 @@
         }
 
         .variant-select,
-        .quantity-select {
+        .quantity-select,
+        .color-select {
             max-width: 180px;
             background-color: #E8E8E8 !important;
         }
@@ -71,9 +72,7 @@
         <div class="container my-5">
 
 
-
             <!--customization-modal-->
-            <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel"
             <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
@@ -127,7 +126,6 @@
                         <p class="text-center text-danger">Your cart is empty.</p>
                     @else
                         @foreach ($cartItems as $cart)
-                            {{-- @if ($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
                             @php
                                 $allCustomized = $cartItems->every(function ($item) {
                                     return $item->customizationRequest !== null;
@@ -161,17 +159,6 @@
                                                         would you like to personalize them with photos and text? </center>
                                                 </b>
                                             </div>
-                                            <!-- Modal Body -->
-                                            <div class="modal-body">
-                                                <center>
-                                                    <h5 class="modal-title" style="color: #DE2300;"
-                                                        id="customizationConfirmModalLabel">Confirmation </h5>
-                                                </center>
-                                                <b>
-                                                    <center> you have customization remaning for your other cart trophy,
-                                                        would you like to personalize them with photos and text? </center>
-                                                </b>
-                                            </div>
 
                                             <!-- Modal Footer -->
                                             {{-- <div class="row">
@@ -184,30 +171,6 @@
             <a href="{{ route('addressPage') }}" class="btn btn-secondary col-4">No</a>
         
       </div> --}}
-                                            <div class="modal-footer justify-content-center">
-                                                <div class="d-flex gap-3">
-                                                    <button type="button" class="btn  px-5" data-bs-dismiss="modal"
-                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">Yes</button>
-                                                    <a href="{{ route('addressPage') }}" class="btn px-5"
-                                                        style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;">No</a>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="modal fade" id="customizationConfirmModal" tabindex="-1"
-                                    aria-labelledby="customizationConfirmModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content border border-2" style="border: 2px solid #FBCB07;">
-
-                                            <!-- Modal Header -->
-                                            <div class="modal-header">
-
-                                                <button type="button" style="color: #DE2300;" class="btn-close"
-                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
                                             <div class="modal-footer justify-content-center">
                                                 <div class="d-flex gap-3">
                                                     <button type="button" class="btn  px-5" data-bs-dismiss="modal"
@@ -276,8 +239,6 @@
                                     <div class="col-3 col-md-2 text-center">
                                         <img src="{{ asset('product_images/' . $cart->product->image) }}"
                                             class="trophy-img" alt="{{ $cart->product->title }}">
-                                        <img src="{{ asset('product_images/' . $cart->product->image) }}"
-                                            class="trophy-img" alt="{{ $cart->product->title }}">
                                     </div>
 
                                     <!-- Details Column -->
@@ -295,8 +256,6 @@
                                                 </i>
                                                 <i class="bi bi-trash text-danger"
                                                     style="font-size: 18px; cursor: pointer;"
-                                                <i class="bi bi-trash text-danger"
-                                                    style="font-size: 18px; cursor: pointer;"
                                                     onclick="submitDeleteForm({{ $cart->id }})"></i>
                                                 <form id="delete-cart-form-{{ $cart->id }}"
                                                     action="{{ route('cart.delete', $cart->id) }}" method="POST"
@@ -309,11 +268,10 @@
 
                                         <!-- Variant and Quantity -->
                                         <div class="d-flex flex-wrap gap-2 mb-2">
+                                            {{-- Size/Variant Select --}}
                                             <select class="form-select form-select-sm variant-select"
                                                 onchange="updateCartItem({{ $cart->id }})">
                                                 @foreach ($cart->product->variants as $variant)
-                                                    <option value="{{ $variant->id }}"
-                                                        data-price="{{ $variant->price }}"
                                                     <option value="{{ $variant->id }}"
                                                         data-price="{{ $variant->price }}"
                                                         data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
@@ -323,6 +281,34 @@
                                                     </option>
                                                 @endforeach
                                             </select>
+
+
+                                            @php
+                                                $colors = collect();
+                                                foreach ($cart->product->variants as $variant) {
+                                                    $decoded = json_decode($variant->color, true);
+                                                    if (is_array($decoded)) {
+                                                        $colors = $colors->merge($decoded); // merge all colors
+                                                    } elseif (!empty($variant->color)) {
+                                                        $colors->push($variant->color); // single string
+                                                    }
+                                                }
+                                                $colors = $colors->unique()->values();
+                                            @endphp
+
+                                            <select class="form-select form-select-sm color-select"
+                                                style=" background-color: #E8E8E8 !important;"
+                                                onchange="updateCartItem({{ $cart->id }})">
+                                                @foreach ($colors as $color)
+                                                    <option value="{{ $color }}"
+                                                        {{ $cart->color == $color ? 'selected' : '' }}>
+                                                        {{ ucfirst($color) }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+
+
+                                            {{-- Quantity --}}
                                             <div class="d-flex align-items-center px-3 py-1"
                                                 style="gap: 15px;border: 1px solid rgba(255, 214, 206, 1);">
                                                 <button class="btn btn-outline me-1" type="button"
@@ -334,57 +320,29 @@
                                                 <button class="btn btn-outline ms-1" type="button"
                                                     onclick="changeQty({{ $cart->id }}, 1)">+</button>
                                             </div>
-                                            <!--
-                                                                        <div class="input-group" style="width: 120px;">
-                                                                        <button class="btn btn-outline-secondary" type="button"
-                                                                         onclick="changeQty({{ $cart->id }}, -1)">−</button>
-
-                                                                         <input type="number"
-                                                                         id="quantity-{{ $cart->id }}"
-                                                                         class="form-control text-center"
-                                                                         value="{{ $cart->quantity }}"
-                                                                         min="1"
-                                                                         max="200"
-                                                                         onchange="updateCartItem({{ $cart->id }})">
-
-                                                                          <button class="btn btn-outline-secondary" type="button"
-                                                                          onclick="changeQty({{ $cart->id }}, 1)">+</button>
-                                                                        </div> -->
-
-
                                         </div>
+
 
                                         <!-- Price Output -->
                                         @php
                                             $variant = $cart->variant ?? $cart->product->variants->first();
                                             $originalprice = $variant->price;
-                                            $originalprice = $variant->price;
                                             $price = $variant->discounted_price ?? $variant->price;
-
 
                                             $gst = $price * 0.18;
                                             $finalPrice = ($price + $gst) * $cart->quantity;
                                         @endphp
 
-
                                         <div class="fw-bold mb-2 price-output" style="font-size: 16px;">
                                             ₹{{ number_format($price, 2) }} <small class="text-muted"></small>
                                         </div>
                                         @if ($originalprice > $price)
-                                            <div class="fw-bold mb-2 price-output"
+                                            <div class="fw-bold mb-2 price-output strike-price"
                                                 style="font-size: 16px;text-decoration: line-through;">
                                                 ₹{{ number_format($originalprice, 2) }}
-
-                                                <small class="text-muted"></small>
-                                            </div>
-                                        @if ($originalprice > $price)
-                                            <div class="fw-bold mb-2 price-output"
-                                                style="font-size: 16px;text-decoration: line-through;">
-                                                ₹{{ number_format($originalprice, 2) }}
-
-                                                <small class="text-muted"></small>
                                             </div>
                                         @endif
+
 
 
                                         @php
@@ -417,22 +375,23 @@
                                                 @endif
                                             </a>
                                         @else
-                                            <a href="javascript:void(0);"
+                                            {{-- <a href="javascript:void(0);"
                                                 onclick="openCustomizationModal({{ $cart->id }})"
                                                 style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
-                                                class="text-primary">
-                                            <a href="javascript:void(0);"
-                                                onclick="openCustomizationModal({{ $cart->id }})"
-                                                style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
-                                                class="text-primary">
+                                                class="text-primary btn">
                                                 <i class="bi bi-pencil-square me-1"></i>
                                                 Customize with your own message or name.
-                                            </a>
-                                        @endif
+                                            </a> --}}
+                                            <button type="button" onclick="openCustomizationModal({{ $cart->id }})"
+                                                style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;border-radius:4px;padding:5px 10px;font-size:14px;display:inline-flex;align-items:center;"
+                                                onmouseover="this.style.backgroundColor='#FFA6A6';"
+                                                onmouseout="this.style.backgroundColor='#FFE3E3';" class="btn">
+                                                <i class="bi bi-pencil-square me-1"></i>
+                                                Customize with your own message or name.
+                                            </button>
                                         @endif
                                     </div>
                                 </div>
-
 
                                 <!--requirement start -->
                                 @php
@@ -446,53 +405,6 @@
                                         ->first();
 
                                 @endphp
-                                @php
-                                    $hasAcceptedCustomization = \App\Models\CustomizationRequest::where(
-                                        'cart_item_id',
-                                        $cart->id,
-                                    )
-                                        ->where(function ($query) {
-                                            $query->where('status', 'accepted')->orWhere('status', 'completed');
-                                        })
-                                        ->first();
-
-                                @endphp
-
-                                @if ($hasAcceptedCustomization && $hasAcceptedCustomization->designer)
-                                    <!-- Completed Customizations Section -->
-                                    <div class="container my-5 customization-section">
-                                        {{-- <h4>Completed Customizations</h4> --}}
-                                        @foreach (Auth::user()->customizationRequests()->where('status', ['accepted', 'completed'])->get() as $request)
-                                            @if ($request->cart_item_id === $cart->id)
-                                                <div class="card mb-3">
-                                                    <div class="card-header" data-bs-toggle="collapse"
-                                                        data-bs-target="#collapse{{ $request->id }}">
-                                                        <strong>Your request has been accepted</strong>
-                                                        <!--{{ $request->description }}-->
-                                                    </div>
-                                                    <div class="collapse show" id="collapse{{ $request->id }}">
-                                                        <div class="card-body">
-                                                            <!--@if ($request->final_image)
-    -->
-                                                            <!--    <p><strong>Final Image:</strong></p>-->
-                                                            <!--    <img src="{{ base_path('customization_images/' . $request->final_image) }}" alt="Final Image" style="max-width: 200px;">-->
-                                                        <!--@else-->
-                                                            <!--    <p>No image available.</p>-->
-                                                            <!--
-    @endif-->
-                                                            <form id="approveForm{{ $request->id }}"
-                                                                action="{{ route('customization.approve', $request->id) }}"
-                                                                method="POST" style="display:inline;">
-                                                                @csrf
-                                                                <button type="submit"
-                                                                    class="btn btn-success btn-sm me-2">Approve</button>
-                                                            </form>
-
-                                                            @if ($request->designer_id)
-                                                                <a href="{{ route('customization.userchat', $request->id) }}"
-                                                                    class="btn btn-outline-primary btn-sm mt-2">
-                                                                    💬 Chat with Assigned Designer
-                                                                </a>
 
                                 @if ($hasAcceptedCustomization && $hasAcceptedCustomization->designer)
                                     <!-- Completed Customizations Section -->
@@ -583,13 +495,9 @@
                         @endforeach
                     @endif
 
-
                 </div>
 
-
                 <!--requirement ed -->
-
-
 
 
 
@@ -599,25 +507,7 @@
                         <p class="text-danger fw-bold mb-3 text-center"
                             style="font-size: 20px; font-weight:700; font-family: 'Source Sans 3', sans-serif">
                             My Order
-                            {{-- @php
-                                    $platform_fee = 20; // Configurable platform fee
-                                    $shipping_charges = 0; // Configurable shipping charges
-                                    $total_mrp = 0;
-                                    $total_discount = 0;
-                                    foreach ($cartItems as $cart) {
-                                        $variant = $cart->variant ?? $cart->product->variants->first();
-                                        $price = $variant->price ?? 0;
-                                        $discounted_price = $variant->discounted_price ?? ($variant->price ?? 0);
-                                        $total_mrp += $price * $cart->quantity;
-                                        $total_discount += ($price - $discounted_price) * $cart->quantity;
-                                    }
-                                    $total_amount =
-                                        $total_mrp -
-                                        $total_discount +
-                                        ($total_mrp - $total_discount) * 0.18 +
-                                        $platform_fee +
-                                        $shipping_charges;
-                                @endphp --}}
+
                         </p>
                         <p class="fw-bold">Price Details </p>
                         <div class="d-flex justify-content-between">
@@ -683,6 +573,22 @@
                                                     <input type="hidden" name="product_id" value="{{ $prod->id }}">
                                                     <input type="hidden" name="variant_id"
                                                         value="{{ $prod->variants->first()->id ?? '' }}">
+                                                    @php
+                                                        $firstVariant = $prod->variants->first();
+                                                        $firstColor = '';
+
+                                                        if ($firstVariant && $firstVariant->color) {
+                                                            $decoded = is_string($firstVariant->color)
+                                                                ? json_decode($firstVariant->color, true)
+                                                                : $firstVariant->color;
+                                                            $firstColor = is_array($decoded)
+                                                                ? $decoded[0] ?? ''
+                                                                : $decoded;
+                                                        }
+                                                    @endphp
+
+                                                    <input type="hidden" name="color" id="selectedColor"
+                                                        value="{{ $firstColor }}">
                                                     <button type="submit" class="add-to-cart-btn">Add To Cart</button>
                                                 </form>
                                                 <i class="fas fa-share icon-toggle share-icon" data-bs-toggle="modal"
@@ -733,9 +639,17 @@
         function updateCartItem(cartId) {
             const card = document.querySelector(`.cart-item-card[data-cart-id="${cartId}"]`);
             const variantSelect = card.querySelector('.variant-select');
+            const colorSelect = card.querySelector('.color-select');
             const quantityInput = document.getElementById(`quantity-${cartId}`) || card.querySelector('.quantity-select');
             const variantId = variantSelect.value;
+            const color = colorSelect.value;
             const quantity = quantityInput.value;
+            console.log('Updating cart item:', {
+                cartId,
+                variantId,
+                color,
+                quantity
+            });
 
 
             fetch(`/cart/update/${cartId}`, {
@@ -747,6 +661,7 @@
                     },
                     body: JSON.stringify({
                         variant_id: variantId,
+                        color: color,
                         quantity: quantity
                     })
                 })
@@ -758,20 +673,33 @@
                     if (data.success) {
                         updateOrderSummary();
 
-                        const priceOutput = card.querySelector('.price-output');
+                        const priceOutputs = card.querySelectorAll('.price-output');
                         const selectedOption = variantSelect.options[variantSelect.selectedIndex];
-                        const discountedPrice = parseFloat(selectedOption.dataset.discounted) || parseFloat(
-                            selectedOption.dataset.price);
-                        const gst = discountedPrice * 0.18;
-                        const finalPrice = (discountedPrice + gst) * quantity;
+                        const originalPrice = parseFloat(selectedOption.dataset.price);
+                        const discountedPrice = parseFloat(selectedOption.dataset.discounted) || originalPrice;
 
-                        if (priceOutput) {
-                            priceOutput.innerHTML = `₹${discountedPrice.toFixed(2)} `;
+                        // Update discounted (main) price
+                        if (priceOutputs[0]) {
+                            priceOutputs[0].innerHTML = `₹${discountedPrice.toFixed(2)}`;
                         }
-                    } else {
-                        alert(data.message || 'Failed to update cart item.');
+
+                        // Update strike-through price if applicable
+                        let strikeEl = card.querySelector('.strike-price');
+                        if (originalPrice > discountedPrice) {
+                            if (!strikeEl) {
+                                strikeEl = document.createElement('div');
+                                strikeEl.classList.add('fw-bold', 'mb-2', 'price-output', 'strike-price');
+                                strikeEl.style.fontSize = "16px";
+                                strikeEl.style.textDecoration = "line-through";
+                                card.querySelector('.price-output').after(strikeEl);
+                            }
+                            strikeEl.innerHTML = `₹${originalPrice.toFixed(2)}`;
+                        } else if (strikeEl) {
+                            strikeEl.remove(); // remove if no discount
+                        }
                     }
                 })
+
                 .catch(error => {
                     console.error('Error updating cart:', error);
                     alert('An error occurred while updating the cart.');
