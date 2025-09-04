@@ -583,6 +583,25 @@ public function filterProduct(Request $req)
     ]);
 }
 
+public function filterByPrice(Request $request)
+{
+    $min = (int) $request->get('min', 0);
+    $max = (int) $request->get('max', 100000);
+
+    // Saare products jinke kisi bhi variant ka discounted_price is range me hai
+    $products = Product::whereHas('variants', function($q) use ($min, $max) {
+            $q->whereBetween('price', [$min, $max]);
+        })
+        ->with(['variants' => function($q) use ($min, $max) {
+            $q->whereBetween('price', [$min, $max]);
+        }])
+        ->get();
+
+    $html = view('partials.top_picks_cards', compact('products'))->render();
+
+    return response()->json(['html' => $html]);
+}
+
 
 
 }

@@ -87,6 +87,8 @@ Route::any('/PageDetail/{id}', [WebsiteController::class, 'pageDetail'])->name('
 
 // Public filter for home page price filter
 Route::get('/filterProducts', [ProductController::class, 'filterProducts'])->name('filterProducts');
+// route for price dropdown in home blade 
+Route::get('/products/filter', [ProductController::class, 'filterByPrice'])->name('products.filter');
 
 Route::get('/', [WebsiteController::class, 'Websiteindex'])->name('Websitehome');
 Route::middleware(['auth'])->group(function () {
