@@ -87,7 +87,6 @@ Route::any('/PageDetail/{id}', [WebsiteController::class, 'pageDetail'])->name('
 
 
 
-
 Route::get('/', [WebsiteController::class, 'Websiteindex'])->name('Websitehome');
 Route::middleware(['auth'])->group(function () {
 
@@ -197,6 +196,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('changePassword');
     Route::put('/update-password', [ProfileController::class, 'updatePassword'])->name('passwordUpdate');
     Route::put('/update-profile', [ProfileController::class, 'update'])->name('profile.update');
+
+
 
     Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
 
