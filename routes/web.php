@@ -1,46 +1,52 @@
 <?php
 
+use App\Models\User;
+use App\Models\PaymentItem;
 use App\Models\SubCategory;
+use Illuminate\Http\Request;
 use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\ValidUser;
+use Illuminate\Support\Facades\DB;
+use App\Models\Customization_image;
+use App\Models\CustomizationMessage;
+use App\Models\CustomizationRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UsageController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+
 use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
+
 use App\Http\Controllers\DesignerController;
+
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\OccasionController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\MaterialTypeController;
 use App\Http\Controllers\CustomizationController;
 use App\Http\Controllers\OccasionProductController;
-use App\Http\Controllers\PaymentController;
-
 use App\Http\Controllers\Admin\PaymentAdminController;
-
-use App\Models\CustomizationRequest;
-use App\Models\PaymentItem;
-use App\Models\CustomizationMessage;
-
-use App\Models\Customization_image;
-
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 
 
 
@@ -87,7 +93,7 @@ Route::any('/PageDetail/{id}', [WebsiteController::class, 'pageDetail'])->name('
 
 // Public filter for home page price filter
 Route::get('/filterProducts', [ProductController::class, 'filterProducts'])->name('filterProducts');
-// route for price dropdown in home blade 
+// route for price dropdown in home blade
 Route::get('/products/filter', [ProductController::class, 'filterByPrice'])->name('products.filter');
 
 Route::get('/', [WebsiteController::class, 'Websiteindex'])->name('Websitehome');
@@ -205,6 +211,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('changePassword');
     Route::put('/update-password', [ProfileController::class, 'updatePassword'])->name('passwordUpdate');
     Route::put('/update-profile', [ProfileController::class, 'update'])->name('profile.update');
+
+
 
     Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
 
@@ -375,6 +383,7 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/viewTestimonial/{id?}', [TestimonialController::class, 'show'])->name('test.view');
     Route::put('/update-testimonial/{id?}', [TestimonialController::class, 'update'])->name('test.update');
     Route::delete('/delete-testimonial/{id?}', [TestimonialController::class, 'destroy'])->name('test.destroy');
+
     // Clients---------------------------------------------------------------------------------------------
     Route::get('clients', [ClientController::class, 'index'])->name('clients');
     Route::get('add-client', [ClientController::class, 'create'])->name('client.add');
@@ -392,6 +401,48 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('editGallery/{id?}', [GalleryController::class, 'edit'])->name('gallery.edit');
     Route::put('update-Gallery/{id?}', [GalleryController::class, 'update'])->name('gallery.update');
     Route::delete('delete-Gallery/{id?}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
+
+    //material type
+    Route::get('/materialtype', [MaterialTypeController::class, 'index'])->name('admin.materialtype.index');
+    Route::get('/materialtype/create', [MaterialTypeController::class, 'create'])->name('admin.materialtype.create');
+    Route::post('/materialtype/store', [MaterialTypeController::class, 'store'])->name('admin.materialtype.store');
+    Route::get('/materialtype/{id}/edit', [MaterialTypeController::class, 'edit'])->name('admin.materialtype.edit');
+    Route::put('/materialtype/{id}', [MaterialTypeController::class, 'update'])->name('admin.materialtype.update');
+    Route::delete('/materialtype/{id}', [MaterialTypeController::class, 'destroy'])->name('admin.materialtype.destroy');
+
+
+    //material
+    Route::get('/material', [MaterialController::class, 'index'])->name('admin.material.index');
+    Route::get('/material/create', [MaterialController::class, 'create'])->name('admin.material.create');
+    Route::post('/material/store', [MaterialController::class, 'store'])->name('admin.material.store');
+    Route::get('/material/{id}/edit', [MaterialController::class, 'edit'])->name('admin.material.edit');
+    Route::put('/material/{id}', [MaterialController::class, 'update'])->name('admin.material.update');
+    Route::delete('/material/{id}', [MaterialController::class, 'destroy'])->name('admin.material.destroy');
+
+    //purchase
+    Route::get('/purchase/{id}', [PurchaseController::class, 'index'])->name('admin.purchase.index');
+    Route::get('/purchase/create/{id}', [PurchaseController::class, 'create'])->name('admin.purchase.create');
+    Route::post('/purchase/store', [PurchaseController::class, 'store'])->name('admin.purchase.store');
+    Route::get('/purchase/{id}/edit', [PurchaseController::class, 'edit'])->name('admin.purchase.edit');
+    Route::put('/purchase/{id}', [PurchaseController::class, 'update'])->name('admin.purchase.update');
+    Route::delete('/purchase/{id}', [PurchaseController::class, 'destroy'])->name('admin.purchase.destroy');
+
+
+    //usage
+    Route::get('/usage/{id}', [UsageController::class, 'index'])->name('admin.usage.index');
+    Route::get('/usage/create/{id}', [UsageController::class, 'create'])->name('admin.usage.create');
+    Route::post('/usage/store', [UsageController::class, 'store'])->name('admin.usage.store');
+    Route::get('/usage/{id}/edit', [UsageController::class, 'edit'])->name('admin.usage.edit');
+    Route::put('/usage/{id}', [UsageController::class, 'update'])->name('admin.usage.update');
+    Route::delete('/usage/{id}', [UsageController::class, 'destroy'])->name('admin.usage.destroy');
+
+    //suppier with multiple purchase
+    Route::get('/supplier', [SupplierController::class, 'index'])->name('admin.supplier.index');
+    Route::get('/supplier/create', [SupplierController::class, 'create'])->name('admin.supplier.create');
+    Route::post('/supplier/store', [SupplierController::class, 'store'])->name('admin.supplier.store');
+    Route::get('/supplier/{id}/edit', [SupplierController::class, 'edit'])->name('admin.supplier.edit');
+    Route::put('/supplier/{id}', [SupplierController::class, 'update'])->name('admin.supplier.update');
+    Route::delete('/supplier/{id}', [SupplierController::class, 'destroy'])->name('admin.supplier.destroy');
 });
 
 Route::get('/clean-cache', function () {

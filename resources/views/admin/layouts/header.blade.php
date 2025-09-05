@@ -154,6 +154,19 @@
                         </li>
 
 
+                    <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+                        <a class="nav-link" href="{{ route('Designerinfo') }}">
+                            <span class="menu-title">Designer</span>
+                            <i class="mdi mdi-account-group menu-icon"></i>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+                        <a class="nav-link" href="{{ route('teams') }}">
+                            <span class="menu-title">Team</span>
+                            <i class="mdi mdi-account-group menu-icon"></i>
+                        </a>
+                    </li>
                         <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
                             <a class="nav-link" href="{{ route('Designerinfo') }}">
                                 <span class="menu-title">Designer</span>
@@ -168,13 +181,12 @@
                             </a>
                         </li>
 
-                        <li class="nav-item"
-                            data-keywords="testimonials,addTestimonial,viewTestimonial,editTestimonial">
-                            <a class="nav-link" href="{{ route('tests') }}">
-                                <span class="menu-title">Testimonials</span>
-                                <i class="mdi mdi-comment-text menu-icon"></i>
-                            </a>
-                        </li>
+                    <li class="nav-item" data-keywords="testimonials,addTestimonial,viewTestimonial,editTestimonial">
+                        <a class="nav-link" href="{{ route('tests') }}">
+                            <span class="menu-title">Testimonials</span>
+                            <i class="mdi mdi-comment-text menu-icon"></i>
+                        </a>
+                    </li>
 
                         <li class="nav-item" data-keywords="pages,addPage,editPage,viewPage">
                             <a class="nav-link" href="{{ route('pages') }}">
@@ -208,6 +220,103 @@
                             </a> --}}
                         </li>
                     @endif
+                    <style>
+                        /* Collapse fallback */
+                        .collapse {
+                            display: none;
+                        }
+
+                        .collapse.show {
+                            display: block;
+                        }
+
+                        /* Arrow animation */
+                        .menu-arrow {
+                            transition: transform .2s ease;
+                        }
+
+                        .menu-arrow.rotated {
+                            transform: rotate(90deg);
+                        }
+
+                        .menu-arrow {
+                            display: inline-block;
+                            width: 0;
+                            height: 0;
+                            margin-left: 5px;
+                            vertical-align: middle;
+                            border-left: 5px solid transparent;
+                            border-right: 5px solid transparent;
+                            border-top: 5px solid #333;
+                            /* arrow color */
+                            transition: transform 0.2s ease;
+                        }
+
+                        .menu-arrow.rotated {
+                            transform: rotate(180deg);
+                            /* open झाल्यावर up arrow होईल */
+                        }
+
+                        .nav-item .nav-link[aria-expanded="false"]::after,
+                        .nav-item .nav-link[aria-expanded="true"]::after {
+                            display: none !important;
+                        }
+                    </style>
+
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="collapse" href="#rowMaterialMenu" aria-expanded="false"
+                            aria-controls="rowMaterialMenu">
+                            <span class="menu-title">Raw Material</span>
+                            <i class="mdi mdi-chevron-down menu-icon"></i>
+                        </a>
+
+
+                        <div class="collapse" id="rowMaterialMenu">
+                            <ul class="nav flex-column sub-menu">
+                                <li class="nav-item"><a class="nav-link"
+                                        href="{{ route('admin.materialtype.index') }}">Raw Material Type</a></li>
+                                <li class="nav-item"><a class="nav-link"
+                                        href="{{ route('admin.material.index') }}">Raw Material</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{route('admin.supplier.index')}}">Supplier With Purchase</a></li>
+                                <li class="nav-item"><a class="nav-link" href="">Add Purchase</a></li>
+                                {{--  <li class="nav-item"><a class="nav-link" href="">Usage</a></li>  --}}
+                            </ul>
+                        </div>
+                    </li>
+
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            document.querySelectorAll('a.nav-link[data-toggle="collapse"]').forEach(function(trigger) {
+                                trigger.addEventListener('click', function(e) {
+                                    e.preventDefault();
+
+                                    // Try immediate sibling ".collapse" first
+                                    var panel = this.parentElement.querySelector('.collapse');
+
+                                    // Fallback: use href / data-target selector if present
+                                    if (!panel) {
+                                        var sel = this.getAttribute('href') || this.getAttribute('data-target');
+                                        if (sel) {
+                                            panel = document.querySelector(sel);
+                                        }
+                                    }
+                                    if (!panel) return;
+
+                                    // Toggle
+                                    panel.classList.toggle('show');
+                                    this.setAttribute('aria-expanded', panel.classList.contains('show'));
+
+                                    // Rotate arrow icon if present
+                                    var arrow = this.querySelector('.menu-arrow');
+                                    if (arrow) arrow.classList.toggle('rotated');
+                                });
+                            });
+                        });
+                    </script>
+
+
+
                 </ul>
             </nav>
             <!-- ========== /SIDEBAR ========== -->
