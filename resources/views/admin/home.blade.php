@@ -1,42 +1,43 @@
 @extends('admin.layouts.masterlayout')
 @section('content')
-   
-        <div class="content-wrapper">
-            <div class="page-header">
-                <h3 class="page-title">
-                    <span class="page-title-icon bg-gradient-primary text-white me-2">
-                        <i class="mdi mdi-home"></i>
-                    </span> Dashboard
-                </h3>
-                <nav aria-label="breadcrumb">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h3 class="page-title">
+                <span class="page-title-icon bg-gradient-primary text-white me-2">
+                    <i class="mdi mdi-home"></i>
+                </span>{{ Auth::user()->role == 1 ? 'Dashboard' : (Auth::user()->role == 3 ? 'Production Panel' : '') }}
+            </h3>
+            {{-- <nav aria-label="breadcrumb">
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item active" aria-current="page">
                             <span></span>Overview <i
                                 class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
                         </li>
                     </ul>
-                </nav>
-            </div>
-              <div class="row">
+                </nav> --}}
+        </div>
+        @if (Auth::user()->role == 1)
+            <div class="row">
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-danger card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
-                            <h4 class="font-weight-normal mb-3">Users<i
-                                    class="mdi mdi-chart-line mdi-24px float-end"></i>
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
+                            <h4 class="font-weight-normal mb-3">Users<i class="mdi mdi-chart-line mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$users}}</h2>
+                            <h2 class="mb-5">{{ $users }}</h2>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-info card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Products <i
                                     class="mdi mdi-bookmark-outline mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$products}}</h2>
+                            <h2 class="mb-5">{{ $products }}</h2>
                             {{-- <h6 class="card-text">Decreased by 10%</h6> --}}
                         </div>
                     </div>
@@ -44,11 +45,12 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-success card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Team Members<i
                                     class="mdi mdi-diamond mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$teams}}</h2>
+                            <h2 class="mb-5">{{ $teams }}</h2>
                             {{-- <h6 class="card-text">Increased by 5%</h6> --}}
                         </div>
                     </div>
@@ -56,11 +58,12 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-success card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Testimonials<i
                                     class="mdi mdi-diamond mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$testimonials}}</h2>
+                            <h2 class="mb-5">{{ $testimonials }}</h2>
                             {{-- <h6 class="card-text">Increased by 5%</h6> --}}
                         </div>
                     </div>
@@ -69,11 +72,12 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-success card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Award Categories<i
                                     class="mdi mdi-diamond mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$awardCategories}}</h2>
+                            <h2 class="mb-5">{{ $awardCategories }}</h2>
                             {{-- <h6 class="card-text">Increased by 5%</h6> --}}
                         </div>
                     </div>
@@ -81,11 +85,12 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-danger card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Sub Categories<i
                                     class="mdi mdi-chart-line mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$subCategories}}</h2>
+                            <h2 class="mb-5">{{ $subCategories }}</h2>
                         </div>
                     </div>
                 </div>
@@ -94,11 +99,11 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-danger card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
-                            <h4 class="font-weight-normal mb-3">Pages <i
-                                    class="mdi mdi-chart-line mdi-24px float-end"></i>
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
+                            <h4 class="font-weight-normal mb-3">Pages <i class="mdi mdi-chart-line mdi-24px float-end"></i>
                             </h4>
-                            <h2 class="mb-5">{{$pages}}</h2>
+                            <h2 class="mb-5">{{ $pages }}</h2>
                             {{-- <h6 class="card-text">Increased by 60%</h6> --}}
                         </div>
                     </div>
@@ -106,7 +111,8 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-info card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Weekly Orders <i
                                     class="mdi mdi-bookmark-outline mdi-24px float-end"></i>
                             </h4>
@@ -118,7 +124,8 @@
                 <div class="col-md-4 stretch-card grid-margin">
                     <div class="card bg-gradient-success card-img-holder text-white">
                         <div class="card-body">
-                            <img src="{{asset('admin/assets/images/dashboard/circle.svg')}}" class="card-img-absolute" alt="circle-image" />
+                            <img src="{{ asset('admin/assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                                alt="circle-image" />
                             <h4 class="font-weight-normal mb-3">Visitors Online <i
                                     class="mdi mdi-diamond mdi-24px float-end"></i>
                             </h4>
@@ -173,7 +180,8 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <img src="{{asset('admin/assets/images/faces/face1.jpg')}}}}" class="me-2" alt="image">
+                                                <img src="{{ asset('admin/assets/images/faces/face1.jpg') }}}}"
+                                                    class="me-2" alt="image">
                                                 David Grey
                                             </td>
                                             <td> Fund is not recieved </td>
@@ -185,7 +193,8 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                <img src="{{asset('assets/images/faces/face2.jpg" class="me-2" alt="image">
+                                                <img src="{{ asset('assets/images/faces/face2.jpg') }} " class="me-2"
+                                                    alt="image">
                                                 Stella Johnson
                                             </td>
                                             <td> High loading time </td>
@@ -209,7 +218,8 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                <img src="assets/images/faces/face4.jpg" class="me-2" alt="image"> John
+                                                <img src="assets/images/faces/face4.jpg" class="me-2" alt="image">
+                                                John
                                                 Doe
                                             </td>
                                             <td> Loosing control on server </td>
@@ -226,7 +236,56 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- content-wrapper ends -->
+        @elseif(auth()->user()->role == 3)
+            <div class="container mt-4">
+                {{-- <h2>Production Panel</h2> --}}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product</th>
+                            <th>Image/CDR</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($tasks as $task)
+                            <tr>
+                                <td>{{ $task->payment->order_id }}</td>
+                                <td>{{ $task->product->title }}</td>
+                                <td>
+                                    @if ($task->file)
+                                        {{-- <a href="{{ asset('customizations/', $task->file) }}" target="_blank">CDR
+                                            Link</a> --}}
+                                        <a href="{{ asset('customizations/' . $task->file) }}" target="_blank">
+                                            Open File
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Not uploaded</span>
+                                    @endif
+                                </td>
+                                <td>{{ ucfirst($task->status) }}</td>
+                                <td>{{ $task->assignedUser->name ?? 'Unassigned' }}</td>
+                                <td>
+                                    @if ($task->status === 'pending')
+                                        <form method="POST" action="{{ route('production.updateStatus', $task->id) }}">
+                                            @csrf
+                                            <input type="hidden" name="status" value="ready_to_dispatch">
+                                            <button class="btn btn-sm btn-primary">Ready To Dispatch</button>
+                                        </form>
+                                    @elseif($task->status === 'ready_to_dispatch')
+                                        <span class="badge bg-success">Ready</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
 
+    </div>
+    <!-- content-wrapper ends -->
 @endsection

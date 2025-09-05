@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\PaymentItem;
 use App\Models\Payment;
+use App\Models\ProductionTask;
 use Illuminate\Support\Facades\DB;
 
 
@@ -193,7 +194,9 @@ public function orderWorkspace($orderId)
 
 public function approveImage(CustomizationMessage $message)
 {
+    
     $user = auth()->user();
+    
 
     // Ensure the user owns this customization request
     if ($message->customizationRequest->user_id !== $user->id) {
@@ -223,15 +226,26 @@ public function approveImage(CustomizationMessage $message)
         return $item->customizationRequest && $item->customizationRequest->status === 'approved';
     });
 
-    if ($allRequestsApproved && $payment->order_status !== 'approved') {
-        $payment->order_status = 'approved';
+    if ($allRequestsApproved && $payment->delivery_status !== 'approved') {
+        $payment->delivery_status = 'approved';
         $payment->save();
     }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Image approved successfully',
+
+    // 4. Create a production task for this approved image
+     ProductionTask::create([
+        'payment_item_id' => $request->paymentItem->id,
+        'payment_id'      => $payment->id,
+        'product_id'      => $request->paymentItem->product_id,
+        'file'        => $message->attachment, // assuming approved file path is stored here
+        'status'          => 'pending',
     ]);
+
+    // return response()->json([
+    //     'success' => true,
+    //     'message' => 'Image approved successfully',
+    // ]);
+    return redirect()->back();
 }
 
 public function cancelApproval(CustomizationMessage $message)
@@ -662,6 +676,8 @@ $requests = CustomizationRequest::with([
             $sub->where('status', 'pending')->whereNull('designer_id');
         })->orWhere(function ($sub) use ($designerId) {
             $sub->where('status', 'accepted')->where('designer_id', $designerId);    
+        })->orWhere(function ($sub) use ($designerId) {
+            $sub->where('status', 'approved     ')->where('designer_id', $designerId);    
         })->orWhere(function ($sub) use ($designerId) {
         $sub->where('status', 'completed')->where('designer_id', $designerId);
         })->orWhere(function ($sub) use ($designerId) {

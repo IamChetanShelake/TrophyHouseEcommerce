@@ -161,9 +161,12 @@
                                     <span class="badge bg-success">Approved</span>
                                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn"
                                         data-id="{{ $msg->id }}">Cancel</button>
-                                @else
+                                @elseif ($msg->is_approved == 0)
+                                <form action="{{route('customization.approveImage',$msg->id)}}" method="POST">
+                                    @csrf
                                     <button class="btn btn-sm btn-outline-success approve-btn"
-                                        data-id="{{ $msg->id }}">Approve</button>
+                                    data-id="{{ $msg->id }}">Approve</button>
+                                </form>
                                 @endif
                             </div>
                         @endif
@@ -197,35 +200,35 @@
         // Event delegation: one listener for approve & cancel
         document.getElementById("chatBox").addEventListener("click", function(e) {
             // Approve
-            if (e.target.classList.contains("approve-btn")) {
-                let messageId = e.target.dataset.id;
-                if (!confirm('Are you sure you want to approve this image?')) return;
+            // if (e.target.classList.contains("approve-btn")) {
+            //     let messageId = e.target.dataset.id;
+            //     if (!confirm('Are you sure you want to approve this image?')) return;
 
-                fetch(`/customization/approve-image/${messageId}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Reset ALL other approvals to "Approve" button
-                            document.querySelectorAll(".approval-actions").forEach(div => {
-                                div.innerHTML =
-                                    `<button class="btn btn-sm btn-outline-success approve-btn" data-id="${div.id.replace('actions-','')}">Approve</button>`;
-                            });
+            //     fetch(`/customization/approve-image/${messageId}`, {
+            //             method: 'POST',
+            //             headers: {
+            //                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            //                 'Accept': 'application/json'
+            //             }
+            //         })
+            //         .then(res => res.json())
+            //         .then(data => {
+            //             if (data.success) {
+            //                 // Reset ALL other approvals to "Approve" button
+            //                 document.querySelectorAll(".approval-actions").forEach(div => {
+            //                     div.innerHTML =
+            //                         `<button class="btn btn-sm btn-outline-success approve-btn" data-id="${div.id.replace('actions-','')}">Approve</button>`;
+            //                 });
 
-                            // Set THIS one as approved
-                            let container = document.getElementById(`actions-${messageId}`);
-                            container.innerHTML = `
-                                <span class="badge bg-success">Approved</span>
-                                <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>
-                            `;
-                        }
-                    });
-            }
+            //                 // Set THIS one as approved
+            //                 let container = document.getElementById(`actions-${messageId}`);
+            //                 container.innerHTML = `
+            //                     <span class="badge bg-success">Approved</span>
+            //                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>
+            //                 `;
+            //             }
+            //         });
+            // }
 
             // Cancel
             if (e.target.classList.contains("cancel-approve-btn")) {

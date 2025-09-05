@@ -14,6 +14,7 @@ use App\Models\SubCategory;
 use App\Models\Testimonial;
 use App\Mail\GetintouchMail;
 use App\Models\WishlistItem;
+use App\Models\ProductionTask;
 use Illuminate\Http\Request;
 use App\Models\AwardCategory;
 use App\Models\ProductVariant;
@@ -78,6 +79,7 @@ $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_pr
         // foreach($products as $prod){
         //    echo $prod->variants->count()."<br>";
         // }
+        
 
          return view('website.home', compact('pages', 'testimonials', 'aboutus', 'clients', 'products','occasions', 'occProducts', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count','minPrice','maxPrice'));
     }
@@ -260,15 +262,20 @@ $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_pr
     public function cart()
     {
         if (Auth::check()) {
-           $cartItems = cartItem::with('product','customizationRequest')->where('user_id', Auth::id())->get(); // Updated to cartItem
+           $cartItems = cartItem::with('product','occasionalProduct','customizationRequest')->where('user_id', Auth::id())->get(); // Updated to cartItem
             $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem
             if ($cartItems->isEmpty()) {
                 $cart_items = 0;
             }
             $product = Product::with('variants')->get();
+            $occasionalProduct = OccasionProduct::with('variants')->get();
             $similarProducts = Product::with('category')
                 ->with('subcategory')
                 ->get();
+            $similarOccProducts = OccasionProduct::with(['category', 'subcategory'])->get();
+
+$allSimilarProducts = $similarProducts->concat($similarOccProducts);
+
             $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
             $categories = AwardCategory::with('products')->get();
             $pages = Page::all();

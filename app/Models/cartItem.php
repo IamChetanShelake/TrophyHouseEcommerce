@@ -3,6 +3,7 @@
 namespace App\Models;
 use App\Models\PaymentItem;
 use App\Models\Product;
+use App\Models\OccasionProduct;
 use App\Models\ProductVariant;
 use App\Models\CustomizationRequest;
 
@@ -16,6 +17,10 @@ class cartItem extends Model
 public function product()
 {
     return $this->belongsTo(Product::class, 'product_id');
+}
+public function occasionalProduct()
+{
+    return $this->belongsTo(OccasionProduct::class, 'occasional_product_id');
 }
 public function variant()
 {

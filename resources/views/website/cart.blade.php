@@ -70,8 +70,6 @@
 
     <section>
         <div class="container my-5">
-
-
             <!--customization-modal-->
             <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel"
                 aria-hidden="true">
@@ -161,16 +159,7 @@
                                             </div>
 
                                             <!-- Modal Footer -->
-                                            {{-- <div class="row">
-        
 
-            <button type="button" class="btn btn-primary col-4" data-bs-dismiss="modal">Yes</button>
-       
-        
-
-            <a href="{{ route('addressPage') }}" class="btn btn-secondary col-4">No</a>
-        
-      </div> --}}
                                             <div class="modal-footer justify-content-center">
                                                 <div class="d-flex gap-3">
                                                     <button type="button" class="btn  px-5" data-bs-dismiss="modal"
@@ -208,16 +197,7 @@
                                             </div>
 
                                             <!-- Modal Footer -->
-                                            {{-- <div class="row">
-        
 
-            <button type="button" class="btn btn-primary col-4" data-bs-dismiss="modal">Yes</button>
-       
-        
-
-            <a href="{{ route('addressPage') }}" class="btn btn-secondary col-4">No</a>
-        
-      </div> --}}
                                             <div class="modal-footer justify-content-center">
                                                 <div class="d-flex gap-3">
 
@@ -237,22 +217,34 @@
                                 <div class="row align-items-center">
                                     <!-- Image Column -->
                                     <div class="col-3 col-md-2 text-center">
-                                        <img src="{{ asset('product_images/' . $cart->product->image) }}"
-                                            class="trophy-img" alt="{{ $cart->product->title }}">
+                                        @if ($cart->product_id !== null)
+                                            <img src="{{ asset('product_images/' . $cart->product->image) }}"
+                                                class="trophy-img" alt="{{ $cart->product->title }}">
+                                        @else
+                                            <img src="{{ asset('OccasionalProduct_images/' . $cart->occasionalProduct->image) }}"
+                                                class="trophy-img" alt="{{ $cart->occasionalProduct->title }}">
+                                        @endif
                                     </div>
 
                                     <!-- Details Column -->
                                     <div class="col-9 col-md-10">
                                         <!-- Title and Icons -->
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <p class="mb-1"
-                                                style="font-family: 'Source Sans 3', sans-serif; font-weight: 500; font-size: 18px;">
-                                                {{ $cart->product->title }}
-                                            </p>
+                                            @if ($cart->product_id !== null)
+                                                <p class="mb-1"
+                                                    style="font-family: 'Source Sans 3', sans-serif; font-weight: 500; font-size: 18px;">
+                                                    {{ $cart->product->title }}
+                                                </p>
+                                            @else
+                                                <p class="mb-1"
+                                                    style="font-family: 'Source Sans 3', sans-serif; font-weight: 500; font-size: 18px;">
+                                                    {{ $cart->occasionalProduct->title }}
+                                                </p>
+                                            @endif
                                             <div>
-                                                <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($cart->product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                    data-product-id="{{ $cart->product->id }}"
-                                                    title="{{ in_array($cart->product->id, $wishlist_product_ids ?? []) ? 'Remove from Wishlist' : 'Add to Wishlist' }}">
+                                                <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($cart->product->id ?? $cart->occasionalProduct->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
+                                                    data-product-id="{{ $cart->product->id ?? $cart->occasionalProduct->id }}"
+                                                    title="{{ in_array($cart->product->id ?? $cart->occasionalProduct->id, $wishlist_product_ids ?? []) ? 'Remove from Wishlist' : 'Add to Wishlist' }}">
                                                 </i>
                                                 <i class="bi bi-trash text-danger"
                                                     style="font-size: 18px; cursor: pointer;"
@@ -271,21 +263,37 @@
                                             {{-- Size/Variant Select --}}
                                             <select class="form-select form-select-sm variant-select"
                                                 onchange="updateCartItem({{ $cart->id }})">
-                                                @foreach ($cart->product->variants as $variant)
-                                                    <option value="{{ $variant->id }}"
-                                                        data-price="{{ $variant->price }}"
-                                                        data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
-                                                        {{ $cart->variant_id == $variant->id ? 'selected' : '' }}>
-                                                        {{ $variant->size }} inch -
-                                                        ₹{{ $variant->discounted_price ?? $variant->price }}
-                                                    </option>
-                                                @endforeach
+                                                @if ($cart->product_id !== null)
+                                                    @foreach ($cart->product->variants as $variant)
+                                                        <option value="{{ $variant->id }}"
+                                                            data-price="{{ $variant->price }}"
+                                                            data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
+                                                            {{ $cart->variant_id == $variant->id ? 'selected' : '' }}>
+                                                            {{ $variant->size }} inch -
+                                                            ₹{{ $variant->discounted_price ?? $variant->price }}
+                                                        </option>
+                                                    @endforeach
+                                                @else
+                                                    @foreach ($cart->occasionalProduct->variants as $variant)
+                                                        <option value="{{ $variant->id }}"
+                                                            data-price="{{ $variant->price }}"
+                                                            data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
+                                                            {{ $cart->variant_id == $variant->id ? 'selected' : '' }}>
+                                                            {{ $variant->size }} inch -
+                                                            ₹{{ $variant->discounted_price ?? $variant->price }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
 
 
                                             @php
                                                 $colors = collect();
-                                                foreach ($cart->product->variants as $variant) {
+
+                                                foreach (
+                                                    $cart->product->variants ?? $cart->occasionalProduct->variants
+                                                    as $variant
+                                                ) {
                                                     $decoded = json_decode($variant->color, true);
                                                     if (is_array($decoded)) {
                                                         $colors = $colors->merge($decoded); // merge all colors
@@ -325,7 +333,13 @@
 
                                         <!-- Price Output -->
                                         @php
-                                            $variant = $cart->variant ?? $cart->product->variants->first();
+                                            if ($cart->product_id !== null) {
+                                                $productVariants = $cart->product->variants->first();
+                                            } else {
+                                                $productVariants = $cart->occasionalProduct->variants->first();
+                                            }
+
+                                            $variant = $cart->variant ?? $productVariants;
                                             $originalprice = $variant->price;
                                             $price = $variant->discounted_price ?? $variant->price;
 

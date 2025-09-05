@@ -8,10 +8,12 @@ use App\Models\Occasion;
 use App\Models\OccasionProduct;
 use App\Models\SubCategory;
 use App\Models\productImage;
+use App\Models\WishlistItem;
 use Illuminate\Http\Request;
 use App\Models\AwardCategory;
 use App\Imports\ProductImport;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
@@ -597,7 +599,11 @@ public function filterByPrice(Request $request)
         }])
         ->get();
 
-    $html = view('partials.top_picks_cards', compact('products'))->render();
+    // Add wishlist data for authenticated users
+    $wishlist_product_ids = Auth::check() ?
+        WishlistItem::where('user_id', Auth::id())->pluck('product_id')->toArray() : [];
+
+    $html = view('partials.top_picks_cards', compact('products', 'wishlist_product_ids'))->render();
 
     return response()->json(['html' => $html]);
 }

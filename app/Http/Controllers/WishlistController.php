@@ -26,12 +26,25 @@ class WishlistController extends Controller
 
     public function addToWishlist(Request $request)
     {
-        $request->validate(['product_id' => 'required|exists:products,id']);
+        $request->validate([
+            'product_id' => 'nullable|exists:products,id',
+            'occasional_product_id' => 'nullable|exists:occasional_products,id',
+        ]);
         $productId = $request->input('product_id');
+        $occasionalProductId = $request->input('occasional_product_id,');
         
-        $existing = WishlistItem::where('user_id', Auth::id())
-            ->where('product_id', $productId)
-            ->first();
+        // $existing = WishlistItem::where('user_id', Auth::id())
+        //     ->where('product_id', $productId)
+        //     ->first();
+         // Check if item already exists in wishlist
+    $existing = WishlistItem::where('user_id', $userId)
+        ->when($request->filled('product_id'), function ($query) use ($request) {
+            $query->where('product_id', $request->product_id);
+        })
+        ->when($request->filled('occasional_product_id'), function ($query) use ($request) {
+            $query->where('occasional_product_id', $request->occasional_product_id);
+        })
+        ->first();
         
         if ($existing) {
             return response()->json([
@@ -43,7 +56,8 @@ class WishlistController extends Controller
 
         WishlistItem::create([
             'user_id' => Auth::id(),
-            'product_id' => $productId,
+            'product_id' => $productId ?? null,
+             'occasional_product_id' => $occasionalProductId ?? null,
             'quantity' => 1,
         ]);
 

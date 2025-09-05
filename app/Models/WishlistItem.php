@@ -23,6 +23,7 @@ class WishlistItem extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'occasional_product_id',
         'quantity',  
     ];
 
@@ -38,6 +39,6 @@ class WishlistItem extends Model
 
         public function occProducts()
 {
-    return $this->belongsTo(OccasionProduct::class);
+    return $this->belongsTo(OccasionProduct::class,'occasional_product_id');
 }
 }

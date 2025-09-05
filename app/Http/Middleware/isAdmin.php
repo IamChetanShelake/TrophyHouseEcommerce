@@ -21,6 +21,9 @@ class isAdmin
     if (Auth::check() && Auth::user()->role == 1) {
         return $next($request); // Allow the request
     }
+    elseif (Auth::check() && Auth::user()->role == 3) {
+        return $next($request); // Allow the request
+    }
     // else if (Auth::check() && Auth::user()->role == 0){
     //     // Otherwise, deny access or redirect
     //     return redirect()->route('Websitehome');

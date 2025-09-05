@@ -265,7 +265,7 @@
                             </small>
                         </div>
                     @endforeach
-                    Pickup between {{ $startDate }} - {{ $endDate }}
+                    Delivery after 5 days from Order Placed
 
                     <p style="font-family:'Source Sans 3', sans-serif;font-size:18px;font-weight:600;" class="mb-3">
                         Price Details ({{ $cartItems->count() }} {{ $cartItems->count() == 1 ? 'Item' : 'Items' }})

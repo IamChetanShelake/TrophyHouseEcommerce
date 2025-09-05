@@ -123,74 +123,155 @@ class OrderController extends Controller
     }
 
     public function myOrders()
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Please login to view your orders.');
-        }
+{
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'Please login to view your orders.');
+    }
 
-        // Get user's payment history with items
-        $payments = Payment::with([
-            'paymentItems.product',
-            'paymentItems.variant',
-            'paymentItems.customizationRequest',
-            'paymentItems.customizationRequest.messages'
-        ])
-            ->where('customer_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+    // Get user's payment history with items
+    $payments = Payment::with([
+        'paymentItems.product',
+        'paymentItems.variant',
+        'paymentItems.customizationRequest',
+        'paymentItems.customizationRequest.messages'
+    ])
+        ->where('customer_id', Auth::id())
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        //approval checks
-        // Add is_approved property dynamically
+    // Define common data (always needed)
+    $commonData = [
+        'categories' => AwardCategory::with('products')->get(),
+        'cart_items' => cartItem::where('user_id', Auth::id())->count(),
+        'pages' => Page::all(),
+        'wishlist_count' => WishlistItem::where('user_id', Auth::id())->count(),
+    ];
+
+    $customization_request = CustomizationRequest::where('user_id', Auth::id())->get();
+    $customizationRequest = CustomizationRequest::with('designer')
+        ->where('user_id', Auth::id())
+        ->first();
+
+    if ($payments->isNotEmpty()) {
+        // Approval checks
         foreach ($payments as $payment) {
             foreach ($payment->paymentItems as $item) {
                 $item->is_approved = $item->customizationRequest
                     ? $item->customizationRequest->messages
-                    ->where('is_approved', 1)
-                    ->count() > 0
+                        ->where('is_approved', 1)
+                        ->count() > 0
                     : false;
             }
+
+            // Fetch customization details safely
+            $custom = $customization_request->firstWhere(
+                'payment_item_id',
+                $payment->id,
+            );
+
+            $customization = Auth::user()
+                ->customizationRequests()
+                ->where('payment_item_id', $payment->id)
+                ->where('status', 'pending')
+                ->first();
+
+            $customizationApproved = Auth::user()
+                ->customizationRequests()
+                ->where('payment_item_id', $payment->id)
+                ->where('status', 'approved')
+                ->first();
+
+            if (!isset($customizationApproved)) {
+                $customizationApproved = null;
+            }
         }
+    } else {
+        $payments = collect(); // empty collection (better than [])
+    }
+
+    return view('website.orders.my-orders', array_merge($commonData, [
+        'payments' => $payments,
+        'customization_request' => $customization_request,
+        'customizationRequest' => $customizationRequest,
+    ]));
+}
 
 
-        // Get common view data for layout
-        $commonData = [
-            'categories' => AwardCategory::with('products')->get(),
-            'cart_items' => cartItem::where('user_id', Auth::id())->count(),
-            'pages' => Page::all(),
-            'wishlist_count' => WishlistItem::where('user_id', Auth::id())->count(),
-        ];
-        $customization_request = CustomizationRequest::where('user_id', Auth::id())->get();
-        $customizationRequest = CustomizationRequest::with('designer')
-            ->where('user_id', Auth::id())
-            ->first();
-                                                        $custom = $customization_request->firstWhere(
-                                                            'payment_item_id',
-                                                            $payment->id,
-                                                        );
+    //my method 
+    // public function myOrders()
+    // {
+    //     if (!Auth::check()) {
+    //         return redirect()->route('login')->with('error', 'Please login to view your orders.');
+    //     }
 
-                                                        $customization = Auth::user()
-                                                            ->customizationRequests()
-                                                            ->where('payment_item_id', $payment->id)
-                                                            ->where('status', 'pending')
-                                                            ->first();
+    //     // Get user's payment history with items
+    //     $payments = Payment::with([
+    //         'paymentItems.product',
+    //         'paymentItems.variant',
+    //         'paymentItems.customizationRequest',
+    //         'paymentItems.customizationRequest.messages'
+    //     ])
+    //         ->where('customer_id', Auth::id())
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+            
+    //     //approval checks
+    //     // Add is_approved property dynamically
+    //     if($payments->isNotEmpty()){
+
+    //     foreach ($payments as $payment) {
+    //         foreach ($payment->paymentItems as $item) {
+    //             $item->is_approved = $item->customizationRequest
+    //                 ? $item->customizationRequest->messages
+    //                 ->where('is_approved', 1)
+    //                 ->count() > 0
+    //                 : false;
+    //         }
+    //     }
+
+
+    //     // Get common view data for layout
+    //     $commonData = [
+    //         'categories' => AwardCategory::with('products')->get(),
+    //         'cart_items' => cartItem::where('user_id', Auth::id())->count(),
+    //         'pages' => Page::all(),
+    //         'wishlist_count' => WishlistItem::where('user_id', Auth::id())->count(),
+    //     ];
+    //     $customization_request = CustomizationRequest::where('user_id', Auth::id())->get();
+    //     $customizationRequest = CustomizationRequest::with('designer')
+    //         ->where('user_id', Auth::id())
+    //         ->first();
+    //                                                     $custom = $customization_request->firstWhere(
+    //                                                         'payment_item_id',
+    //                                                         $payment->id,
+    //                                                     );
+
+    //                                                     $customization = Auth::user()
+    //                                                         ->customizationRequests()
+    //                                                         ->where('payment_item_id', $payment->id)
+    //                                                         ->where('status', 'pending')
+    //                                                         ->first();
                                                         
-                                                        $customizationApproved = Auth::user()
-                                                            ->customizationRequests()
-                                                            ->where('payment_item_id', $payment->id)
-                                                            ->where('status', 'approved')
-                                                            ->first();
-                                                        if (isset($customizationApproved)) {
-                                                        } else {
-                                                            $customizationApproved = null;
-                                                        }
+    //                                                     $customizationApproved = Auth::user()
+    //                                                         ->customizationRequests()
+    //                                                         ->where('payment_item_id', $payment->id)
+    //                                                         ->where('status', 'approved')
+    //                                                         ->first();
+    //                                                     if (isset($customizationApproved)) {
+    //                                                     } else {
+    //                                                         $customizationApproved = null;
+    //                                                     }
+    //     }else{
+    //         $payments = []; 
+    //     }
                                                 
        
-        return view('website.orders.my-orders', array_merge($commonData, [
-            'payments' => $payments,
-            'customization_request' => $customization_request,
-            'customizationRequest' => $customizationRequest,
-        ]));
-    }
+    //     return view('website.orders.my-orders', array_merge($commonData, [
+    //         'payments' => $payments,
+    //         'customization_request' => $customization_request,
+    //         'customizationRequest' => $customizationRequest,
+    //     ]));
+    // }
 
     public function orderDetails($id)
     {

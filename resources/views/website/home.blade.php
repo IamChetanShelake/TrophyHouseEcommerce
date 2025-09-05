@@ -1051,7 +1051,7 @@
                             <div class="hover-yellow-bg d-none d-sm-block"></div>
                             <div class="row justify-content-center text-center position-relative">
                                 <!-- <div class="row justify-content-center text-center py-5"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
 
                                 <!-- Product Not Found Message -->
                                 <p class="text-center text-danger fw-bold d-none" id="no-products-msg">
@@ -1061,7 +1061,7 @@
 
                                 <!-- Product Card Wrapper -->
                                 <!-- <div class="trophy-card-wrapper position-relative">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
                                 @php $hasTopPick = false; @endphp
                                 @foreach ($products as $prod)
                                     @php
@@ -1102,6 +1102,7 @@
                                                                 value="{{ $prod->id }}">
                                                             <input type="hidden" name="variant_id"
                                                                 value="{{ $prod->variants->first()->id ?? '' }}">
+
                                                             @php
                                                                 $firstVariant = $prod->variants->first();
                                                                 $firstColor = '';
@@ -1141,7 +1142,7 @@
                                 @endforeach
 
                                 <!--
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @if (!$hasTopPick)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @if (!$hasTopPick)
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('no-products-msg').classList.remove('d-none');
@@ -1561,25 +1562,31 @@
 
                                                                 <div class="trophy-hover-bar">
                                                                     <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                                        data-product-id="{{ $product->id }}"
+                                                                        data-occasional-product-id="{{ $product->id ?? '' }}"
                                                                         title="Toggle Wishlist"></i>
 
                                                                     <form action="{{ route('cart.add') }}"
                                                                         method="POST">
                                                                         @csrf
-                                                                        <input type="hidden" name="product_id"
-                                                                            value="{{ $prod->id }}">
+
+
+                                                                        <input type="hidden" name="occasional_product_id"
+                                                                            value="{{ $product->id }}">
+                                                                        <input type="hidden" name="variant_id"
+                                                                            value="{{ $product->variants->first()->id }}">
+
                                                                         <button type="submit" class="add-to-cart-btn">Add
                                                                             To
                                                                             Cart</button>
                                                                     </form>
                                                                     <!--<i class="fas fa-share icon-toggle"></i>-->
                                                                     <i class="fas fa-share icon-toggle share-icon"
-                                                                        data-share-link="{{ route('productDetail', $prod->id) }}"></i>
+                                                                        data-share-link="{{ route('productDetail', $product->id) }}"
+                                                                        data-occasional-product-id="{{ $product->id ?? '' }}"></i>
                                                                 </div>
                                                             </div>
                                                             <div class="card-body py-2">
-                                                                <p class="mb-1 product-id">{{ $product->id }}</p>
+                                                                <p class="mb-1 product-title">{{ $product->title }}</p>
                                                                 <p class="mb-0 text-danger fw-bold">
                                                                     {{ $price }} Rs</p>
                                                             </div>
@@ -2260,7 +2267,8 @@
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation(); // Prevent parent link navigation
-                        const productId = this.dataset.productId;
+                        const productId = this.dataset.productId || null;
+                        const occasionalProductId = this.dataset.occasionalProductId || null;
                         const isWishlisted = this.classList.contains('text-danger');
 
                         // Check if user is authenticated
@@ -2269,71 +2277,74 @@
                             window.location.href = '{{ route('login') }}';
                             return;
                         }
+                        // Build request body depending on type
+                        let bodyData = {};
+                        if (productId) bodyData.product_id = productId;
+                        if (occasionalProductId) bodyData.occasional_product_id = occasionalProductId;
 
                         // Prepare the request
                         const url = isWishlisted ? '/wishlist/get-item/' + productId :
                             '{{ route('wishlist.add') }}';
                         const method = isWishlisted ? 'GET' : 'POST';
-                        const body = isWishlisted ? null : JSON.stringify({
-                            product_id: productId
-                        });
-
-                        // First, fetch the wishlist item ID if removing
-                        fetch(url, {
-                                method: method,
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                },
-                                body: body,
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (!data.success) {
-                                    alert(data.message || 'An error occurred.');
-                                    return Promise.reject(new Error('Request failed'));
-                                }
-
-                                if (isWishlisted) {
-                                    // Remove from wishlist using the wishlist_item_id
-                                    const wishlistItemId = data.wishlist_item_id;
-                                    return fetch('{{ route('wishlist.remove', ['id' => ':id']) }}'
-                                        .replace(':id', wishlistItemId), {
-                                            method: 'DELETE',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                            },
-                                        }).then(response => response.json());
-                                } else {
-                                    // Product added successfully
-                                    this.classList.add('text-danger');
-                                    updateWishlistCount(data.count);
-                                    alert(data.message); // Single alert for add
-                                    return Promise.resolve(data);
-                                }
-                            })
-                            .then(data => {
-                                if (isWishlisted && data.success) {
-                                    this.classList.remove('text-danger');
-                                    updateWishlistCount(data.count);
-                                    alert(data.message); // Single alert for remove
-                                }
-                            })
-                            .catch(error => {
-                                if (error.message !== 'Request failed') {
-                                    console.error('Error:', error);
-                                    alert('An error occurred while updating your wishlist.');
-                                }
-                            });
+                        const body = isWishlisted ? null : JSON.stringify(bodyData);
                     });
-                });
 
-                function updateWishlistCount(count) {
-                    if (wishlistCountElement) {
-                        wishlistCountElement.textContent = count || 0;
-                    }
+                    // First, fetch the wishlist item ID if removing
+                    fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: body,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert(data.message || 'An error occurred.');
+                                return Promise.reject(new Error('Request failed'));
+                            }
+
+                            if (isWishlisted) {
+                                // Remove from wishlist using the wishlist_item_id
+                                const wishlistItemId = data.wishlist_item_id;
+                                return fetch('{{ route('wishlist.remove', ['id' => ':id']) }}'
+                                    .replace(':id', wishlistItemId), {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        },
+                                    }).then(response => response.json());
+                            } else {
+                                // Product added successfully
+                                this.classList.add('text-danger');
+                                updateWishlistCount(data.count);
+                                alert(data.message); // Single alert for add
+                                return Promise.resolve(data);
+                            }
+                        })
+                        .then(data => {
+                            if (isWishlisted && data.success) {
+                                this.classList.remove('text-danger');
+                                updateWishlistCount(data.count);
+                                alert(data.message); // Single alert for remove
+                            }
+                        })
+                        .catch(error => {
+                            if (error.message !== 'Request failed') {
+                                console.error('Error:', error);
+                                alert('An error occurred while updating your wishlist.');
+                            }
+                        });
+                });
+            });
+
+            function updateWishlistCount(count) {
+                if (wishlistCountElement) {
+                    wishlistCountElement.textContent = count || 0;
                 }
+            }
             });
         </script>
 
@@ -2617,6 +2628,124 @@
     </script>
 
     <script>
+        // Helper functions to re-attach event listeners after AJAX content update
+        function attachWishlistListeners() {
+            document.querySelectorAll('.wishlist-toggle').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const productId = this.dataset.productId;
+                    const occasionalProductId = this.dataset.occasionalProductId || null;
+                    const isWishlisted = this.classList.contains('text-danger');
+
+
+                    // Check if user is authenticated
+                    if (!{{ Auth::check() ? 'true' : 'false' }}) {
+                        alert('Please log in to manage your wishlist.');
+                        window.location.href = '{{ route('login') }}';
+                        return;
+                    }
+
+                    // Build request body depending on type
+                    let bodyData = {};
+                    if (productId) bodyData.product_id = productId;
+                    if (occasionalProductId) bodyData.occasional_product_id = occasionalProductId;
+
+                    // Prepare the request
+                    const url = isWishlisted ? '/wishlist/get-item/' + (productId ?? occasionalProductId) :
+                        '{{ route('wishlist.add') }}';
+                    const method = isWishlisted ? 'GET' : 'POST';
+                    const body = isWishlisted ? null : JSON.stringify({
+                        product_id: productId
+                    });
+
+                    // First, fetch the wishlist item ID if removing
+                    fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: body,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert(data.message || 'An error occurred.');
+                                return Promise.reject(new Error('Request failed'));
+                            }
+
+                            if (isWishlisted) {
+                                // Remove from wishlist using the wishlist_item_id
+                                const wishlistItemId = data.wishlist_item_id;
+                                return fetch('{{ route('wishlist.remove', ['id' => ':id']) }}'
+                                    .replace(':id', wishlistItemId), {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        },
+                                    }).then(response => response.json());
+                            } else {
+                                // Product added successfully
+                                this.classList.add('text-danger');
+                                updateWishlistCount(data.count);
+                                alert(data.message); // Single alert for add
+                                return Promise.resolve(data);
+                            }
+                        })
+                        .then(data => {
+                            if (isWishlisted && data.success) {
+                                this.classList.remove('text-danger');
+                                updateWishlistCount(data.count);
+                                alert(data.message); // Single alert for remove
+                            }
+                        })
+                        .catch(error => {
+                            if (error.message !== 'Request failed') {
+                                console.error('Error:', error);
+                                alert('An error occurred while updating your wishlist.');
+                            }
+                        });
+                });
+            });
+        }
+
+        function attachCartListeners() {
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // The form will submit normally, no special handling needed
+                });
+            });
+        }
+
+        function attachShareListeners() {
+            document.querySelectorAll('.share-icon').forEach(icon => {
+                icon.addEventListener('click', function(e) {
+                    const shareLink = this.dataset.shareLink;
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'Check out this product',
+                            url: shareLink
+                        });
+                    } else {
+                        // Fallback: copy to clipboard
+                        navigator.clipboard.writeText(shareLink).then(() => {
+                            alert('Link copied to clipboard!');
+                        });
+                    }
+                });
+            });
+        }
+
+        function updateWishlistCount(count) {
+            const wishlistCountElement = document.querySelector('.wishlist-count');
+            if (wishlistCountElement) {
+                wishlistCountElement.textContent = count || 0;
+            }
+        }
+
+        // Price range filter with event listener re-attachment
         document.getElementById('priceRange').addEventListener('change', function() {
             let range = this.value;
             if (!range) return;
@@ -2627,6 +2756,11 @@
                 .then(data => {
                     console.log("this is range", data);
                     document.getElementById('products-wrapper').innerHTML = data.html;
+
+                    // RE-ATTACH EVENT LISTENERS AFTER CONTENT UPDATE
+                    attachWishlistListeners();
+                    attachCartListeners();
+                    attachShareListeners();
                 })
                 .catch(err => console.error(err));
         });

@@ -10,6 +10,7 @@ use App\Models\SubCategory;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use App\Models\AwardCategory;
+use App\Models\ProductionTask;
 
 class HomeController extends Controller
 {
@@ -37,7 +38,10 @@ class HomeController extends Controller
         $awardCategories = AwardCategory::count();
         $subCategories = SubCategory::count();
         $users = User::count();
-        return view('admin.home',compact(['products','testimonials','teams','pages','awardCategories','subCategories','users']));
+         $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+        return view('admin.home',compact(['products','testimonials','teams','pages','awardCategories','subCategories','users','tasks']));
     }
 
    

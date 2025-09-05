@@ -119,8 +119,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/wishlist/get-item/{product_id}', [WishlistController::class, 'getWishlistItem'])->middleware('auth')->name('wishlist.getItem');
     Route::post('/wishlist/proceed-to-cart', [WishlistController::class, 'proceedToCart'])->name('wishlist.proceedToCart');
 
-    // Customization
-
+    // designer customization routes
     Route::prefix('designer')->group(function () {
 
         Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
@@ -184,6 +183,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/customization/chat/send/{id}', [CustomizationController::class, 'sendUserMessage'])->name('customization.userchat.send');
 
     Route::post('/customization/{id}/request-edit', [CustomizationController::class, 'requestEdit'])->name('customization.request-edit');
+
+    // Production Panel
+    Route::get('/production/requests', [WebsiteController::class, 'productionRequests'])->name('production.requests');
+    Route::post('/production/{id}/status', [ProductionController::class, 'updateStatus'])->name('production.updateStatus');
+
 
 
     // Address Management

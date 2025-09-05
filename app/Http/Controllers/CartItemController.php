@@ -20,25 +20,38 @@ class CartItemController extends Controller
     public function addToCart(Request $request)
     {
         
-
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'nullable|exists:products,id',
+            'occasional_product_id' => 'nullable|exists:occasional_products,id',
             'variant_id' => 'required|exists:product_variants,id',
             'color' => 'nullable|string',
         ]);
-
+        
+        if (!$request->filled('product_id') && !$request->filled('occasional_product_id')) {
+            return redirect()->back()->with('error', 'No product specified!');
+        }
+        
         $userId = auth()->id();
-        $productId = $request->product_id;
+        $productId = $request->product_id ?? null;
+        $occasionalProductId = $request->occasional_product_id ?? null;
         $variantId = $request->variant_id;
-         $color = $request->color;
-
+        $color = $request->color;
+        
         // Check if the same product + variant already exists in the cart
-        $cartItem = CartItem::where('user_id', $userId)
-            ->where('product_id', $productId)
-            ->where('variant_id', $variantId)
-              ->when($color, fn($q) => $q->where('color', $color)) 
-            ->first();
-      
+       $cartItem = CartItem::where('user_id', $userId)
+    ->when($productId, function ($q) use ($productId) {
+        return $q->where('product_id', $productId);
+    })
+    ->when($occasionalProductId, function ($q) use ($occasionalProductId) {
+        return $q->where('occasional_product_id', $occasionalProductId);
+    })
+    ->where('variant_id', $variantId)
+    ->when($color, function ($q) use ($color) {
+        return $q->where('color', $color);
+    })
+    ->first();
+
+        
         if ($cartItem) {
             // If already in cart with same size, just increment quantity
             $cartItem->quantity += 1;
@@ -52,10 +65,12 @@ class CartItemController extends Controller
             $addedToCart = CartItem::create([
                 'user_id' => $userId,
                 'product_id' => $productId,
+                'occasional_product_id' => $occasionalProductId,
                 'variant_id' => $variantId,
                 'color' => $color,
                 'quantity' => 1
             ]);
+            // dd('no item with that');
             
             if ($addedToCart) {
                 return redirect()->back()->with('success', 'Product added to cart!');
