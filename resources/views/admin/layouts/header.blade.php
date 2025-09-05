@@ -246,18 +246,20 @@
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="collapse" href="#rowMaterialMenu" aria-expanded="false"
                             aria-controls="rowMaterialMenu">
-                            <span class="menu-title">Row Material</span>
+                            <span class="menu-title">Raw Material</span>
                             <i class="mdi mdi-chevron-down menu-icon"></i>
                         </a>
 
 
                         <div class="collapse" id="rowMaterialMenu">
                             <ul class="nav flex-column sub-menu">
-                                <li class="nav-item"><a class="nav-link" href="{{route('admin.materialtype.index')}}">Row Material Type</a></li>
-                                <li class="nav-item"><a class="nav-link" href="{{route('admin.material.index')}}">Row Material</a></li>
-                                <li class="nav-item"><a class="nav-link" href="">Supplier</a></li>
-                                <li class="nav-item"><a class="nav-link" href="">Purchase</a></li>
-                                <li class="nav-item"><a class="nav-link" href="">Usage</a></li>
+                                <li class="nav-item"><a class="nav-link"
+                                        href="{{ route('admin.materialtype.index') }}">Raw Material Type</a></li>
+                                <li class="nav-item"><a class="nav-link"
+                                        href="{{ route('admin.material.index') }}">Raw Material</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{route('admin.supplier.index')}}">Supplier With Purchase</a></li>
+                                <li class="nav-item"><a class="nav-link" href="">Add Purchase</a></li>
+                                {{--  <li class="nav-item"><a class="nav-link" href="">Usage</a></li>  --}}
                             </ul>
                         </div>
                     </li>

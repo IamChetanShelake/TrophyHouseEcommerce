@@ -21,21 +21,24 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UsageController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+
 use App\Http\Controllers\ProfileController;
 
 use App\Http\Controllers\WebsiteController;
-
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
+
 use App\Http\Controllers\DesignerController;
 
 use App\Http\Controllers\MaterialController;
-
 use App\Http\Controllers\OccasionController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SubCategoryController;
@@ -376,6 +379,7 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/viewTestimonial/{id?}', [TestimonialController::class, 'show'])->name('test.view');
     Route::put('/update-testimonial/{id?}', [TestimonialController::class, 'update'])->name('test.update');
     Route::delete('/delete-testimonial/{id?}', [TestimonialController::class, 'destroy'])->name('test.destroy');
+
     // Clients---------------------------------------------------------------------------------------------
     Route::get('clients', [ClientController::class, 'index'])->name('clients');
     Route::get('add-client', [ClientController::class, 'create'])->name('client.add');
@@ -410,6 +414,31 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/material/{id}/edit', [MaterialController::class, 'edit'])->name('admin.material.edit');
     Route::put('/material/{id}', [MaterialController::class, 'update'])->name('admin.material.update');
     Route::delete('/material/{id}', [MaterialController::class, 'destroy'])->name('admin.material.destroy');
+
+    //purchase
+    Route::get('/purchase/{id}', [PurchaseController::class, 'index'])->name('admin.purchase.index');
+    Route::get('/purchase/create/{id}', [PurchaseController::class, 'create'])->name('admin.purchase.create');
+    Route::post('/purchase/store', [PurchaseController::class, 'store'])->name('admin.purchase.store');
+    Route::get('/purchase/{id}/edit', [PurchaseController::class, 'edit'])->name('admin.purchase.edit');
+    Route::put('/purchase/{id}', [PurchaseController::class, 'update'])->name('admin.purchase.update');
+    Route::delete('/purchase/{id}', [PurchaseController::class, 'destroy'])->name('admin.purchase.destroy');
+
+
+    //usage
+    Route::get('/usage/{id}', [UsageController::class, 'index'])->name('admin.usage.index');
+    Route::get('/usage/create/{id}', [UsageController::class, 'create'])->name('admin.usage.create');
+    Route::post('/usage/store', [UsageController::class, 'store'])->name('admin.usage.store');
+    Route::get('/usage/{id}/edit', [UsageController::class, 'edit'])->name('admin.usage.edit');
+    Route::put('/usage/{id}', [UsageController::class, 'update'])->name('admin.usage.update');
+    Route::delete('/usage/{id}', [UsageController::class, 'destroy'])->name('admin.usage.destroy');
+
+    //suppier with multiple purchase
+    Route::get('/supplier', [SupplierController::class, 'index'])->name('admin.supplier.index');
+    Route::get('/supplier/create', [SupplierController::class, 'create'])->name('admin.supplier.create');
+    Route::post('/supplier/store', [SupplierController::class, 'store'])->name('admin.supplier.store');
+    Route::get('/supplier/{id}/edit', [SupplierController::class, 'edit'])->name('admin.supplier.edit');
+    Route::put('/supplier/{id}', [SupplierController::class, 'update'])->name('admin.supplier.update');
+    Route::delete('/supplier/{id}', [SupplierController::class, 'destroy'])->name('admin.supplier.destroy');
 });
 
 Route::get('/clean-cache', function () {

@@ -90,7 +90,7 @@
                                                 <th>Stock In</th>
                                                 <th>Stock Out</th>
                                                 <th>Current Stock</th>
-                                                <th>Reorder Level</th>
+                                                {{--  <th>Reorder Level</th>  --}}
                                                 {{--  <th>Description</th>  --}}
                                                 <th style="text-align: center;">Action</th>
                                             </tr>
@@ -102,33 +102,51 @@
                                                     <td>{{ $material->name }}</td>
                                                     <td>{{ $material->category->name ?? 'N/A' }}</td>
                                                     <td>{{ $material->unit }}</td>
-                                                    {{--  <td>{{ $material->stock_in }}</td>
-                                            <td>{{ $material->stock_out }}</td>
-                                            <td>{{ $material->current_stock }}</td>
-                                            <td>{{ $material->reorder_level }}</td>  --}}
-                                                    <td>{{ intval($material->stock_in) }} &nbsp; <a
-                                                            href="{{ route('admin.purchase.create') }}" class="btn  btn-sm"
+                                                    <td>{{ intval($material->stock_in) }} <a
+                                                            href="{{ route('admin.purchase.create', $material->id) }}"
+                                                            class="btn btn-sm" style="background-color: green; color:#fff;">
+                                                            <b>+</b>
+                                                        </a></td>
+                                                    <td>{{ intval($material->stock_out) }} <a
+                                                            href="{{ route('admin.usage.create', $material->id) }}"
+                                                            class="btn btn-danger btn-sm">
+                                                            <b> -</b>
+                                                        </a></td>
+                                                    <td><b>{{ $material->current_stock }}</b></td>
+                                                    {{--  <td>{{ $material->reorder_level }}</td>  --}}
+                                                    {{--  <td>{{ intval($material->stock_in) }} &nbsp; <a
+                                                            href="{{ route('admin.purchase.create',$material->id) }}" class="btn  btn-sm"
                                                             style="background-color: green; color:#fff;">
                                                             <b> +</b>
-                                                        </a></td>
-                                                    <td>{{ intval($material->stock_out) }}&nbsp;
-                                                        <a href="" class="btn btn-danger btn-sm">
+                                                        </a></td>  --}}
+                                                    {{--  <td>
+                                                        {{ intval($material->purchases_sum_quantity ?? 0) }} &nbsp;
+                                                        <a href="{{ route('admin.purchase.create', $material->id) }}"
+                                                            class="btn btn-sm" style="background-color: green; color:#fff;">
+                                                            <b>+</b>
+                                                        </a>
+                                                    </td>  --}}
+
+                                                    {{--  <td>{{ intval($material->stock_out) }}&nbsp;
+                                                        <a href="{{ route('admin.usage.create', $material->id) }}"
+                                                            class="btn btn-danger btn-sm">
                                                             <b> -</b>
                                                         </a>
-                                                    </td>
-                                                    <td>{{ intval($material->current_stock) }}</td>
-                                                    <td>{{ intval($material->reorder_level) }}</td>
+                                                    </td>  --}}
+                                                    {{--  <td>{{ intval($material->current_stock) }}</td>
+                                                    <td>{{ intval($material->reorder_level) }}</td>  --}}
 
                                                     {{--  <td>{{ $material->desc ?? 'N/A' }}</td>  --}}
                                                     <td style="text-align: center;">
 
-                                                        <a href="{{ route('admin.purchase.index') }}"
+                                                        <a href="{{ route('admin.purchase.index', $material->id) }}"
                                                             class="btn btn-primary btn-sm"
                                                             style="background-color: green; color:#fff;">
-                                                            Purchase List
+                                                            Purchase
                                                         </a>
-                                                        <a href="" class="btn btn-danger btn-sm">
-                                                            Usage List
+                                                        <a href="{{ route('admin.usage.index', $material->id) }}"
+                                                            class="btn btn-danger btn-sm">
+                                                            Usage
                                                         </a>
 
                                                         <a href="{{ route('admin.material.edit', $material->id) }}"

@@ -13,12 +13,12 @@ class MaterialTypeController extends Controller
         $query = MaterialType::query()->orderBy('created_at', 'desc');
         $materialTypes = $query->paginate(500);
 
-        return view('admin.RowMaterial.materialtype.index', compact('materialTypes'));
+        return view('admin.RawMaterial.materialtype.index', compact('materialTypes'));
     }
 
     public function create()
     {
-        return view('admin.RowMaterial.materialtype.create');
+        return view('admin.RawMaterial.materialtype.create');
     }
 
     public function store(Request $request)
@@ -39,7 +39,7 @@ class MaterialTypeController extends Controller
     public function edit($id)
     {
         $materialType = MaterialType::findOrFail($id);
-        return view('admin.RowMaterial.materialtype.edit', compact('materialType'));
+        return view('admin.RawMaterial.materialtype.edit', compact('materialType'));
     }
 
     public function update(Request $request, $id)
