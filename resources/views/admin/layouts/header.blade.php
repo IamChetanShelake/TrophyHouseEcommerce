@@ -154,19 +154,19 @@
                         </li>
 
 
-                    <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
-                        <a class="nav-link" href="{{ route('Designerinfo') }}">
-                            <span class="menu-title">Designer</span>
-                            <i class="mdi mdi-account-group menu-icon"></i>
-                        </a>
-                    </li>
+                        <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+                            <a class="nav-link" href="{{ route('Designerinfo') }}">
+                                <span class="menu-title">Designer</span>
+                                <i class="mdi mdi-account-group menu-icon"></i>
+                            </a>
+                        </li>
 
-                    <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
-                        <a class="nav-link" href="{{ route('teams') }}">
-                            <span class="menu-title">Team</span>
-                            <i class="mdi mdi-account-group menu-icon"></i>
-                        </a>
-                    </li>
+                        <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+                            <a class="nav-link" href="{{ route('teams') }}">
+                                <span class="menu-title">Team</span>
+                                <i class="mdi mdi-account-group menu-icon"></i>
+                            </a>
+                        </li>
                         <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
                             <a class="nav-link" href="{{ route('Designerinfo') }}">
                                 <span class="menu-title">Designer</span>
@@ -181,12 +181,13 @@
                             </a>
                         </li>
 
-                    <li class="nav-item" data-keywords="testimonials,addTestimonial,viewTestimonial,editTestimonial">
-                        <a class="nav-link" href="{{ route('tests') }}">
-                            <span class="menu-title">Testimonials</span>
-                            <i class="mdi mdi-comment-text menu-icon"></i>
-                        </a>
-                    </li>
+                        <li class="nav-item"
+                            data-keywords="testimonials,addTestimonial,viewTestimonial,editTestimonial">
+                            <a class="nav-link" href="{{ route('tests') }}">
+                                <span class="menu-title">Testimonials</span>
+                                <i class="mdi mdi-comment-text menu-icon"></i>
+                            </a>
+                        </li>
 
                         <li class="nav-item" data-keywords="pages,addPage,editPage,viewPage">
                             <a class="nav-link" href="{{ route('pages') }}">
@@ -277,8 +278,11 @@
                                         href="{{ route('admin.materialtype.index') }}">Raw Material Type</a></li>
                                 <li class="nav-item"><a class="nav-link"
                                         href="{{ route('admin.material.index') }}">Raw Material</a></li>
-                                <li class="nav-item"><a class="nav-link" href="{{route('admin.supplier.index')}}">Supplier With Purchase</a></li>
-                                <li class="nav-item"><a class="nav-link" href="">Add Purchase</a></li>
+                                {{--  <li class="nav-item"><a class="nav-link" href="{{route('admin.supplier.index')}}">Supplier With Purchase</a></li>  --}}
+                                <li class="nav-item"><a class="nav-link" href="{{ route('admin.supplier.index') }}">
+                                        Purchase</a></li>
+                                <li class="nav-item"><a class="nav-link"
+                                        href="{{ route('admin.usage-person.index') }}"> Usage</a></li>
                                 {{--  <li class="nav-item"><a class="nav-link" href="">Usage</a></li>  --}}
                             </ul>
                         </div>

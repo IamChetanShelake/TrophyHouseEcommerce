@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('material_id');
             $table->foreign('material_id')->references('id')->on('materials')->onDelete('cascade');
             $table->decimal('quantity', 10, 2);
+            $table->unsignedBigInteger('usage_person_id');
+            $table->foreign('usage_person_id')->references('id')->on('usage_persons')->onDelete('cascade');
             $table->string('use_person_name');
             $table->date('usage_date');
             $table->timestamps();
