@@ -86,9 +86,9 @@ class CartItemController extends Controller
     {
         $product = Product::with('variants')->find($id);
       // Decode colors for each variant
-$product->variants->map(function ($variant) {
-    $variant->color = is_string($variant->color) ? json_decode($variant->color, true) : $variant->color;
-    return $variant;
+        $product->variants->map(function ($variant) {
+        $variant->color = is_string($variant->color) ? json_decode($variant->color, true) : $variant->color;
+        return $variant;
 });
 
         $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;

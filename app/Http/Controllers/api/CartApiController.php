@@ -192,26 +192,34 @@ public function addToCart(Request $req)
 // }
 public function removeFromCart(Request $req)
 {
-    $userId = $req->input('user_id');
+    // $userId = $req->input('user_id');
     $productId = $req->input('product_id');
 
-    if (!$userId || !$productId) {
-        return response()->json([
-            'status' => false,
-            'status_code' => 400,
-            'message' => 'User ID and Product ID are required',
-        ], 400);
+    // if (!$userId ) {
+    //     return response()->json([
+    //         'status' => false,
+    //         'status_code' => 400,
+    //         'message' => 'User ID and Product ID are required',
+    //     ], 400);
+    // }
+
+    $cartItem = cartItem::query();
+
+    if ($productId) {
+        $query->where('product_id', $productId);
     }
 
-    $cartItem = cartItem::where('user_id', $userId)
-        ->where('product_id', $productId)
-        ->first();
+    if ($occasionalProductId) {
+        $query->where('occasional_product_id', $occasionalProductId);
+    }
+
+    $cartItem = $query->first();
 
     if (!$cartItem) {
         return response()->json([
             'status' => false,
             'status_code' => 404,
-            'message' => 'Product not found in cart',
+            'message' => 'Item not found in cart',
         ], 404);
     }
 
@@ -220,8 +228,8 @@ public function removeFromCart(Request $req)
     return response()->json([
         'status' => true,
         'status_code' => 200,
-        'message' => 'Product removed from cart successfully',
-    ]);
+        'message' => 'Item removed from cart successfully',
+    ], 200);
 }
 
 

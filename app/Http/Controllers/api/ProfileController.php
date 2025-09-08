@@ -15,8 +15,8 @@ class ProfileController extends Controller
    public function editProfile(Request $request)
 {
     // Get the currently authenticated user (without Sanctum, assumes session or token-based)
-    $user = User::where('id',$request->user_id)->first(); // or auth()->user();
-//    return $user;
+    $user = auth()->user(); // or auth()->user();
+   return $user;
     
     // if (!$userId) {
     //     return response()->json([
