@@ -41,8 +41,10 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\UsagePersonController;
 use App\Http\Controllers\MaterialTypeController;
 use App\Http\Controllers\CustomizationController;
 use App\Http\Controllers\OccasionProductController;
@@ -443,6 +445,16 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/supplier/{id}/edit', [SupplierController::class, 'edit'])->name('admin.supplier.edit');
     Route::put('/supplier/{id}', [SupplierController::class, 'update'])->name('admin.supplier.update');
     Route::delete('/supplier/{id}', [SupplierController::class, 'destroy'])->name('admin.supplier.destroy');
+
+
+    Route::prefix('admin')->group(function () {
+        Route::get('/usage-person', [UsagePersonController::class, 'index'])->name('admin.usage-person.index');
+        Route::get('/usage-person/create', [UsagePersonController::class, 'create'])->name('admin.usage-person.create');
+        Route::post('/usage-person/store', [UsagePersonController::class, 'store'])->name('admin.usage-person.store');
+        Route::get('/usage-person/{id}/edit', [UsagePersonController::class, 'edit'])->name('admin.usage-person.edit');
+        Route::put('/usage-person/{id}', [UsagePersonController::class, 'update'])->name('admin.usage-person.update');
+        Route::delete('/usage-person/{id}', [UsagePersonController::class, 'destroy'])->name('admin.usage-person.destroy');
+    });
 });
 
 Route::get('/clean-cache', function () {
