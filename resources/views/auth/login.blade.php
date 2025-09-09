@@ -142,7 +142,8 @@
                     <!-- Email -->
                     <div class="mb-3">
                         <input id="mobile" type="tel" class="form-control @error('mobile') is-invalid @enderror"
-                            name="mobile" value="{{ old('mobile') }}" required placeholder=" Phone Number ">
+                            name="mobile" value="{{ old('mobile') }}" required placeholder=" Phone Number " maxlength="10"
+                            pattern="[0-9]{10}" autofocus>
 
                         @error('mobile')
                             <span class="invalid-feedback d-block" role="alert">

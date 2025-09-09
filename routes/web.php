@@ -67,7 +67,6 @@ Route::get('/view-category/{id}', [WebsiteController::class, 'viewCategory'])->n
 // Show products under a subcategory
 Route::get('/subcategory/{id}', [CategoryController::class, 'showSubcategory'])->name('view.subcategory');
 
-
 Route::get('/subcategory-products/{id}', [ProductController::class, 'getProductsBySubcategory'])->name('subcategory.products');
 
 //cartpage  routes
@@ -325,8 +324,6 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
 
     Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
-
-
 
     // Single order details
     Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');

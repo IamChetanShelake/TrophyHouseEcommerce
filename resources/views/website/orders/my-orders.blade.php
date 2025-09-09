@@ -169,6 +169,7 @@
             margin-top: 10px;
         }
     </style>
+
     <!--customization-modal-->
     <div class="modal fade" id="customizationModal" tabindex="-1" aria-labelledby="customizationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -284,6 +285,65 @@
                                                     <i class="fas fa-times"></i> Payment Failed
                                                 </span>
                                             @endif
+                                            <div class="mt-4">
+                                                @foreach ($payments as $p)
+                                                    @if ($p->delivery_status == 'pending')
+                                                        <span class="badge"
+                                                            style="background-color: #dcbf00;color: #c2d400;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                    @elseif($p->delivery_status == 'accepted')
+                                                        <span class="badge"
+                                                            style="background-color: #008616;
+                                                color: #00d720;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                    @elseif ($p->delivery_status == 'approved')
+                                                        <button class="badge"
+                                                            style=" background-color: #c9ddff;
+    color: #001cff;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;
+"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#statusModal{{ $p->id }}">
+                                                            {{ $p->delivery_status }}
+                                                        </button>
+                                                    @elseif ($p->delivery_status == 'ready_to_pickup')
+                                                        {{-- <span class="badge"
+                                                style="background-color: #a4ffae;color: #00c264;
+    border: none;
+    font-size: 13px;
+    border-radius: 25px;">{{ $p->delivery_status }}</span> --}}
+                                                        <button class="badge"
+                                                            style="background-color: #a4ffae;color: #00c264;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#statusModalDelivered{{ $p->id }}">
+                                                            Ready To Pick Up
+                                                        </button>
+                                                    @elseif ($p->delivery_status == 'delivered')
+                                                        <span class="badge"
+                                                            style="background-color: #89ff9c;color: #39c900;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                    @elseif ($p->delivery_status == 'cancelled')
+                                                        <span class="badge"
+                                                            style="background-color: #ff7777;color: #d30000;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                    @else
+                                                        <span class="badge bg-dark">pending</span>
+                                                    @endif
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -335,8 +395,7 @@
                                                         }
                                                     @endphp
 
-                                                    @if ($customization_request && $custom)
-                                                      
+                                                    {{-- @if ($customization_request && $custom)
                                                         <a class="text-success">
                                                             @if ($customization)
                                                                 <i class="bi bi-check-circle-fill me-1"></i>
@@ -344,7 +403,7 @@
                                                                 soon!
                                                             @elseif($customizationApproved)
                                                                 <i class="bi bi-check-circle-fill me-1"></i>
-                                                                 Approved!
+                                                                Approved!
                                                             @endif
                                                         </a>
                                                     @else
@@ -355,35 +414,15 @@
                                                             <i class="bi bi-pencil-square me-1"></i>
                                                             Customize with your own message or name.
                                                         </a>
-                                                    @endif
+                                                    @endif --}}
                                                 </div>
 
                                                 <div class="text-end d-flex flex-column align-items-end">
-                                                    @if ($payment->status == 'paid')
-                                                        <small class="text-success">
-                                                            <i class="fas fa-check-circle"></i> Paid
-                                                        </small>
-                                                    @elseif($payment->status == 'pending')
-                                                        <small class="text-warning">
-                                                            <i class="fas fa-clock"></i> Pending
-                                                        </small>
-                                                    @else
-                                                        <small class="text-danger">
-                                                            <i class="fas fa-times-circle"></i> Failed
-                                                        </small>
-                                                    @endif
+
+
+                                                    {{-- Chat with Designer --}}
 
                                                     @if ($item->customizationRequest)
-                                                        {{-- <span class="badge bg-primary">
-                                                            <i class="fas fa-pencil-alt"></i>
-                                                            <span>Customization</span>
-                                                            @if ($item->customizationRequest->status == 'rejected')
-                                                                {{ 'pending' }}
-                                                            @else
-                                                                {{ ucfirst($item->customizationRequest->status) }}
-                                                            @endif
-                                                        </span> --}}
-
                                                         <div class="d-flex align-items-center gap-2 mt-2">
                                                             <a href="{{ route('customization.userchat', $item->customizationRequest->id ?? null) }}"
                                                                 class="btn btn-sm btn-success mt-1"
@@ -394,17 +433,7 @@
                                                             </a>
                                                         </div>
                                                     @endif
-                                                    {{-- @if ($item->customizationRequest && $item->customizationRequest->messages->count())
-                                                        <div class="d-flex align-items-center gap-2 mt-2">
-                                                            <p class="mb-0"> </p>
-                                                            <a href="{{ route('customization.userchat', $item->customizationRequest->id) }}"
-                                                                class="btn btn-sm btn-success mt-1">
-                                                                <i class="fas fa-comments"></i> View Chat
-                                                            </a>
-                                                        </div>
-                                                    @else
-                                                        <p class="mt-2 mb-0">No chat messages yet.</p>
-                                                    @endif --}}
+
                                                 </div>
                                             </div>
                                         @endforeach

@@ -104,6 +104,31 @@
             top: 2px;
             left: 2px;
         }
+
+        .coupon-card {
+            animation: fadeIn 1s ease-in-out;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-text {
+            color: #27ae60;
+        }
+
+        .error-text {
+            color: #e74c3c;
+        }
     </style>
 
     <section class="container my-5">
@@ -297,6 +322,28 @@
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total Amount (incl. 18% GST)</strong>
                         <strong>₹{{ number_format($totalAmount, 2) }}</strong>
+                    </div>
+
+
+                    <!-- Coupon Input Section -->
+                    <div class="coupon-card bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                        <h5 class="text-3xl font-bold text-center text-gray-800 mb-6">Coupon Code Center</h5>
+                        <p class="text-gray-600 text-center mb-4">Enter your coupon code below to apply a discount!</p>
+                        <div class="mb-4">
+                            <label for="couponInput" class="block text-gray-700 font-medium mb-2">Coupon Code:</label>
+                            <input id="couponInput" type="text" placeholder="e.g., SWIFT10, SAVE20"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        </div>
+
+                        <!-- Apply Button -->
+                        <button id="applyBtn"
+                            class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-md transition-all duration-300"
+                            onclick="applyCoupon()">
+                            Apply Coupon
+                        </button>
+
+                        <!-- Feedback Message -->
+                        <p id="feedback" class="mt-4 text-center font-medium hidden"></p>
                     </div>
 
                     <form action="{{ route('pay') }}" method="POST">
