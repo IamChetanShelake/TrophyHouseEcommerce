@@ -2,119 +2,102 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Designer;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
 
-class DesignerController extends Controller
+class ProductUserController extends Controller
 {
-    // Show all designers
+    // List all product users
     public function index()
     {
-        $designers = User::where('role',2)->get();
-       
-        return view('admin.DesignerCrud.index', compact('designers'));
+        $users = User::where('role', 3)->latest()->paginate(500);
+        return view('admin.product-user.index', compact('users'));
     }
 
-    // Show form to add a designer
+    // Show form to create a new product user
     public function create()
     {
-        return view('admin.DesignerCrud.create');
+        return view('admin.product-user.create');
     }
 
-    // Store new designer
+    // Store a new product user
     public function store(Request $request)
     {
-        $request->validate([
-            'name'        => 'required',
-            'email'       => 'required|email|unique:users',
-            'mobile_no'   => 'required',
-            'password'    => 'required|min:6',
-            'birthday'    => 'required|date',
-            'designation' => 'nullable|string|max:255',
-            'image'       => 'nullable'
-        ]);
-
-        $imageName = null;
-        if ($request->hasFile('image')) {
-            $imageName = time().'.'.$request->file('image')->extension();
-            $request->file('image')->move('designer_images', $imageName);
+        $data = $this->validateData($request);
+        $data['role'] = 3;
+        $this->handleProfileImage($request, $data);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         }
-
-        User::create([
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'mobile'   => $request->mobile_no,
-            'password'    => Hash::make($request->password),
-            'birthday'    => $request->birthday,
-            'designation' => $request->designation,
-            'role' => 2,
-            'profile_img'       => $imageName,
-        ]);
-
-        return redirect()->route('Designerinfo')->with('success', 'Designer added successfully.');
+        User::create($data);
+        return redirect()->route('admin.product-user.index')->with('success', 'Product user created successfully!');
     }
 
-    // View designer details
-    public function show($id)
-    {
-        $designer = User::findOrFail($id);
-        return view('admin.DesignerCrud.show', compact('designer'));
-    }
-
-    // Show form to edit designer
+    // Show form to edit an existing product user
     public function edit($id)
     {
-        $designer = User::findOrFail($id);
-        return view('admin.DesignerCrud.edit', compact('designer'));
+        $user = User::where('role', 3)->findOrFail($id);
+        return view('admin.product-user.edit', compact('user'));
     }
 
-    // Update designer
+    // Update an existing product user
     public function update(Request $request, $id)
     {
-        $designer = User::findOrFail($id);
-
-       
-        // $imageName = $designer->image;
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            $oldPath = base_path('designer_images/' . $designer->profile_img);
-            if (is_file($oldPath)) {
-      
-               unlink($oldPath);
-            }
-
-            $imageName = time().'.'.$request->file('image')->extension();
-            $request->file('image')->move('designer_images', $imageName);
+        $user = User::where('role', 3)->findOrFail($id);
+        $data = $this->validateData($request, $user->id);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
         }
-
-        $designer->update([
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'mobile'   => $request->mobile_no,
-            'birthday'    => $request->birthday,
-            'designation' => $request->designation,
-            'profile_img'       => $imageName,
-        ]);
-
-        return redirect()->route('Designerinfo')->with('success', 'Designer updated successfully.');
+        $this->handleProfileImage($request, $data, $user);
+        $user->update($data);
+        return redirect()->route('admin.product-user.index')->with('success', 'Product user updated successfully!');
     }
 
-    // Delete designer
+    // Delete a product user
     public function destroy($id)
     {
-        $designer = User::findOrFail($id);
+        $user = User::where('role', 3)->findOrFail($id);
+        $this->deleteProfileImage($user);
+        $user->delete();
+        return redirect()->route('admin.product-user.index')->with('success', 'Product user deleted successfully!');
+    }
 
-        // Delete image file
-        $filepath = base_path('designer_images/'.$designer->profile_img);
-        if (is_file($filepath)) {
-            unlink($filepath);
+    // Validate user data
+    private function validateData(Request $request, $userId = null)
+    {
+        return $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . ($userId ?: 'NULL'),
+            'mobile' => 'required|string|max:15|unique:users,mobile,' . ($userId ?: 'NULL'),
+            'password' => $userId ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
+            'profile_image' => 'nullable|image|max:2048',
+        ]);
+    }
+
+    // Handle profile image upload
+    private function handleProfileImage(Request $request, array &$data, $user = null)
+    {
+        if ($request->hasFile('profile_image')) {
+            if ($user && $user->profile_image && file_exists(public_path($user->profile_image))) {
+                unlink(public_path($user->profile_image));
+            }
+            $filename = time() . '_' . Str::random(10) . '.' . $request->file('profile_image')->getClientOriginalExtension();
+            $request->file('profile_image')->move('profile_image', $filename);
+            $data['profile_image'] = 'profile_image/' . $filename;
+        } elseif ($user) {
+            $data['profile_image'] = $user->profile_image;
         }
+    }
 
-        $designer->delete();
-
-        return redirect()->route('Designerinfo')->with('success', 'Designer deleted successfully.');
+    // Delete profile image from storage
+    private function deleteProfileImage($user)
+    {
+        if ($user->profile_image && file_exists(public_path($user->profile_image))) {
+            unlink(public_path($user->profile_image));
+        }
     }
 }

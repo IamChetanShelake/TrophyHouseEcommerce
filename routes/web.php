@@ -34,7 +34,6 @@ use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
 
 use App\Http\Controllers\DesignerController;
-
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\OccasionController;
 use App\Http\Controllers\PurchaseController;
@@ -42,6 +41,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProductUserController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\UsagePersonController;
@@ -447,14 +447,22 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::delete('/supplier/{id}', [SupplierController::class, 'destroy'])->name('admin.supplier.destroy');
 
 
-    Route::prefix('admin')->group(function () {
-        Route::get('/usage-person', [UsagePersonController::class, 'index'])->name('admin.usage-person.index');
-        Route::get('/usage-person/create', [UsagePersonController::class, 'create'])->name('admin.usage-person.create');
-        Route::post('/usage-person/store', [UsagePersonController::class, 'store'])->name('admin.usage-person.store');
-        Route::get('/usage-person/{id}/edit', [UsagePersonController::class, 'edit'])->name('admin.usage-person.edit');
-        Route::put('/usage-person/{id}', [UsagePersonController::class, 'update'])->name('admin.usage-person.update');
-        Route::delete('/usage-person/{id}', [UsagePersonController::class, 'destroy'])->name('admin.usage-person.destroy');
-    });
+
+    Route::get('/usage-person', [UsagePersonController::class, 'index'])->name('admin.usage-person.index');
+    Route::get('/usage-person/create', [UsagePersonController::class, 'create'])->name('admin.usage-person.create');
+    Route::post('/usage-person/store', [UsagePersonController::class, 'store'])->name('admin.usage-person.store');
+    Route::get('/usage-person/{id}/edit', [UsagePersonController::class, 'edit'])->name('admin.usage-person.edit');
+    Route::put('/usage-person/{id}', [UsagePersonController::class, 'update'])->name('admin.usage-person.update');
+    Route::delete('/usage-person/{id}', [UsagePersonController::class, 'destroy'])->name('admin.usage-person.destroy');
+
+
+
+    Route::get('/product-user', [ProductUserController::class, 'index'])->name('admin.product-user.index');
+    Route::get('/product-user/create', [ProductUserController::class, 'create'])->name('admin.product-user.create');
+    Route::post('/product-user/store', [ProductUserController::class, 'store'])->name('admin.product-user.store');
+    Route::get('/product-user/{id}/edit', [ProductUserController::class, 'edit'])->name('admin.product-user.edit');
+    Route::put('/product-user/{id}', [ProductUserController::class, 'update'])->name('admin.product-user.update');
+    Route::delete('/product-user/{id}', [ProductUserController::class, 'destroy'])->name('admin.product-user.destroy');
 });
 
 Route::get('/clean-cache', function () {

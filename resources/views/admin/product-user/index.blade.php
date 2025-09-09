@@ -22,12 +22,6 @@
             background-color: #f5f5f5;
         }
 
-        .btn-add-row {
-            background-color: #0d6efd;
-            border: none;
-            color: #fff;
-        }
-
         .btn-submit {
             background-color: #28a745;
             border: none;
@@ -50,7 +44,7 @@
                 <x-session-message />
                 <div class="row">
                     <div class="col-lg-12">
-                        <p style="font-family: Rubik; font-size: 38px; font-weight: 500; color: #000;">Usage Persons List</p>
+                        <p style="font-family: Rubik; font-size: 38px; font-weight: 500; color: #000;">Product Users List</p>
                     </div>
                 </div>
                 <div class="row mt-4">
@@ -58,7 +52,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <div class="text-end">
-                                    <a href="{{ route('admin.usage-person.create') }}" class="btn btn-primary mb-3">Add New
+                                    <a href="{{ route('admin.product-user.create') }}" class="btn btn-primary mb-3 ">Add New
                                     </a>
                                 </div>
 
@@ -67,24 +61,30 @@
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
-                                                <th>Contact</th>
-                                                <th>Date</th>
-                                                <th>Total Quantity</th>
+                                                <th>Email</th>
+                                                <th>Mobile</th>
+                                                <th>Profile Image</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($usagePersons as $usagePerson)
+                                            @foreach ($users as $user)
                                                 <tr>
-                                                    <td>{{ $usagePerson->name }}</td>
-                                                    <td>{{ $usagePerson->contact ?? 'N/A' }}</td>
-                                                    <td>{{ $usagePerson->date }}</td>
-                                                    <td>{{ $usagePerson->usages_sum_quantity ?? 0 }}</td>
+                                                    <td>{{ $user->name }}</td>
+                                                    <td>{{ $user->email ?? 'N/A' }}</td>
+                                                    <td>{{ $user->mobile }}</td>
                                                     <td>
-                                                        <a href="{{ route('admin.usage-person.edit', $usagePerson->id) }}"
+                                                        @if ($user->profile_img)
+                                                            <img src="{{ asset('profile_image/' . $user->profile_img) }}"
+                                                                alt="Profile" style="width: 50px; height: 50px;">
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ route('admin.product-user.edit', $user->id) }}"
                                                             class="btn btn-primary btn-sm">Edit</a>
-                                                        <form
-                                                            action="{{ route('admin.usage-person.destroy', $usagePerson->id) }}"
+                                                        <form action="{{ route('admin.product-user.destroy', $user->id) }}"
                                                             method="POST" style="display:inline;">
                                                             @csrf
                                                             @method('DELETE')
@@ -97,7 +97,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                {{ $usagePersons->links() }}
+                                {{ $users->links() }}
                             </div>
                         </div>
                     </div>

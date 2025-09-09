@@ -162,24 +162,31 @@
                         </li>
 
                         <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+                            <a class="nav-link" href="{{ route('admin.product-user.index') }}">
+                                <span class="menu-title">Production</span>
+                                <i class="mdi mdi-account-group menu-icon"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
                             <a class="nav-link" href="{{ route('teams') }}">
                                 <span class="menu-title">Team</span>
                                 <i class="mdi mdi-account-group menu-icon"></i>
                             </a>
                         </li>
-                        <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+                        {{--  <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
                             <a class="nav-link" href="{{ route('Designerinfo') }}">
                                 <span class="menu-title">Designer</span>
                                 <i class="mdi mdi-account-group menu-icon"></i>
                             </a>
-                        </li>
+                        </li>  --}}
 
-                        <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
+
+                        {{--  <li class="nav-item" data-keywords="team,addTeam,viewTeam,editTeam">
                             <a class="nav-link" href="{{ route('teams') }}">
                                 <span class="menu-title">Team</span>
                                 <i class="mdi mdi-account-group menu-icon"></i>
                             </a>
-                        </li>
+                        </li>  --}}
 
                         <li class="nav-item"
                             data-keywords="testimonials,addTestimonial,viewTestimonial,editTestimonial">
