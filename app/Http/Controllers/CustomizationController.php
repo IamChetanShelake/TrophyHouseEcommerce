@@ -228,7 +228,8 @@ class CustomizationController extends Controller
 
             // payment_item चे customization_status "Approved" करा
             $paymentItem = $request->paymentItem;
-            $paymentItem->customization_status = 'Approved';
+            $paymentItem->customization_status = 'approved';
+            $paymentItem->delivery_status = 'approved';
             $paymentItem->save();
         }
 
@@ -345,7 +346,7 @@ class CustomizationController extends Controller
     //     ]);
     // }
 
-    // //cancel approve 
+    // //cancel approve
     // public function cancelApproval(CustomizationMessage $message)
     // {
     //     $user = auth()->user();
