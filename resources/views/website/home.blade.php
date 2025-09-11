@@ -14,8 +14,8 @@
         }
 
         .occasional-slider-section .trophy-card {
-            flex: 0 0 calc(33.33% - 20px);
-            /*max-width: calc(30.33% - 20px);*/
+            /* flex: 0 0 calc(33.33% - 20px); */
+            max-width: calc(30.33% - 20px);
             /*width: 550px;*/
             border: 1px solid #f0cfcf;
             border-radius: 10px;
@@ -343,7 +343,7 @@
                             <!-- mobile -->
                             <div class="mb-3">
                                 <input id="mobile" type="tel"
-                                    class="form-control @error('mobile') is-invalid @enderror" name="mobile"
+                                    class="form-control @error('mobile') is-invalid @enderror" name="mobile" maxlength="10"
                                     value="{{ old('mobile') }}" required placeholder=" Phone Number ">
 
                                 @error('mobile')
@@ -1051,7 +1051,7 @@
                             <div class="hover-yellow-bg d-none d-sm-block"></div>
                             <div class="row justify-content-center text-center position-relative">
                                 <!-- <div class="row justify-content-center text-center py-5"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
 
                                 <!-- Product Not Found Message -->
                                 <p class="text-center text-danger fw-bold d-none" id="no-products-msg">
@@ -1061,7 +1061,7 @@
 
                                 <!-- Product Card Wrapper -->
                                 <!-- <div class="trophy-card-wrapper position-relative">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
                                 @php $hasTopPick = false; @endphp
                                 @foreach ($products as $prod)
                                     @php
@@ -1142,7 +1142,7 @@
                                 @endforeach
 
                                 <!--
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @if (!$hasTopPick)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @if (!$hasTopPick)
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('no-products-msg').classList.remove('d-none');
@@ -1435,7 +1435,7 @@
         @foreach ($occasions as $occ)
             @if ($occ->occproducts->isNotEmpty())
                 <section class="container-fluid testimonial-section py-5 bg-white">
-                    <!--@php $occProducts @endphp-->
+
                     <div class="container">
                         <div class="row align-items-center mb-4">
 
@@ -2638,7 +2638,6 @@
                     const occasionalProductId = this.dataset.occasionalProductId || null;
                     const isWishlisted = this.classList.contains('text-danger');
 
-
                     // Check if user is authenticated
                     if (!{{ Auth::check() ? 'true' : 'false' }}) {
                         alert('Please log in to manage your wishlist.');
@@ -2650,6 +2649,7 @@
                     let bodyData = {};
                     if (productId) bodyData.product_id = productId;
                     if (occasionalProductId) bodyData.occasional_product_id = occasionalProductId;
+                    console.log(bodyData);
 
                     // Prepare the request
                     const url = isWishlisted ? '/wishlist/get-item/' + (productId ?? occasionalProductId) :

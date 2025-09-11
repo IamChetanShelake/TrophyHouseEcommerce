@@ -24,7 +24,37 @@ use App\Models\CustomizationRequest;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+    // public function index(Request $request)
+    // {
+    //     $q = Payment::with([
+    //         'user',
+    //         'items.product',
+    //         'items.variant:id,product_id,size,color,price,discounted_price',
+    //         'items.customizationRequest:id,payment_item_id,status',
+    //         'items.customizationRequest.messages',
+    //         'items.designer:id,name'
+    //     ])
+    //         ->where('status', 'paid'); // show only paid
+
+    //     if ($request->filled('q')) {
+    //         $term = '%' . $request->q . '%';
+    //         $q->where(function ($qb) use ($term) {
+    //             $qb->where('order_id', 'like', $term)
+    //                 ->orWhere('customer_name', 'like', $term)
+    //                 ->orWhere('customer_email', 'like', $term);
+    //         });
+    //     }
+
+    //     $payments = $q->latest('updated_at')->paginate(20);
+    //     // return $payments;
+    //     // foreach ($payments as $p) {
+    //     //      $p->order_status;
+    //     // }
+    //     return view('admin.Orders.index', compact('payments'));
+    // }
+
+
+    public function index(Request $request, $status = null)
     {
         $q = Payment::with([
             'user',
@@ -33,8 +63,12 @@ class OrderController extends Controller
             'items.customizationRequest:id,payment_item_id,status',
             'items.customizationRequest.messages',
             'items.designer:id,name'
-        ])
-            ->where('status', 'paid'); // show only paid
+        ])->where('status', 'paid'); // show only paid
+
+        // filter by delivery status if provided
+        if ($status) {
+            $q->where('delivery_status', $status);
+        }
 
         if ($request->filled('q')) {
             $term = '%' . $request->q . '%';
@@ -46,12 +80,10 @@ class OrderController extends Controller
         }
 
         $payments = $q->latest('updated_at')->paginate(20);
-        // return $payments;
-        // foreach ($payments as $p) {
-        //      $p->order_status;
-        // }
-        return view('admin.Orders.index', compact('payments'));
+
+        return view('admin.Orders.index', compact('payments', 'status'));
     }
+
 
     public function show(Payment $payment)
     {
@@ -188,7 +220,6 @@ class OrderController extends Controller
         } else {
             $payments = collect(); // empty collection (better than [])
         }
-
         return view('website.orders.my-orders', array_merge($commonData, [
             'payments' => $payments,
             'customization_request' => $customization_request,
@@ -197,7 +228,7 @@ class OrderController extends Controller
     }
 
 
-    //my method 
+    //my method
     // public function myOrders()
     // {
     //     if (!Auth::check()) {
@@ -262,7 +293,7 @@ class OrderController extends Controller
     //                                                         $customizationApproved = null;
     //                                                     }
     //     }else{
-    //         $payments = []; 
+    //         $payments = [];
     //     }
 
 
@@ -362,6 +393,7 @@ class OrderController extends Controller
             }
 
             return response()->json([
+                'image'  => $payment->user->profile_img  ?? null,
                 'name'  => $payment->user->name  ?? $payment->customer_name,
                 'email' => $payment->user->email ?? $payment->customer_email,
                 'phone' => $payment->user->mobile ?? $payment->customer_phone,
@@ -418,9 +450,10 @@ class OrderController extends Controller
             'items.variant',
             'items.designer',
             'items.customizationRequest.messages',
+            'items.customizationRequest.designer',
         ])->where('order_id', $orderId)->firstOrFail();
-        // return $payment;
-        // Get designer IDs who have already accepted this order
+
+        // Get designer IDs who already accepted
         $acceptedDesignerIds = $payment->items
             ->pluck('customizationRequest')
             ->filter(fn($c) => $c && $c->status === 'accepted')
@@ -428,17 +461,47 @@ class OrderController extends Controller
             ->unique()
             ->toArray();
 
-        // Get all designers except those who already accepted
+        // All other designers (optional, if needed later)
         $designers = User::where('role', 2)
             ->whereNotIn('id', $acceptedDesignerIds)
             ->get();
 
-        return view('admin.orders.products', [
-            'orderId' => $orderId,
-            'products' => $payment->items,
-            'designers' => $designers
+        return response()->json([
+            'products' => $payment->items->map(function ($item) {
+                $customization = $item->customizationRequest;
+
+                return [
+                    'id' => $item->id,
+                    'product' => $item->product ? [
+                        'id' => $item->product->id,
+                        'title' => $item->product->title,
+                    ] : null,
+                    'variant' => $item->variant ? [
+                        'id' => $item->variant->id,
+                        'size' => $item->variant->size,
+                        'color' => $item->variant->color,
+                    ] : null,
+                    'designer' => $item->designer ? [
+                        'id' => $item->designer->id,
+                        'name' => $item->designer->name,
+                    ] : null,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'customization_request' => $customization ? [
+                        'id' => $customization->id,
+                        'status' => $customization->status,
+                        'designer' => $customization->designer ? [
+                            'id' => $customization->designer->id,
+                            'name' => $customization->designer->name,
+                        ] : null,
+                        'messages_count' => $customization->messages->count(),
+                    ] : null,
+                    'is_approved' => $customization?->messages->where('is_approved', 1)->count() > 0,
+                ];
+            }),
         ]);
     }
+
 
     public function productChat($productId)
     {

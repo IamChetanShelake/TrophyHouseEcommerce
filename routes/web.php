@@ -67,7 +67,6 @@ Route::get('/view-category/{id}', [WebsiteController::class, 'viewCategory'])->n
 // Show products under a subcategory
 Route::get('/subcategory/{id}', [CategoryController::class, 'showSubcategory'])->name('view.subcategory');
 
-
 Route::get('/subcategory-products/{id}', [ProductController::class, 'getProductsBySubcategory'])->name('subcategory.products');
 
 //cartpage  routes
@@ -242,6 +241,8 @@ Auth::routes();
 Route::middleware(['auth', isAdmin::class])->group(function () {
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/ProductionOrders', [HomeController::class, 'productionindex'])->name('prohome');
+    Route::get('/CompletedProductionOrders', [HomeController::class, 'comproductionindex'])->name('comprohome');
 
     // Users
     Route::get('users', [HomeController::class, 'users'])->name('users');
@@ -318,15 +319,15 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
 
     // Orders
     // Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    // Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{status?}', [OrderController::class, 'index'])->name('orders');
+
 
 
     Route::get('orders/user/{orderId}', [OrderController::class, 'getUserDetails'])->name('user');
     Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
 
     Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
-
-
 
     // Single order details
     Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');

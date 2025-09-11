@@ -31,18 +31,50 @@ class HomeController extends Controller
      */
     public function index()
     {
-         $products = Product::count();
+        $products = Product::count();
         $testimonials = Testimonial::count();
         $teams = Team::count();
         $pages = Page::count();
         $awardCategories = AwardCategory::count();
         $subCategories = SubCategory::count();
         $users = User::count();
-         $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser'])
-        ->orderBy('created_at', 'desc')
-        ->get();
-        return view('admin.home',compact(['products','testimonials','teams','pages','awardCategories','subCategories','users','tasks']));
+        $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.home', compact(['products', 'testimonials', 'teams', 'pages', 'awardCategories', 'subCategories', 'users', 'tasks']));
     }
 
-   
+
+    public function productionindex()
+    {
+        $products = Product::count();
+        $testimonials = Testimonial::count();
+        $teams = Team::count();
+        $pages = Page::count();
+        $awardCategories = AwardCategory::count();
+        $subCategories = SubCategory::count();
+        $users = User::count();
+        $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser'])
+            ->orderBy('created_at', 'desc')->where('status', 'pending')
+            ->get();
+
+        return view('admin.prohome', compact(['products', 'testimonials', 'teams', 'pages', 'awardCategories', 'subCategories', 'users', 'tasks']));
+    }
+
+    public function comproductionindex()
+    {
+        $products = Product::count();
+        $testimonials = Testimonial::count();
+        $teams = Team::count();
+        $pages = Page::count();
+        $awardCategories = AwardCategory::count();
+        $subCategories = SubCategory::count();
+        $users = User::count();
+        $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser'])
+            ->orderBy('created_at', 'desc')->where('status', 'ready_to_dispatch')
+            ->get();
+
+        return view('admin.comprohome', compact(['products', 'testimonials', 'teams', 'pages', 'awardCategories', 'subCategories', 'users', 'tasks']));
+    }
 }
