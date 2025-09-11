@@ -96,20 +96,75 @@
             <!-- ========== SIDEBAR ========== -->
             <nav class="sidebar sidebar-offcanvas" id="sidebar">
                 <ul class="nav">
-                    @if (Auth::user()->role == 1)
-                        <li class="nav-item" data-keywords="home">
-                            <a class="nav-link" href="{{ route('home') }}">
-                                <span class="menu-title">Dashboard</span>
-                                <i class="mdi mdi-home menu-icon"></i>
+                    <li class="nav-item" data-keywords="home">
+                        <a class="nav-link" href="{{ route('home') }}">
+                            <span class="menu-title">Dashboard</span>
+                            <i class="mdi mdi-home menu-icon"></i>
+                        </a>
+                    </li>
+
+                    @if (Auth::user()->role == 3)
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#ordersMenu" aria-expanded="false"
+                                aria-controls="ordersMenu">
+                                <span class="menu-title">Orders</span>
+                                <i class="mdi mdi-chevron-down menu-icon"></i>
+                            </a>
+                            <div class="collapse" id="ordersMenu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'dispatched') }}">Ready to Dispatch</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'approved') }}">Production</a></li>
+
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item" data-keywords="payments">
+                            <a class="nav-link" href="{{ route('comprohome') }}">
+                                <span class="menu-title">Completed Production Orders</span>
+                                <i class="mdi mdi-credit-card menu-icon"></i>
                             </a>
                         </li>
+                        <li class="nav-item" data-keywords="payments2">
+                            <a class="nav-link" href="{{ route('prohome') }}">
+                                <span class="menu-title">Production Orders</span>
+                                <i class="mdi mdi-credit-card menu-icon"></i>
+                            </a>
+                        </li>
+                    @endif
 
-                        <li class="nav-item" data-keywords="orders">
+                    @if (Auth::user()->role == 1)
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" href="#ordersMenu" aria-expanded="false"
+                                aria-controls="ordersMenu">
+                                <span class="menu-title">Orders</span>
+                                <i class="mdi mdi-chevron-down menu-icon"></i>
+                            </a>
+                            <div class="collapse" id="ordersMenu">
+                                <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'delivered') }}">Delivered</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'dispatched') }}">Ready to Dispatch</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'approved') }}">Production</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'accepted') }}">Designer</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('orders', 'pending') }}">Pending</a></li>
+                                </ul>
+                            </div>
+                        </li>
+
+
+
+                        {{--  <li class="nav-item" data-keywords="orders">
                             <a class="nav-link" href="{{ route('orders') }}">
                                 <span class="menu-title">Orders</span>
                                 <i class="mdi mdi-receipt-text menu-icon"></i>
                             </a>
-                        </li>
+                        </li>  --}}
 
                         <li class="nav-item" data-keywords="payments">
                             <a class="nav-link" href="{{ route('admin.payments') }}">

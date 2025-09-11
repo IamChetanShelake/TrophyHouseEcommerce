@@ -52,7 +52,9 @@
         <div class="card" style="padding: 20px;">
             <div class="card-body">
 
-                <h1>Orders</h1>
+                {{--  <h1>Orders</h1>  --}}
+                <h1>Orders - {{ ucfirst($status ?? 'All') }}</h1>
+
                 <div class="row">
                     <div class="col-lg-6 offset-lg-4">
                         <form method="GET" action="{{ route('orders') }}" class="d-flex mb-3">
@@ -202,7 +204,7 @@
                                         @else
                                             <span class="badge bg-dark">pending</span>
                                         @endif
-                                    </td>  --}}
+                                    </td>
 
                                     <td>
                                         @if ($p->delivery_status == 'pending')
@@ -212,12 +214,13 @@
                                             <span class="badge"
                                                 style="background-color: #008616">{{ $p->delivery_status }}</span>
                                         @elseif ($p->delivery_status == 'approved')
-                                            <button class="badge" style="background-color: #003fab" data-bs-toggle="modal"
-                                                data-bs-target="#statusModal{{ $p->id }}">
+                                            <button class="badge" style="background-color: #003fab"
+                                                data-bs-toggle="modal" data-bs-target="#statusModal{{ $p->id }}">
                                                 {{ $p->delivery_status }}
                                             </button>
                                         @elseif ($p->delivery_status == 'ready_to_pickup')
-                                            <button class="badge" style="background-color: #00a4b0" data-bs-toggle="modal"
+                                            <button class="badge" style="background-color: #00a4b0"
+                                                data-bs-toggle="modal"
                                                 data-bs-target="#statusModalDelivered{{ $p->id }}">
                                                 Ready To Pick Up
                                             </button>
@@ -300,8 +303,8 @@
                         })
                         .then(user => {
                             document.getElementById('user-details').innerHTML = `
-                                <p><strong>Profile:</strong> <img src=" ${user . image}" 
-         alt="Profile Image" 
+                                <p><strong>Profile:</strong> <img src=" ${user . image}"
+         alt="Profile Image"
          width="80" height="80"> </p>
                                 <p><strong>Name:</strong> ${user.name}</p>
                                 <p><strong>Email:</strong> ${user.email}</p>
@@ -360,7 +363,7 @@
                                     let chat = (p.customization_request && p
                                             .customization_request.messages_count > 0) ?
                                         `<button type="button" class="btn btn-info btn-sm view-chat-btn"
-                                            data-product-id="${p.id}" 
+                                            data-product-id="${p.id}"
                                             data-product-name="${p.product?.title ?? 'N/A'}">View Chat</button>` :
                                         `<span class="text-muted">No Chat</span>`;
 

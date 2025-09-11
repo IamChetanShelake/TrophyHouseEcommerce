@@ -243,6 +243,8 @@ Auth::routes();
 Route::middleware(['auth', isAdmin::class])->group(function () {
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/ProductionOrders', [HomeController::class, 'productionindex'])->name('prohome');
+    Route::get('/CompletedProductionOrders', [HomeController::class, 'comproductionindex'])->name('comprohome');
 
     // Users
     Route::get('users', [HomeController::class, 'users'])->name('users');
@@ -319,7 +321,9 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
 
     // Orders
     // Route::get('/orders', [ProductController::class, 'orders'])->name('orders');
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    // Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{status?}', [OrderController::class, 'index'])->name('orders');
+
 
 
     Route::get('orders/user/{orderId}', [OrderController::class, 'getUserDetails'])->name('user');

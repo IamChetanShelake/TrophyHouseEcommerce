@@ -24,7 +24,37 @@ use App\Models\CustomizationRequest;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+    // public function index(Request $request)
+    // {
+    //     $q = Payment::with([
+    //         'user',
+    //         'items.product',
+    //         'items.variant:id,product_id,size,color,price,discounted_price',
+    //         'items.customizationRequest:id,payment_item_id,status',
+    //         'items.customizationRequest.messages',
+    //         'items.designer:id,name'
+    //     ])
+    //         ->where('status', 'paid'); // show only paid
+
+    //     if ($request->filled('q')) {
+    //         $term = '%' . $request->q . '%';
+    //         $q->where(function ($qb) use ($term) {
+    //             $qb->where('order_id', 'like', $term)
+    //                 ->orWhere('customer_name', 'like', $term)
+    //                 ->orWhere('customer_email', 'like', $term);
+    //         });
+    //     }
+
+    //     $payments = $q->latest('updated_at')->paginate(20);
+    //     // return $payments;
+    //     // foreach ($payments as $p) {
+    //     //      $p->order_status;
+    //     // }
+    //     return view('admin.Orders.index', compact('payments'));
+    // }
+
+
+    public function index(Request $request, $status = null)
     {
         $q = Payment::with([
             'user',
@@ -33,8 +63,12 @@ class OrderController extends Controller
             'items.customizationRequest:id,payment_item_id,status',
             'items.customizationRequest.messages',
             'items.designer:id,name'
-        ])
-            ->where('status', 'paid'); // show only paid
+        ])->where('status', 'paid'); // show only paid
+
+        // filter by delivery status if provided
+        if ($status) {
+            $q->where('delivery_status', $status);
+        }
 
         if ($request->filled('q')) {
             $term = '%' . $request->q . '%';
@@ -46,12 +80,10 @@ class OrderController extends Controller
         }
 
         $payments = $q->latest('updated_at')->paginate(20);
-        // return $payments;
-        // foreach ($payments as $p) {
-        //      $p->order_status;
-        // }
-        return view('admin.Orders.index', compact('payments'));
+
+        return view('admin.Orders.index', compact('payments', 'status'));
     }
+
 
     public function show(Payment $payment)
     {
@@ -197,7 +229,7 @@ class OrderController extends Controller
     }
 
 
-    //my method 
+    //my method
     // public function myOrders()
     // {
     //     if (!Auth::check()) {
@@ -262,7 +294,7 @@ class OrderController extends Controller
     //                                                         $customizationApproved = null;
     //                                                     }
     //     }else{
-    //         $payments = []; 
+    //         $payments = [];
     //     }
 
 

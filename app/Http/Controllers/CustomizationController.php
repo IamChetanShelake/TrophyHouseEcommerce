@@ -214,11 +214,24 @@ class CustomizationController extends Controller
         $message->save();
 
         // --- Keep your existing request & order update logic ---
+        // $allApproved = $request->messages()->where('is_approved', 0)->count() === 0;
+        // if ($allApproved && $request->status !== 'approved') {
+        //     $request->status = 'approved';
+        //     $request->save();
+        // }
+
         $allApproved = $request->messages()->where('is_approved', 0)->count() === 0;
+
         if ($allApproved && $request->status !== 'approved') {
             $request->status = 'approved';
             $request->save();
+
+            // payment_item चे customization_status "Approved" करा
+            $paymentItem = $request->paymentItem;
+            $paymentItem->customization_status = 'Approved';
+            $paymentItem->save();
         }
+
 
         $payment = $request->paymentItem->payment;
 
