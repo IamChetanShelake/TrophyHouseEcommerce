@@ -15,7 +15,7 @@
         }
 
         .chat-header {
-            background: #667eea;
+            background: #e63946;
             color: white;
             padding: 15px 20px;
             font-weight: 600;
@@ -103,7 +103,7 @@
         }
 
         .chat-input button {
-            background: #667eea;
+            background: #e63946;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -162,11 +162,11 @@
                                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn"
                                         data-id="{{ $msg->id }}">Cancel</button>
                                 @elseif ($msg->is_approved == 0)
-                                <form action="{{route('customization.approveImage',$msg->id)}}" method="POST">
-                                    @csrf
-                                    <button class="btn btn-sm btn-outline-success approve-btn"
-                                    data-id="{{ $msg->id }}">Approve</button>
-                                </form>
+                                    <form action="{{ route('customization.approveImage', $msg->id) }}" method="POST">
+                                        @csrf
+                                        <button class="btn btn-sm btn-outline-success approve-btn"
+                                            data-id="{{ $msg->id }}">Approve</button>
+                                    </form>
                                 @endif
                             </div>
                         @endif
@@ -223,9 +223,9 @@
             //                 // Set THIS one as approved
             //                 let container = document.getElementById(`actions-${messageId}`);
             //                 container.innerHTML = `
-            //                     <span class="badge bg-success">Approved</span>
-            //                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>
-            //                 `;
+        //                     <span class="badge bg-success">Approved</span>
+        //                     <button class="btn btn-sm btn-outline-danger cancel-approve-btn" data-id="${messageId}">Cancel</button>
+        //                 `;
             //             }
             //         });
             // }

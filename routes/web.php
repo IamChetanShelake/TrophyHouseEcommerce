@@ -124,7 +124,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/wishlist/get-item/{product_id}', [WishlistController::class, 'getWishlistItem'])->middleware('auth')->name('wishlist.getItem');
     Route::post('/wishlist/proceed-to-cart', [WishlistController::class, 'proceedToCart'])->name('wishlist.proceedToCart');
 
-    // designer customization routes
+
+
+
+    // designer customization routes--------------------------------------------------
     Route::prefix('designer')->group(function () {
 
         Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');

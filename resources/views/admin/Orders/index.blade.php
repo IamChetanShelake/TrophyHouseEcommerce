@@ -70,7 +70,7 @@
                     </div>
                     <div class="col-lg-2 text-start">
                         <a href="{{ route('createorder') }}" class="btn"
-                            style="background:#ffc107;color:white; font-size:21px;">+
+                            style="background:#ffc107;color:white; font-size:15px;">+
                             New</a>
                     </div>
                 </div>
