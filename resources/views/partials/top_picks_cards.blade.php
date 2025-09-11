@@ -8,7 +8,7 @@
 
                     <div class="trophy-hover-bar mt-1 d-flex justify-content-around">
                         <!-- Wishlist -->
-                        <i class="fas fa-heart icon-toggle wishlist-toggle {{ (isset($wishlist_product_ids) && in_array($prod->id, $wishlist_product_ids)) ? 'text-danger' : '' }}"
+                        <i class="fas fa-heart icon-toggle wishlist-toggle {{ isset($wishlist_product_ids) && in_array($prod->id, $wishlist_product_ids) ? 'text-danger' : '' }}"
                             data-product-id="{{ $prod->id }}" title="Toggle Wishlist"></i>
 
                         <!-- Add to Cart -->
@@ -30,7 +30,7 @@
 
                     <p class="mb-0 text-danger fw-bold">
                         @if ($prod->variants->count())
-                            {{ $prod->variants->first()->discounted_price }} Rs
+                            {{ $prod->variants->min('discounted_price') }} Rs
                         @else
                             N/A
                         @endif

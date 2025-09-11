@@ -26,15 +26,12 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-
 use App\Http\Controllers\ProfileController;
-
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
-
+use App\Http\Controllers\CouponAdminController;
 use App\Http\Controllers\DesignerController;
-
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\OccasionController;
 use App\Http\Controllers\PurchaseController;
@@ -42,6 +39,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProductUserController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\UsagePersonController;
@@ -205,6 +203,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/address/delete/{id}', [WebsiteController::class, 'deleteAddress'])->name('address.delete');
     Route::post('/address/set-default/{id}', [WebsiteController::class, 'setDefaultAddress'])->name('address.setDefault');
     Route::get('/filter-products', [WebsiteController::class, 'filterProducts']);
+
+    //coupon code--------------------------------------
+    Route::post('/apply-coupon', [WebsiteController::class, 'applyCoupon'])->name('apply.coupon');
+
 
 
     //profile---------------------------------
@@ -444,14 +446,36 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::delete('/supplier/{id}', [SupplierController::class, 'destroy'])->name('admin.supplier.destroy');
 
 
-    Route::prefix('admin')->group(function () {
-        Route::get('/usage-person', [UsagePersonController::class, 'index'])->name('admin.usage-person.index');
-        Route::get('/usage-person/create', [UsagePersonController::class, 'create'])->name('admin.usage-person.create');
-        Route::post('/usage-person/store', [UsagePersonController::class, 'store'])->name('admin.usage-person.store');
-        Route::get('/usage-person/{id}/edit', [UsagePersonController::class, 'edit'])->name('admin.usage-person.edit');
-        Route::put('/usage-person/{id}', [UsagePersonController::class, 'update'])->name('admin.usage-person.update');
-        Route::delete('/usage-person/{id}', [UsagePersonController::class, 'destroy'])->name('admin.usage-person.destroy');
-    });
+
+    Route::get('/usage-person', [UsagePersonController::class, 'index'])->name('admin.usage-person.index');
+    Route::get('/usage-person/create', [UsagePersonController::class, 'create'])->name('admin.usage-person.create');
+    Route::post('/usage-person/store', [UsagePersonController::class, 'store'])->name('admin.usage-person.store');
+    Route::get('/usage-person/{id}/edit', [UsagePersonController::class, 'edit'])->name('admin.usage-person.edit');
+    Route::put('/usage-person/{id}', [UsagePersonController::class, 'update'])->name('admin.usage-person.update');
+    Route::delete('/usage-person/{id}', [UsagePersonController::class, 'destroy'])->name('admin.usage-person.destroy');
+
+
+
+    Route::get('/product-user', [ProductUserController::class, 'index'])->name('admin.product-user.index');
+    Route::get('/product-user/create', [ProductUserController::class, 'create'])->name('admin.product-user.create');
+    Route::post('/product-user/store', [ProductUserController::class, 'store'])->name('admin.product-user.store');
+    Route::get('/product-user/{id}/edit', [ProductUserController::class, 'edit'])->name('admin.product-user.edit');
+    Route::put('/product-user/{id}', [ProductUserController::class, 'update'])->name('admin.product-user.update');
+    Route::delete('/product-user/{id}', [ProductUserController::class, 'destroy'])->name('admin.product-user.destroy');
+
+    //Coupon Codes Crud---------------------------------
+    Route::get('coupons', [CouponAdminController::class, 'index'])->name('coupons.index'); // list all coupons
+    Route::get('coupons/create', [CouponAdminController::class, 'create'])->name('coupons.create'); // show form
+    Route::post('coupons', [CouponAdminController::class, 'store'])->name('coupons.store'); // save new coupon
+    Route::get('coupons/{coupon}/edit', [CouponAdminController::class, 'edit'])->name('coupons.edit'); // edit form
+    Route::put('coupons/{coupon}', [CouponAdminController::class, 'update'])->name('coupons.update');
+    // update coupon
+    Route::put('coupons/view/{coupon}', [CouponAdminController::class, 'view'])->name('coupons.view');
+    // view coupon
+    Route::delete('coupons/{coupon}', [CouponAdminController::class, 'destroy'])->name('coupons.destroy'); // delete coupon
+
+    // Optional: toggle active/inactive
+    Route::post('coupons/{coupon}/toggle', [CouponAdminController::class, 'toggle'])->name('admin.coupons.toggle');
 });
 
 Route::get('/clean-cache', function () {

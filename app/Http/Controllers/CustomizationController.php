@@ -16,6 +16,7 @@ use App\Models\PaymentItem;
 use App\Models\Payment;
 use App\Models\ProductionTask;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 
 
@@ -220,15 +221,19 @@ class CustomizationController extends Controller
         }
 
         $payment = $request->paymentItem->payment;
+
         $allRequestsApproved = $payment->paymentItems->every(function ($item) {
             return $item->customizationRequest && $item->customizationRequest->status === 'approved';
         });
 
+
         if ($allRequestsApproved && $payment->delivery_status !== 'approved') {
             $payment->delivery_status = 'approved';
+
+            // Set delivery date = 5 days after last approved image
+            $payment->delivery_date = Carbon::now()->addDays(5);
             $payment->save();
         }
-
 
         // 4. Create a production task for this approved image
         ProductionTask::create([
@@ -249,6 +254,7 @@ class CustomizationController extends Controller
     public function cancelApproval(CustomizationMessage $message)
     {
         $user = auth()->user();
+
         if ($message->customizationRequest->user_id !== $user->id) abort(403);
 
         $message->is_approved = 0;
@@ -260,6 +266,20 @@ class CustomizationController extends Controller
         if ($request->messages()->where('is_approved', 1)->count() === 0) {
             $request->status = 'accepted';
             $request->save();
+        }
+
+        // --- Payment level rollback ---
+        $payment = $request->paymentItem->payment;
+
+        $allRequestsApproved = $payment->paymentItems->every(function ($item) {
+            return $item->customizationRequest && $item->customizationRequest->status === 'approved';
+        });
+
+        // If not all approved anymore → reset delivery_status and delivery_date
+        if (!$allRequestsApproved) {
+            $payment->delivery_status = 'accepted';   // or "pending" if you prefer
+            $payment->delivery_date = null;     // remove scheduled delivery
+            $payment->save();
         }
 
         return response()->json(['success' => true]);
@@ -447,14 +467,14 @@ class CustomizationController extends Controller
 
         // Only the current designer can transfer
 
-        if ($customization->designer_id !== auth()->id()) {
+        if ($customizations->designer_id !== auth()->user()->id()) {
             return back()->with('error', 'Unauthorized');
         }
 
-        $customization->transferred_from = $customization->designer_id;
-        $customization->designer_id = $request->new_designer_id;
-        $customization->status = 'accepted'; // remains accepted
-        $customization->save();
+        $customizations->transferred_from = $customizations->designer_id;
+        $customizations->designer_id = $request->new_designer_id;
+        $customizations->status = 'accepted'; // remains accepted
+        $customizations->save();
 
         return back()->with('success', 'Request transferred successfully.');
     }

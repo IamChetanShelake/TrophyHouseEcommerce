@@ -43,21 +43,21 @@ class WebsiteController extends Controller
         ];
     }
     public function filterProducts(Request $req)
-{
-    $min = $req->min_price ?? 0;
-    $max = $req->max_price ?? 100000;
+    {
+        $min = $req->min_price ?? 0;
+        $max = $req->max_price ?? 100000;
 
-    $products = Product::with('variants')
-        ->whereHas('variants', function($q) use ($min, $max) {
-            $q->where(function ($query) use ($min, $max) {
-                $query->whereBetween('discounted_price', [$min, $max])
-                      ->orWhereBetween('price', [$min, $max]);
-            });
-        })
-        ->get();
+        $products = Product::with('variants')
+            ->whereHas('variants', function ($q) use ($min, $max) {
+                $q->where(function ($query) use ($min, $max) {
+                    $query->whereBetween('discounted_price', [$min, $max])
+                        ->orWhereBetween('price', [$min, $max]);
+                });
+            })
+            ->get();
 
-    return response()->json(['products' => $products]);
-}
+        return response()->json(['products' => $products]);
+    }
 
 
     public function Websiteindex()
@@ -73,15 +73,15 @@ class WebsiteController extends Controller
         $clients = Client::all();
         $aboutus = About::all();
         $pages = Page::all();
-        
+
         $minPrice = ProductVariant::whereNotNull('discounted_price')->min('discounted_price') ?? 0;
-$maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_price') ?? 5000;
+        $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_price') ?? 5000;
         // foreach($products as $prod){
         //    echo $prod->variants->count()."<br>";
         // }
-        
 
-         return view('website.home', compact('pages', 'testimonials', 'aboutus', 'clients', 'products','occasions', 'occProducts', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count','minPrice','maxPrice'));
+
+        return view('website.home', compact('pages', 'testimonials', 'aboutus', 'clients', 'products', 'occasions', 'occProducts', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count', 'minPrice', 'maxPrice'));
     }
 
     public function contact()
@@ -166,9 +166,9 @@ $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_pr
     //     $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
 
 
-        
+
     //     $allPrices = ProductVariant::pluck('price')->sort()->values();
-       
+
     //     $minPrice = floor($allPrices->min() / 500) * 500;
     //     $maxPrice = ceil($allPrices->max() / 500) * 500;
     //     $priceRanges = [];
@@ -176,9 +176,9 @@ $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_pr
     //     for ($i = $minPrice; $i < $maxPrice; $i += $step) {
     //         $range = '₹' . $i . ' - ₹' . ($i + $step);
     //         $priceRanges[] = $range;
-           
+
     //     }
-       
+
     //     $priceRanges[] = '₹' . $maxPrice . ' & above';
 
 
@@ -262,7 +262,7 @@ $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_pr
     public function cart()
     {
         if (Auth::check()) {
-           $cartItems = cartItem::with('product','occasionalProduct','customizationRequest')->where('user_id', Auth::id())->get(); // Updated to cartItem
+            $cartItems = cartItem::with('product', 'occasionalProduct', 'customizationRequest')->where('user_id', Auth::id())->get(); // Updated to cartItem
             $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem
             if ($cartItems->isEmpty()) {
                 $cart_items = 0;
@@ -274,18 +274,18 @@ $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_pr
                 ->get();
             $similarOccProducts = OccasionProduct::with(['category', 'subcategory'])->get();
 
-$allSimilarProducts = $similarProducts->concat($similarOccProducts);
+            $allSimilarProducts = $similarProducts->concat($similarOccProducts);
 
             $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
             $categories = AwardCategory::with('products')->get();
             $pages = Page::all();
-         $customization_request = CustomizationRequest::where('user_id', Auth::id())->get();
-         $customizationRequest = CustomizationRequest::with('designer')
-    ->where('user_id', Auth::id())
-    ->first();
+            $customization_request = CustomizationRequest::where('user_id', Auth::id())->get();
+            $customizationRequest = CustomizationRequest::with('designer')
+                ->where('user_id', Auth::id())
+                ->first();
 
 
-            return view('website.cart', compact('pages','customizationRequest', 'cartItems', 'cart_items','similarProducts', 'wishlist_count', 'categories','customization_request'));
+            return view('website.cart', compact('pages', 'customizationRequest', 'cartItems', 'cart_items', 'similarProducts', 'wishlist_count', 'categories', 'customization_request'));
         }
         return redirect()->route('login');
     }
@@ -315,10 +315,10 @@ $allSimilarProducts = $similarProducts->concat($similarOccProducts);
 
     public function cartupdate(Request $request, $id)
     {
-         $request->validate([
+        $request->validate([
             'quantity' => 'required|integer|min:1|max:200',
             'variant_id' => 'required|exists:product_variants,id',
-            'color'=>'nullable|string',
+            'color' => 'nullable|string',
         ]);
 
         $cartItem = cartItem::where('id', $id)->where('user_id', Auth::id())->firstOrFail(); // Updated to cartItem
@@ -495,5 +495,30 @@ $allSimilarProducts = $similarProducts->concat($similarOccProducts);
         $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem
         $pages = Page::all();
         return view('website.payment', compact('wishlist_count', 'categories', 'cart_items', 'pages'));
+    }
+
+    public function applyCoupon(Request $request)
+    {
+        $code = $request->input('coupon_code');
+
+        // Example: find coupon
+
+        $coupon = Coupon::where('code', $code)->first();
+
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Invalid coupon code.']);
+        }
+
+        // Check if expired
+        if ($coupon->expiry_date < now()) {
+            return response()->json(['success' => false, 'message' => 'Coupon expired.']);
+        }
+
+        // Apply discount logic
+        return response()->json([
+            'success' => true,
+            'message' => 'Coupon applied successfully!',
+            'discount' => $coupon->discount,
+        ]);
     }
 }

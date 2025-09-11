@@ -24,6 +24,45 @@ class UsagePersonController extends Controller
         return view('admin.RawMaterial.usageperson.create', compact('materials', 'materialTypes'));
     }
 
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'contact' => 'required|string|max:255',
+    //         'date' => 'required|date',
+    //         'material_id.*' => 'required|exists:materials,id',
+    //         'quantity.*' => 'required|numeric|min:0',
+    //         'usage_date.*' => 'required|date',
+    //     ]);
+
+    //     $usagePerson = new UsagePerson();
+    //     $usagePerson->name = $request->name;
+    //     $usagePerson->contact = $request->contact;
+    //     $usagePerson->date = $request->date;
+    //     $usagePerson->save();
+
+    //     foreach ($request->material_id as $key => $material_id) {
+    //         $usage = new Usage();
+    //         $usage->usage_person_id = $usagePerson->id;
+    //         $usage->material_id = $material_id;
+    //         $usage->quantity = $request->quantity[$key];
+    //         $usage->use_person_name = $request->name; // Optional, based on your schema
+    //         $usage->usage_date = $request->usage_date[$key];
+    //         $usage->save();
+    //     }
+
+    //     $material = Material::find($material_id);
+    //     if ($material) {
+    //         $material->increment('stock_out', $request->quantity[$key]);
+
+    //         // current_stock calculate & update
+    //         $material->current_stock = $material->stock_in - $material->stock_out;
+    //         $material->save();
+    //     }
+
+    //     return redirect()->route('admin.usage-person.index')->with('success', 'Usage person and usages added successfully!');
+    // }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -46,22 +85,23 @@ class UsagePersonController extends Controller
             $usage->usage_person_id = $usagePerson->id;
             $usage->material_id = $material_id;
             $usage->quantity = $request->quantity[$key];
-            $usage->use_person_name = $request->name; // Optional, based on your schema
+            $usage->use_person_name = $request->name;
             $usage->usage_date = $request->usage_date[$key];
             $usage->save();
-        }
 
-        $material = Material::find($material_id);
-        if ($material) {
-            $material->increment('stock_out', $request->quantity[$key]);
+            // ✅ Update stock_out and current_stock inside the loop
+            $material = Material::find($material_id);
+            if ($material) {
+                $material->increment('stock_out', $request->quantity[$key]);
 
-            // current_stock calculate & update
-            $material->current_stock = $material->stock_in - $material->stock_out;
-            $material->save();
+                $material->current_stock = $material->stock_in - $material->stock_out;
+                $material->save();
+            }
         }
 
         return redirect()->route('admin.usage-person.index')->with('success', 'Usage person and usages added successfully!');
     }
+
 
     public function edit($id)
     {

@@ -188,6 +188,7 @@ class OrderController extends Controller
         } else {
             $payments = collect(); // empty collection (better than [])
         }
+        // return $payments;
         return view('website.orders.my-orders', array_merge($commonData, [
             'payments' => $payments,
             'customization_request' => $customization_request,

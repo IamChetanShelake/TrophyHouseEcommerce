@@ -105,29 +105,9 @@
             left: 2px;
         }
 
-        .coupon-card {
-            animation: fadeIn 1s ease-in-out;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .success-text {
-            color: #27ae60;
-        }
-
-        .error-text {
-            color: #e74c3c;
+        .coupon-loading {
+            opacity: 0.6;
+            pointer-events: none;
         }
     </style>
 
@@ -236,6 +216,7 @@
 
             <!-- Right Column: Price Summary -->
             <div class="col-lg-4" style="padding-top: 54px;">
+
                 <div class="price-box">
                     <p class="mb-3" style="font-family:'Source Sans 3', sans-serif;font-size:20px;font-weight:600;">PICKUP
                         ESTIMATES</p>
@@ -263,7 +244,26 @@
                         $totalBase = $totalMRP - $totalDiscount;
                         $totalGST = $totalBase * 0.18;
                         $priceWithGST = $totalBase + $totalGST;
-                        $totalAmount = $priceWithGST + $shippingCharges;
+
+                        // Check for applied coupon
+                        use App\Models\Coupon;
+                        $appliedCoupon = session('applied_coupon');
+                        $couponDiscount = 0;
+                        $couponDisplay = '';
+
+                        if ($appliedCoupon) {
+                            $coupon = Coupon::find($appliedCoupon['id']);
+                            if ($coupon && $coupon->isValid()) {
+                                $couponDiscount = $appliedCoupon['discount'];
+                                $couponDisplay =
+                                    $appliedCoupon['code'] .
+                                    ' (' .
+                                    ($coupon->type === 'fixed' ? '₹' . $coupon->value : $coupon->value . '%') .
+                                    ')';
+                            }
+                        }
+
+                        $finalTotal = $priceWithGST - $couponDiscount + $shippingCharges;
                     @endphp
 
                     @foreach ($cartItems as $item)
@@ -316,41 +316,50 @@
                                 {{ $shippingCharges == 0 ? 'FREE' : '₹' . number_format($shippingCharges, 2) }}
                             </span>
                         </div>
+                        <div class="d-flex">
+                            <span>GST (18%)</span>
+                            <span>₹{{ number_format($totalGST, 2) }}</span>
+                        </div>
+                        @if ($couponDiscount > 0)
+                            <div class="d-flex">
+                                <span>Coupon Discount ({{ $couponDisplay }})</span>
+                                <span
+                                    class="text-success coupon-discount-line">−₹{{ number_format($couponDiscount, 2) }}</span>
+                            </div>
+                        @endif
                     </div>
 
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total Amount (incl. 18% GST)</strong>
-                        <strong>₹{{ number_format($totalAmount, 2) }}</strong>
-                    </div>
-
-
-                    <!-- Coupon Input Section -->
-                    <div class="coupon-card bg-white rounded-lg p-8 max-w-md w-full mx-4">
-                        <h5 class="text-3xl font-bold text-center text-gray-800 mb-6">Coupon Code Center</h5>
-                        <p class="text-gray-600 text-center mb-4">Enter your coupon code below to apply a discount!</p>
-                        <div class="mb-4">
-                            <label for="couponInput" class="block text-gray-700 font-medium mb-2">Coupon Code:</label>
-                            <input id="couponInput" type="text" placeholder="e.g., SWIFT10, SAVE20"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                        </div>
-
-                        <!-- Apply Button -->
-                        <button id="applyBtn"
-                            class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-md transition-all duration-300"
-                            onclick="applyCoupon()">
-                            Apply Coupon
-                        </button>
-
-                        <!-- Feedback Message -->
-                        <p id="feedback" class="mt-4 text-center font-medium hidden"></p>
+                        <strong id="total-amount">₹{{ number_format($finalTotal, 2) }}</strong>
                     </div>
 
                     <form action="{{ route('pay') }}" method="POST">
                         @csrf
-                        <input type="hidden" name="amount" value="{{ $totalAmount }}">
+                        <input type="hidden" name="amount" id="payment-amount" value="{{ $finalTotal }}">
                         <button type="submit" class="btn btn-continue">Proceed To Pay</button>
                     </form>
+                </div>
+                <!-- Coupon Section -->
+                <div class="price-box m1-2">
+                    <p class="mb-3" style="font-family:'Source Sans 3', sans-serif;font-size:18px;font-weight:600;">Have
+                        a
+                        Coupon Code?</p>
+                    <div id="coupon-messages"></div> <!-- For success/error messages -->
+                    <div class="d-flex" id="coupon-input-group">
+                        <input type="text" class="form-control me-2" id="coupon-code" placeholder="Enter coupon code"
+                            style="border-radius: 5px 0 0 5px;">
+                        <button type="button" class="btn btn-success" id="apply-coupon"
+                            style="border-radius: 0 5px 5px 0;" onclick="applyCoupon()">
+                            Apply
+                        </button>
+                    </div>
+                    <div class="d-flex mt-2 d-none" id="coupon-applied">
+                        <span class="badge bg-success me-2" id="coupon-display">COUPON20</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="removeCoupon()">Remove</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -361,12 +370,13 @@
 
     <script>
         function selectAddress(radio, addressId) {
+
             document.querySelectorAll('.address-card').forEach(card => {
                 card.classList.remove('address-selected');
             });
             radio.closest('.address-card').classList.add('address-selected');
 
-            fetch(`/address/set-default/${addressId}`, {
+            fetch('/address/set-default/${addressId}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -388,5 +398,125 @@
                     alert('An error occurred while setting the default address.');
                 });
         }
+
+        // Coupon functions
+        function applyCoupon() {
+            const couponCode = document.getElementById('coupon-code').value.trim().toUpperCase();
+            const applyBtn = document.getElementById('apply-coupon');
+            const messagesDiv = document.getElementById('coupon-messages');
+
+            if (!couponCode) {
+                showCouponMessage('Please enter a coupon code', 'danger');
+                return;
+            }
+
+            // Disable button and show loading
+            applyBtn.disabled = true;
+            applyBtn.innerHTML = 'Applying...';
+            applyBtn.classList.add('coupon-loading');
+
+            fetch('{{ route('apply.coupon') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        coupon_code: couponCode
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showCouponMessage('Coupon applied successfully!', 'success');
+
+                        // Show applied coupon
+                        document.getElementById('coupon-applied').classList.remove('d-none');
+                        document.getElementById('coupon-display').textContent = data.coupon.code;
+
+                        // Hide input group
+                        document.getElementById('coupon-input-group').classList.add('d-none');
+
+                        // Update totals
+                        updateTotals(data.totals);
+                    } else {
+                        showCouponMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error applying coupon:', error);
+                    showCouponMessage('An error occurred while applying coupon', 'danger');
+                })
+                .finally(() => {
+                    applyBtn.disabled = false;
+                    applyBtn.innerHTML = 'Apply';
+                    applyBtn.classList.remove('coupon-loading');
+                });
+        }
+
+        function removeCoupon() {
+            fetch('{{ route('remove.coupon') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Hide applied coupon, show input group
+                        document.getElementById('coupon-applied').classList.add('d-none');
+                        document.getElementById('coupon-input-group').classList.remove('d-none');
+
+                        // Clear coupon code input
+                        document.getElementById('coupon-code').value = '';
+
+                        // Reload page to update all totals
+                        window.location.reload();
+                    } else {
+                        showCouponMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing coupon:', error);
+                    showCouponMessage('An error occurred while removing coupon', 'danger');
+                });
+        }
+
+        function showCouponMessage(message, type) {
+            const messagesDiv = document.getElementById('coupon-messages');
+            messagesDiv.innerHTML = < div class = "alert alert-${type} mt-2 alert-dismissible fade show" > < button type =
+                "button"
+            class = "btn-close"
+            data - bs - dismiss = "alert" > < /button>${message}</div > ;
+        }
+
+        function updateTotals(totals) {
+            // Update individual totals if elements exist
+            const totalAmountElement = document.getElementById('total-amount');
+            if (totalAmountElement) {
+                totalAmountElement.textContent = ₹$ {
+                    totals.final
+                };
+            }
+
+            const paymentAmountElement = document.getElementById('payment-amount');
+            if (paymentAmountElement) {
+                // Convert rupees to paisa for payment gateway (assuming it needs amount in paisa)
+                paymentAmountElement.value = totals.final;
+            }
+        }
+
+        // Initialize coupon UI on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            @if ($couponDiscount > 0)
+                document.getElementById('coupon-applied').classList.remove('d-none');
+                document.getElementById('coupon-display').textContent = '{{ $appliedCoupon['code'] }}';
+                document.getElementById('coupon-input-group').classList.add('d-none');
+            @endif
+        });
     </script>
 @endsection

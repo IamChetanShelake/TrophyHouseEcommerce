@@ -63,6 +63,8 @@ class UsageController extends Controller
 
         $material = Material::find($request->material_id);
         $material->increment('stock_out', $request->quantity);
+        $material->current_stock = $material->stock_in - $material->stock_out;
+        $material->save();
 
         return redirect()
             ->route('admin.usage.index', $usage->material_id)
@@ -121,6 +123,8 @@ class UsageController extends Controller
 
         $material = Material::find($request->material_id);
         $material->increment('stock_out', $diff);
+        $material->current_stock = $material->stock_in - $material->stock_out;
+        $material->save();
 
         return redirect()
             ->route('admin.usage.index', $usage->material_id)
@@ -131,8 +135,9 @@ class UsageController extends Controller
     public function destroy($id)
     {
         $usage = Usage::findOrFail($id);
+        $material = Material::find($usage->material_id);
         $usage->delete();
 
-        return redirect()->route('admin.usage.index')->with('success', 'Usage deleted successfully!');
+        return redirect()->route('admin.usage.index', $material->id)->with('success', 'Usage deleted successfully!');
     }
 }

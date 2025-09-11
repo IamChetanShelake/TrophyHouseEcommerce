@@ -202,6 +202,34 @@
                                         @else
                                             <span class="badge bg-dark">pending</span>
                                         @endif
+                                    </td>  --}}
+
+                                    <td>
+                                        @if ($p->delivery_status == 'pending')
+                                            <span class="badge"
+                                                style="background-color: #dcbf00">{{ $p->delivery_status }}</span>
+                                        @elseif ($p->delivery_status == 'accepted')
+                                            <span class="badge"
+                                                style="background-color: #008616">{{ $p->delivery_status }}</span>
+                                        @elseif ($p->delivery_status == 'approved')
+                                            <button class="badge" style="background-color: #003fab" data-bs-toggle="modal"
+                                                data-bs-target="#statusModal{{ $p->id }}">
+                                                {{ $p->delivery_status }}
+                                            </button>
+                                        @elseif ($p->delivery_status == 'ready_to_pickup')
+                                            <button class="badge" style="background-color: #00a4b0" data-bs-toggle="modal"
+                                                data-bs-target="#statusModalDelivered{{ $p->id }}">
+                                                Ready To Pick Up
+                                            </button>
+                                        @elseif ($p->delivery_status == 'delivered')
+                                            <span class="badge"
+                                                style="background-color: #00ff2a">{{ $p->delivery_status }}</span>
+                                        @elseif ($p->delivery_status == 'cancelled')
+                                            <span class="badge"
+                                                style="background-color: #b40000">{{ $p->delivery_status }}</span>
+                                        @else
+                                            <span class="badge bg-dark">pending</span>
+                                        @endif
                                     </td>
 
                                     <td>

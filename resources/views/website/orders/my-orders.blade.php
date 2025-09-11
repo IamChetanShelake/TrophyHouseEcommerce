@@ -313,11 +313,6 @@
                                                             {{ $p->delivery_status }}
                                                         </button>
                                                     @elseif ($p->delivery_status == 'ready_to_pickup')
-                                                        {{-- <span class="badge"
-                                                style="background-color: #a4ffae;color: #00c264;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span> --}}
                                                         <button class="badge"
                                                             style="background-color: #a4ffae;color: #00c264;
     border: none;
@@ -339,8 +334,6 @@
     border: none;
     font-size: 16px;
     border-radius: 25px;">{{ $p->delivery_status }}</span>
-                                                    @else
-                                                        <span class="badge bg-dark">pending</span>
                                                     @endif
                                                 @endforeach
                                             </div>
