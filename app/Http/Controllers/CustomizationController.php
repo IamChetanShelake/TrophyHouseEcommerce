@@ -673,16 +673,16 @@ class CustomizationController extends Controller
         return redirect()->back()->with('success', 'Message sent to user.');
     }
 
-    public function showRequests()
+    public function showRequests(Request $request)
     {
         $designerId = auth()->id();
+        $statusFilter = $request->get('status'); // comes from tab click
 
-
-        // Get all order IDs where requests are already accepted by other designers
+        // Blocked orders
         $blockedOrderIds = CustomizationRequest::where('status', 'accepted')
             ->whereNotNull('designer_id')
             ->where('designer_id', '!=', $designerId)
-            ->pluck('payment_item_id') // temporarily get payment_item_id
+            ->pluck('payment_item_id')
             ->map(function ($paymentItemId) {
                 $paymentItem = PaymentItem::find($paymentItemId);
                 return $paymentItem ? $paymentItem->payment->order_id : null;
@@ -691,8 +691,8 @@ class CustomizationController extends Controller
             ->unique()
             ->toArray();
 
-        // Now fetch requests visible to current designer
-        $requests = CustomizationRequest::with([
+        // Base query
+        $query = CustomizationRequest::with([
             'user',
             'paymentItem.product',
             'paymentItem.variant',
@@ -701,39 +701,49 @@ class CustomizationController extends Controller
         ])
             ->whereHas('paymentItem.payment', function ($q) {
                 $q->where('status', 'paid');
-            })
-            ->where(function ($query) use ($designerId) {
-                $query->where(function ($sub) {
-                    $sub->where('status', 'pending')->whereNull('designer_id');
-                })->orWhere(function ($sub) use ($designerId) {
-                    $sub->where('status', 'accepted')->where('designer_id', $designerId);
-                })->orWhere(function ($sub) use ($designerId) {
-                    $sub->where('status', 'approved     ')->where('designer_id', $designerId);
-                })->orWhere(function ($sub) use ($designerId) {
-                    $sub->where('status', 'completed')->where('designer_id', $designerId);
-                })->orWhere(function ($sub) use ($designerId) {
-                    $sub->where('status', 'rejected')->where('designer_id', '!=', $designerId);
-                });
-            })
-            ->get()
+            });
+
+        // Apply status filter if tab is clicked
+        if ($statusFilter) {
+            $query->where('designer_id', $designerId)
+                ->where('status', $statusFilter);
+        } else {
+            // Default = pending unassigned
+            $query->where(function ($sub) {
+                $sub->where('status', 'pending')->whereNull('designer_id');
+            });
+        }
+
+        $requests = $query->get()
             ->filter(function ($request) use ($designerId, $blockedOrderIds) {
                 return $request->paymentItem && $request->paymentItem->payment
-                    && !in_array($request->paymentItem->payment->order_id, $blockedOrderIds)
-                    && $request->status !== 'rejected' || $request->designer_id !== $designerId;
+                    && !in_array($request->paymentItem->payment->order_id, $blockedOrderIds);
             })
             ->groupBy(function ($request) {
                 return $request->paymentItem->payment->order_id;
             });
 
-
-
         // Other designers for transfer dropdown
-        $otherDesigners = User::where('role', 2) // role = 2 for designers
-            ->where('id', '!=', $designerId) // exclude current designer
+        $otherDesigners = User::where('role', 2)
+            ->where('id', '!=', $designerId)
             ->get();
 
         return view('admin.designer.requests', compact('requests', 'otherDesigners'));
     }
+
+    // ->where(function ($query) use ($designerId) {
+    //     $query->where(function ($sub) {
+    //         $sub->where('status', 'pending')->whereNull('designer_id');
+    //     })->orWhere(function ($sub) use ($designerId) {
+    //         $sub->where('status', 'accepted')->where('designer_id', $designerId);
+    //     })->orWhere(function ($sub) use ($designerId) {
+    //         $sub->where('status', 'approved     ')->where('designer_id', $designerId);
+    //     })->orWhere(function ($sub) use ($designerId) {
+    //         $sub->where('status', 'completed')->where('designer_id', $designerId);
+    //     })->orWhere(function ($sub) use ($designerId) {
+    //         $sub->where('status', 'rejected')->where('designer_id', '!=', $designerId);
+    //     });
+    // })
 
 
     public function showRecustomizations()

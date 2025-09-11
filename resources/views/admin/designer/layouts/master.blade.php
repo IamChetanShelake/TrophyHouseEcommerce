@@ -30,7 +30,7 @@
         .sidebar .nav-link.active {
             background-color: #f1f1f1;
             border-left: 3px solid #007bff;
-            color: #007bff;
+            color: #007bff !important;
         }
 
         .main-content {
@@ -55,17 +55,29 @@
                 </h5>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('designer/requests') ? 'active' : '' }}"
-                            href="{{ route('requests') }}">
-                            📝 Requests
+                        <a class="nav-link {{ request('status') === 'pending' ? 'active' : '' }}"
+                            href="{{ route('requests', ['status' => 'pending']) }}">
+                            ⏳ Pending
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('designer/recustomizations') ? 'active' : '' }}"
-                            href="{{ route('recustomizations') }}">
-                            ✅ Completed
+                        <a class="nav-link {{ request('status') === 'accepted' ? 'active' : '' }}"
+                            href="{{ route('requests', ['status' => 'accepted']) }}">
+                            ✅Accepted
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request('status') === 'approved' ? 'active' : '' }}"
+                            href="{{ route('requests', ['status' => 'approved']) }}">
+                            🟢Approved
+                        </a>
+                    </li>
+                    {{-- <li class="nav-item">
+                        <a class="nav-link {{ request('status') === 'completed' ? 'active' : '' }}"
+                            href="{{ route('requests', ['status' => 'completed']) }}">
+                            🎉 Completed
+                        </a>
+                    </li> --}}
                     {{-- <li class="nav-item">
                         <a class="nav-link {{ request()->is('designer/chats') ? 'active' : '' }}"
                             href="{{ route('chats') }}">

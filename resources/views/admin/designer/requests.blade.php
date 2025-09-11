@@ -2,64 +2,71 @@
 
 @section('content')
     <h3 class="mb-4">Customization Requests</h3>
-    <table class="table table-bordered ">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Order ID</th>
-                <th>Product(s)</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($requests as $orderId => $orderRequests)
-                @php
-                    $firstReq = $orderRequests->first();
-                @endphp
-                <tr>
-                    <td>{{ $firstReq->id }}</td>
-                    <td>{{ $orderId }}</td>
-                    <td>
-                        {{ $orderRequests->count() }} products
-                        <br>
-                        <button type="button" class="btn btn-info btn-sm mt-1" data-bs-toggle="modal"
-                            data-bs-target="#orderModal{{ $orderId }}">
-                            View Products
-                        </button>
-                    </td>
-                    <td>
-                        @if ($firstReq->status == 'rejected')
-                            {{ 'pending' }}
-                        @else
-                            {{ ucfirst($firstReq->status) }}
-                        @endif
-                    </td>
-                    <td>
-                        @if ($firstReq->status == 'pending' || ($firstReq->status == 'rejected' && $firstReq->designer_id != Auth::id()))
-                            <div style="display: flex; gap: 5px;">
-                                <form method="POST" action="{{ route('customization.accept', $orderId) }}"
-                                    style="display: inline;">
-                                    @csrf
-                                    <button class="btn btn-success btn-sm" style="white-space: nowrap;">Accept</button>
-                                </form>
+    <div class="card" style="padding: 20px;">
+        <div class="card-body">
+            <table class="table table-bordered ">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Product(s)</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($requests as $orderId => $orderRequests)
+                        @php
+                            $firstReq = $orderRequests->first();
+                        @endphp
+                        <tr>
+                            <td>{{ $firstReq->id }}</td>
+                            <td>{{ $orderId }}</td>
+                            <td>
+                                {{ $orderRequests->count() }} products
+                                <br>
+                                <button type="button" class="btn btn-info btn-sm mt-1" data-bs-toggle="modal"
+                                    data-bs-target="#orderModal{{ $orderId }}">
+                                    View Products
+                                </button>
+                            </td>
+                            <td>
+                                @if ($firstReq->status == 'rejected')
+                                    {{ 'pending' }}
+                                @else
+                                    {{ ucfirst($firstReq->status) }}
+                                @endif
+                            </td>
+                            <td>
+                                @if ($firstReq->status == 'pending' || ($firstReq->status == 'rejected' && $firstReq->designer_id != Auth::id()))
+                                    <div style="display: flex; gap: 5px;">
+                                        <form method="POST" action="{{ route('customization.accept', $orderId) }}"
+                                            style="display: inline;">
+                                            @csrf
+                                            <button class="btn btn-success btn-sm"
+                                                style="white-space: nowrap;">Accept</button>
+                                        </form>
 
-                                <form method="POST" action="{{ route('customization.reject', $orderId) }}"
-                                    style="display: inline;">
-                                    @csrf
-                                    <button class="btn btn-danger btn-sm" style="white-space: nowrap;">Reject</button>
-                                </form>
-                            </div>
-                        @elseif ($firstReq->status == 'accepted' && $firstReq->designer_id == Auth::id())
-                            <a href="{{ route('workspace.order', $orderId) }}" class="btn btn-primary btn-sm">Workspace</a>
-                        @else
-                            <span class="text-muted">{{ $firstReq->status }}</span>
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+                                        <form method="POST" action="{{ route('customization.reject', $orderId) }}"
+                                            style="display: inline;">
+                                            @csrf
+                                            <button class="btn btn-danger btn-sm"
+                                                style="white-space: nowrap;">Reject</button>
+                                        </form>
+                                    </div>
+                                @elseif ($firstReq->status == 'accepted' && $firstReq->designer_id == Auth::id())
+                                    <a href="{{ route('workspace.order', $orderId) }}"
+                                        class="btn btn-primary btn-sm">Workspace</a>
+                                @else
+                                    <span class="text-muted">{{ $firstReq->status }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     {{-- Modals should be outside the table --}}
     @foreach ($requests as $orderId => $orderRequests)
