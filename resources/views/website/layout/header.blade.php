@@ -49,6 +49,12 @@
 
     <!-- add to master layout head -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.1/nouislider.min.css" rel="stylesheet">
+    <!--====== Jquery js ======-->
+    <script src="{{ asset('website/assets/vendor/jquery-3.7.1.min.js') }}"></script>
+    <!--====== Bootstrap js ======-->
+    <script src="{{ asset('website/assets/vendor/popper/popper.min.js') }}"></script>
+    <!--====== Bootstrap js ======-->
+    <script src="{{ asset('website/assets/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.1/nouislider.min.js" defer></script>
 
 

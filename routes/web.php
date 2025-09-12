@@ -209,6 +209,7 @@ Route::middleware(['auth'])->group(function () {
 
     //coupon code--------------------------------------
     Route::post('/apply-coupon', [WebsiteController::class, 'applyCoupon'])->name('apply.coupon');
+    Route::post('/remove-coupon', [WebsiteController::class, 'removeCoupon'])->name('remove.coupon');
 
 
 

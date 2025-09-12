@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\cartItem;
 use App\Models\SubCategory;
 use App\Models\Testimonial;
+use App\Models\Coupon;
 use App\Mail\GetintouchMail;
 use App\Models\WishlistItem;
 use App\Models\ProductionTask;
@@ -24,7 +25,8 @@ use App\Models\CustomizationRequest;
 use App\Mail\ContactFormSubmitted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail; // Updated to lowercase 'cartItem'
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class WebsiteController extends Controller
 {
@@ -499,26 +501,103 @@ class WebsiteController extends Controller
 
     public function applyCoupon(Request $request)
     {
-        $code = $request->input('coupon_code');
+        $request->validate([
+            'coupon_code' => 'required|string|max:50'
+        ]);
 
-        // Example: find coupon
+        $code = strtoupper(trim($request->input('coupon_code')));
 
+        // Find coupon
         $coupon = Coupon::where('code', $code)->first();
 
         if (!$coupon) {
             return response()->json(['success' => false, 'message' => 'Invalid coupon code.']);
         }
 
-        // Check if expired
-        if ($coupon->expiry_date < now()) {
-            return response()->json(['success' => false, 'message' => 'Coupon expired.']);
+        // Check if coupon is active
+        if ($coupon->status !== 'active') {
+            return response()->json(['success' => false, 'message' => 'This coupon is not active.']);
         }
 
-        // Apply discount logic
+        // Check expiry date
+        if ($coupon->expiry_date < now()) {
+            return response()->json(['success' => false, 'message' => 'Coupon has expired.']);
+        }
+
+        // Check start date
+        if ($coupon->start_date && $coupon->start_date > now()) {
+            return response()->json(['success' => false, 'message' => 'This coupon is not yet valid.']);
+        }
+
+        // Get cart items to calculate total
+        $cartItems = cartItem::with('product', 'variant')->where('user_id', Auth::id())->get();
+
+        $totalMRP = 0;
+        $totalDiscount = 0;
+
+        foreach ($cartItems as $item) {
+            $variant = $item->variant;
+            $originalPrice = $variant ? $variant->price : 0;
+            $discountedPrice = $variant ? $variant->discounted_price ?? $originalPrice : $originalPrice;
+            $quantity = $item->quantity;
+            $totalMRP += $originalPrice * $quantity;
+            $totalDiscount += ($originalPrice - $discountedPrice) * $quantity;
+        }
+
+        $totalBase = $totalMRP - $totalDiscount;
+        $totalGST = $totalBase * 0.18;
+        $priceWithGST = $totalBase + $totalGST;
+
+        // Check minimum order amount
+        if ($coupon->min_order_amount && $priceWithGST < $coupon->min_order_amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimum order amount of ₹' . number_format($coupon->min_order_amount, 2) . ' required.'
+            ]);
+        }
+
+        // Calculate discount
+        $discount = 0;
+        if ($coupon->type === 'fixed') {
+            $discount = min($coupon->value, $priceWithGST); // Don't exceed order total
+        } else { // percent
+            $discount = ($priceWithGST * $coupon->value) / 100;
+        }
+
+        // Store coupon in session
+        session(['applied_coupon' => [
+            'id' => $coupon->id,
+            'code' => $coupon->code,
+            'type' => $coupon->type,
+            'value' => $coupon->value,
+            'discount' => $discount
+        ]]);
+
+        $finalTotal = $priceWithGST - $discount;
+
         return response()->json([
             'success' => true,
             'message' => 'Coupon applied successfully!',
-            'discount' => $coupon->discount,
+            'coupon' => [
+                'code' => $coupon->code,
+                'type' => $coupon->type,
+                'value' => $coupon->value,
+                'discount' => $discount
+            ],
+            'totals' => [
+                'final' => number_format($finalTotal, 2)
+            ]
+        ]);
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        // Remove coupon from session
+        session()->forget('applied_coupon');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Coupon removed successfully!'
         ]);
     }
 }

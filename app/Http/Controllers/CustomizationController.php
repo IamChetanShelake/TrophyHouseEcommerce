@@ -726,6 +726,7 @@ class CustomizationController extends Controller
         $otherDesigners = User::where('role', 2)
             ->where('id', '!=', $designerId)
             ->get();
+            
 
         return view('admin.designer.requests', compact('requests', 'otherDesigners'));
     }

@@ -388,7 +388,7 @@
                                                         }
                                                     @endphp
 
-                                                    {{-- @if ($customization_request && $custom)
+                                                    @if ($customization_request && $custom)
                                                         <a class="text-success">
                                                             @if ($customization)
                                                                 <i class="bi bi-check-circle-fill me-1"></i>
@@ -407,7 +407,7 @@
                                                             <i class="bi bi-pencil-square me-1"></i>
                                                             Customize with your own message or name.
                                                         </a>
-                                                    @endif --}}
+                                                    @endif
                                                 </div>
 
                                                 <div class="text-end d-flex flex-column align-items-end">

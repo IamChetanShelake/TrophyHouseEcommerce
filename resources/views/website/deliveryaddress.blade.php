@@ -498,14 +498,12 @@
             // Update individual totals if elements exist
             const totalAmountElement = document.getElementById('total-amount');
             if (totalAmountElement) {
-                totalAmountElement.textContent = ₹$ {
-                    totals.final
-                };
+                totalAmountElement.textContent = '₹' + totals.final;
             }
 
             const paymentAmountElement = document.getElementById('payment-amount');
             if (paymentAmountElement) {
-                // Convert rupees to paisa for payment gateway (assuming it needs amount in paisa)
+                // Store the final amount for payment processing
                 paymentAmountElement.value = totals.final;
             }
         }

@@ -128,7 +128,7 @@
                                 {{-- shipping charges --}}
 
                                 @php
-                                   
+
                                     $printingCharge = 0;
                                     if ($cart->customizationRequest ?? false) {
                                         if ($cart->quantity >= 1 && $cart->quantity <= 9) {
@@ -232,7 +232,8 @@
                                     </div>
                                 @endif
 
-                                <div class="card p-3 rounded-3 cart-item-card" data-cart-id="{{ $cart->id }}">
+                                <div class="card p-3 rounded-3 cart-item-card" data-cart-id="{{ $cart->id }}"
+                                    data-has-customization="{{ $cart->customizationRequest ? 'true' : 'false' }}">
                                     <div class="row align-items-center">
                                         <!-- Image Column -->
                                         <div class="col-3 col-md-2 text-center">
@@ -376,6 +377,7 @@
                                                 </div>
                                             @endif
 
+
                                             @php
                                                 $custom = $customization_request->firstWhere('cart_item_id', $cart->id);
                                                 $customization = Auth::user()
@@ -395,6 +397,7 @@
                                             @endphp
 
                                             @if ($customization_request && $custom)
+                                                {{-- @if ($customization_request && $customization_request->cart_item_id != null && $customization_request->cart_item_id == $cart->id) --}}
                                                 <a class="text-success">
                                                     @if ($customization)
                                                         <i class="bi bi-check-circle-fill me-1"></i>
@@ -549,10 +552,7 @@
                                 <span>Discount on MRP</span>
                                 <span id="discount-mrp">₹00.00</span>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Total MRP</span>
-                                <span id="final-mrp">₹00.00</span>
-                            </div>
+
                             <!--<div class="d-flex justify-content-between">-->
                             <!--    <span>Platform Fees</span>-->
                             <!--    <span id="platform-fee">₹00.00</span>-->
@@ -563,11 +563,24 @@
                                     ₹ 00.00
                                 </span>
                             </div>
+                            <div class="d-flex justify-content-between ">
+                                <span>Total MRP</span>
+                                <span id="final-mrp">₹00.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total MRP (incl. 18% GST)</span>
+                                <span id="amt">₹00.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between ">
+                                <span>Printing Charges</span>
+                                <span id="printing-charges">₹00.00</span>
+                            </div>
                             <hr />
                             <div class="d-flex justify-content-between fw-bold">
-                                <span>Total Amount (incl. 18% GST)</span>
+                                <span>Total Amount</span>
                                 <span id="total-amount">₹00.00</span>
                             </div>
+
                             <button type="button" class="btn btn-continue mt-3" data-bs-toggle="modal"
                                 data-bs-target="#customizationConfirmModal">Continue</button>
 
@@ -704,12 +717,10 @@
                     .then(data => {
                         if (data.success) {
                             updateOrderSummary();
-
                             const priceOutputs = card.querySelectorAll('.price-output');
                             const selectedOption = variantSelect.options[variantSelect.selectedIndex];
                             const originalPrice = parseFloat(selectedOption.dataset.price);
                             const discountedPrice = parseFloat(selectedOption.dataset.discounted) || originalPrice;
-
                             // Update discounted (main) price
                             if (priceOutputs[0]) {
                                 priceOutputs[0].innerHTML = `₹${discountedPrice.toFixed(2)}`;
@@ -743,6 +754,7 @@
                 const shippingCharges = {{ $shipping_charges ?? 0 }};
                 let totalMRP = 0;
                 let totalDiscount = 0;
+                let totalPrintingCharges = 0;
 
                 document.querySelectorAll('.cart-item-card').forEach(card => {
                     const variantSelect = card.querySelector('.variant-select');
@@ -753,15 +765,30 @@
                     const originalPrice = parseFloat(selectedOption.dataset.price) || 0;
                     const discountedPrice = parseFloat(selectedOption.dataset.discounted) || originalPrice;
                     const quantity = parseInt(quantityInput.value) || 1;
+                    const hasCustomization = card.dataset.hasCustomization === 'true';
 
                     totalMRP += originalPrice * quantity;
                     totalDiscount += (originalPrice - discountedPrice) * quantity;
+
+                    // Calculate printing charges
+                    let printingCharge = 0;
+                    if (hasCustomization) {
+                        if (quantity >= 1 && quantity <= 9) {
+                            printingCharge = 50 * quantity;
+                        } else if (quantity >= 10 && quantity <= 24) {
+                            printingCharge = 35 * quantity;
+                        } else {
+                            printingCharge = 25 * quantity;
+                        }
+                    }
+                    totalPrintingCharges += printingCharge;
                 });
 
                 const totalBase = totalMRP - totalDiscount;
                 const totalGST = totalBase * 0.18;
                 const priceWithGST = totalBase + totalGST;
-                const totalAmount = priceWithGST + shippingCharges;
+                const amount = priceWithGST;
+                const totalAmount = priceWithGST + shippingCharges + totalPrintingCharges;
 
                 document.getElementById('total-mrp').textContent = `₹${totalMRP.toFixed(2)}`;
                 document.getElementById('discount-mrp').textContent = `- ₹${totalDiscount.toFixed(2)}`;
@@ -770,7 +797,9 @@
                 document.getElementById('shipping-charges').textContent = shippingCharges === 0 ? 'FREE' :
                     `₹${shippingCharges.toFixed(2)}`;
                 document.getElementById('shipping-charges').className = shippingCharges === 0 ? 'text-success' : '';
+                document.getElementById('amt').textContent = `₹${amount.toFixed(2)}`;
                 document.getElementById('total-amount').textContent = `₹${totalAmount.toFixed(2)}`;
+                document.getElementById('printing-charges').textContent = `+ ₹${totalPrintingCharges.toFixed(2)}`;
             }
 
             function changeQty(cartId, delta) {
