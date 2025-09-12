@@ -228,7 +228,8 @@ class CustomizationController extends Controller
 
             // payment_item चे customization_status "Approved" करा
             $paymentItem = $request->paymentItem;
-            $paymentItem->customization_status = 'Approved';
+            $paymentItem->customization_status = 'approved';
+            $paymentItem->delivery_status = 'approved';
             $paymentItem->save();
         }
 
@@ -345,7 +346,7 @@ class CustomizationController extends Controller
     //     ]);
     // }
 
-    // //cancel approve 
+    // //cancel approve
     // public function cancelApproval(CustomizationMessage $message)
     // {
     //     $user = auth()->user();
@@ -690,6 +691,8 @@ class CustomizationController extends Controller
             ->unique()
             ->toArray();
 
+
+
         // Base query
         $query = CustomizationRequest::with([
             'user',
@@ -727,6 +730,10 @@ class CustomizationController extends Controller
             ->where('id', '!=', $designerId)
             ->get();
             
+
+
+
+        // return $requests;
 
         return view('admin.designer.requests', compact('requests', 'otherDesigners'));
     }

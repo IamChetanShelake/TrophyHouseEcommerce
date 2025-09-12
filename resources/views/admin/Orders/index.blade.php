@@ -84,6 +84,7 @@
                                 <th>Amt.</th>
                                 <th>Items</th>
                                 <th>Paymt. Mode</th>
+                                <th>Prosucts</th>
                                 <th>Placed At</th>
                                 <th>Status</th>
                                 <th>Details</th>
@@ -148,59 +149,61 @@
                                     <td>₹{{ number_format($p->amount, 2) }}</td>
                                     <td>{{ $p->items->count() }}</td>
                                     <td>{{ $p->payment_mode ?? '-' }}</td>
-                                    <td>{{ $p->updated_at?->format('d M Y') }}</td>
                                     <td>
+                                        {{ optional($p->items)->where('delivery_status', 'approved')->count() ?? 0 }},
+                                        {{ optional($p->items)->where('delivery_status', 'ready_to_dispatch')->count() ?? 0 }}
+
+                                    </td>
+
+                                    <td>{{ $p->updated_at?->format('d M Y') }}</td>
+                                    {{--  <td>
                                         @if ($p->delivery_status == 'pending')
                                             <span class="badge"
-                                                style="background-color: #dcbf00;color: #c2d400;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                style="background-color: #dcbf00;color: white;
+                                         border: none;
+                                      font-size: 13px;
+                                      border-radius: 25px;">{{ $p->delivery_status }}</span>
                                         @elseif($p->delivery_status == 'accepted')
                                             <span class="badge"
                                                 style="background-color: #008616;
-                                                color: #00d720;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                color: white;
+                                                border: none;
+                                                font-size: 13px;
+                                         border-radius: 25px;">{{ $p->delivery_status }}</span>
                                         @elseif ($p->delivery_status == 'approved')
                                             <button class="badge"
-                                                style=" background-color: #c9ddff;
-    color: #001cff;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;
-"
+                                                style=" background-color: #001cff;
+                                            color:white;
+                                            border: none;
+                                            font-size: 13px;
+                                          border-radius: 25px;
+                                                    "
                                                 data-bs-toggle="modal" data-bs-target="#statusModal{{ $p->id }}">
                                                 {{ $p->delivery_status }}
                                             </button>
                                         @elseif ($p->delivery_status == 'ready_to_pickup')
-                                            {{-- <span class="badge"
-                                                style="background-color: #a4ffae;color: #00c264;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span> --}}
+
                                             <button class="badge"
-                                                style="background-color: #a4ffae;color: #00c264;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;"
+                                                style="background-color: #00c264;color:white ;
+                                                     border: none;
+                                                     font-size: 13px;
+                                                     border-radius: 25px;"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#statusModalDelivered{{ $p->id }}">
                                                 Ready To Pick Up
                                             </button>
                                         @elseif ($p->delivery_status == 'delivered')
                                             <span class="badge"
-                                                style="background-color: #89ff9c;color: #39c900;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                style="background-color: #39c900;color:white ;
+                                               border: none;
+                                               font-size: 13px;
+                                               border-radius: 25px;">{{ $p->delivery_status }}</span>
                                         @elseif ($p->delivery_status == 'cancelled')
                                             <span class="badge"
-                                                style="background-color: #ff7777;color: #d30000;
-    border: none;
-    font-size: 13px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
+                                                style="background-color: #d30000;color:white ;
+                                              border: none;
+                                              font-size: 13px;
+                                            border-radius: 25px;">{{ $p->delivery_status }}</span>
                                         @else
                                             <span class="badge bg-dark">pending</span>
                                         @endif
@@ -233,7 +236,38 @@
                                         @else
                                             <span class="badge bg-dark">pending</span>
                                         @endif
+                                    </td>  --}}
+
+                                    <td>
+                                        @php
+                                            $styles = [
+                                                'pending' => 'background-color: #dcbf00; color: white;',
+                                                'accepted' => 'background-color: #008616; color: white;',
+                                                'approved' => 'background-color: #c9ddff; color: white;',
+                                                'ready_to_pickup' => 'background-color: #a4ffae; color: white;',
+                                                'delivered' => 'background-color: #89ff9c; color: white;',
+                                                'cancelled' => 'background-color: #ff7777; color: white;',
+                                            ];
+
+                                            $defaultStyle = 'background-color: #333; color: #fff;';
+                                            $style = $styles[$p->delivery_status] ?? $defaultStyle;
+                                        @endphp
+
+                                        @if (in_array($p->delivery_status, ['approved', 'ready_to_pickup']))
+                                            <button class="badge"
+                                                style="{{ $style }} border: none; font-size: 13px; border-radius: 25px;"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#{{ $p->delivery_status == 'approved' ? 'statusModal' . $p->id : 'statusModalDelivered' . $p->id }}">
+                                                {{ $p->delivery_status == 'ready_to_pickup' ? 'Ready To Pick Up' : $p->delivery_status }}
+                                            </button>
+                                        @else
+                                            <span class="badge"
+                                                style="{{ $style }} border: none; font-size: 13px; border-radius: 25px;">
+                                                {{ $p->delivery_status }}
+                                            </span>
+                                        @endif
                                     </td>
+
 
                                     <td>
                                         <button class="btn btn-info btn-sm view-user" data-id="{{ $p->order_id }}">
@@ -242,6 +276,9 @@
                                         <a class="btn btn-primary btn-sm view-products" data-id="{{ $p->order_id }}">
                                             Products
                                         </a>
+                                        @if (Auth::user()->role == 1)
+                                            <button class="btn btn-success  btn-sm "> Bill</button>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

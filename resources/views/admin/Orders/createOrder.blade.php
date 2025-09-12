@@ -21,7 +21,7 @@
                         <div class="form-group text-end" style="margin-bottom: -5px;">
                             <input type="hidden" name="status" value="0"> <!-- off value -->
                             <label class="switch">
-                                <input type="checkbox" name="status" value="1" checked>
+                                <input type="checkbox" name="status" value="1" id="status_toggle" checked>
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -99,10 +99,27 @@
 
                         <!-- Email -->
                         <div class="form-group col-lg-12 col-sm-12">
-                            <label for="email">Email</label> <span style="color:red;">*</span>
+                            <label for="email">Email</label>
                             <input type="email" class="form-control" id="email" name="email"
-                                value="{{ old('email') }}" autocomplete="off" required>
-                            <small id="email_error" class="text-danger d-none">This Email already exists.</small>
+                                value="{{ old('email') }}" autocomplete="off">
+                        </div>
+
+                        <!-- GSTIN Field (shown when toggle is ON) -->
+                        <div class="form-group col-lg-12 col-sm-12 gst-fields" id="gstin_group" style="display: none;">
+                            <label for="gstin">GSTIN</label>
+                            <input type="text" class="form-control" id="gstin" name="gstin"
+                                value="{{ old('gstin') }}"
+                                pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                                placeholder="22AAAAA0000A1Z5" maxlength="15">
+                            <small class="text-muted">Enter 15-digit GSTIN number</small>
+                        </div>
+
+                        <!-- HSN Code Field (shown when toggle is ON) -->
+                        <div class="form-group col-lg-12 col-sm-12 gst-fields" id="hsn_group" style="display: none;">
+                            <label for="hsn_code">HSN Code</label>
+                            <input type="text" class="form-control" id="hsn_code" name="hsn_code"
+                                value="{{ old('hsn_code') }}" pattern="^[0-9]{4,8}$" placeholder="1234" maxlength="8">
+                            <small class="text-muted">Enter 4-8 digit HSN Code</small>
                         </div>
 
                         <!-- Password group (hide/show) -->
@@ -175,6 +192,7 @@
                                     <th>Product</th>
                                     <th>Image</th>
                                     <th>Size</th>
+                                    <th>Color</th>
                                     <th>Av.Qty</th>
                                     <th>Qty</th>
                                     <th>Rate</th>
@@ -212,13 +230,19 @@
                                             <option value="">Select</option>
                                         </select>
                                     </td>
+                                    <td>
+                                        <select name="color[]" class="form-control color_dropdown">
+                                            <option value="">Select</option>
+                                        </select>
+                                    </td>
                                     <td><input type="number" name="avqty[]" class="form-control avqty"></td>
                                     <td><input type="number" name="qty[]" class="form-control qty"></td>
                                     <td><input type="number" name="rate[]" class="form-control rate" readonly></td>
                                     <td><input type="number" name="disc_rate[]" class="form-control disc-rate" readonly>
                                     </td>
                                     <td><input type="number" name="total[]" class="form-control total" readonly></td>
-                                    <td><button type="button" class="btn btn-danger remove_row" style="padding:4px 8px;">
+                                    <td><button type="button" class="btn btn-danger remove_row"
+                                            style="padding:4px 8px;">
                                             <i class="fa fa-trash"></i></button>
                                     </td>
 
@@ -354,6 +378,8 @@
                             .then(response => response.json())
                             .then(variants => {
                                 sizeDropdown.innerHTML = '<option value="">Select Size</option>';
+                                let colorDropdown = row.querySelector(".color_dropdown");
+                                colorDropdown.innerHTML = '<option value="">Select Color</option>';
                                 variants.forEach(variant => {
                                     let option = document.createElement('option');
                                     option.value = variant.id;
@@ -364,6 +390,8 @@
                                     option.setAttribute('data-discount', variant.discounted_price ??
                                         variant.price);
                                     option.setAttribute('data-avqty', variant.quantity);
+                                    option.setAttribute('data-colors', JSON.stringify(variant
+                                        .color || []));
 
                                     sizeDropdown.appendChild(option);
                                 });
@@ -374,7 +402,7 @@
 
 
 
-                // Size → Auto-fill Rate, Disc.Rate & Av.Qty
+                // Size → Auto-fill Rate, Disc.Rate & Av.Qty + Colors
                 document.addEventListener("change", function(event) {
                     if (event.target.classList.contains("size_dropdown")) {
                         let row = event.target.closest("tr");
@@ -386,11 +414,22 @@
                         let rate = parseFloat(selectedOption.getAttribute("data-price")) || 0;
                         let discRate = parseFloat(selectedOption.getAttribute("data-discount")) || 0;
                         let avQty = parseFloat(selectedOption.getAttribute("data-avqty")) || 0;
+                        let colors = JSON.parse(selectedOption.getAttribute("data-colors")) || [];
 
                         // set values in row inputs
                         row.querySelector(".rate").value = rate;
                         row.querySelector(".disc-rate").value = discRate;
                         row.querySelector(".avqty").value = avQty;
+
+                        // populate color dropdown
+                        let colorDropdown = row.querySelector(".color_dropdown");
+                        colorDropdown.innerHTML = '<option value="">Select Color</option>';
+                        colors.forEach(color => {
+                            let option = document.createElement('option');
+                            option.value = color;
+                            option.textContent = color;
+                            colorDropdown.appendChild(option);
+                        });
 
                         // जर qty आधी टाकलं असेल तर total पण calculate कर
                         let qty = parseFloat(row.querySelector(".qty").value) || 0;
@@ -428,9 +467,9 @@
             });
 
             function checkUserExists() {
-                let email = document.getElementById("email").value;
+                let mobile = document.getElementById("mobile").value;
 
-                if (email) {
+                if (mobile && mobile.length === 10) {
                     fetch("{{ route('checkUser') }}", {
                             method: "POST",
                             headers: {
@@ -438,26 +477,62 @@
                                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
                             },
                             body: JSON.stringify({
-                                email: email
+                                mobile: mobile
                             })
                         })
                         .then(res => res.json())
                         .then(data => {
                             if (data.exists) {
-                                // Old user
+                                // Old user - hide password field
                                 document.getElementById("password_group").style.display = "none";
-                                document.getElementById("email_error").classList.remove("d-none");
                             } else {
-                                // New user
+                                // New user - show password field
                                 document.getElementById("password_group").style.display = "block";
-                                document.getElementById("email_error").classList.add("d-none");
                             }
                         });
                 }
             }
 
-            // फक्त Email blur झालं की check करा
-            document.getElementById("email").addEventListener("blur", checkUserExists);
+            // Mobile blur event
+            document.getElementById("mobile").addEventListener("blur", checkUserExists);
+
+            // Toggle GST fields based on status switch
+            const statusToggle = document.getElementById('status_toggle');
+            const gstFields = document.querySelectorAll('.gst-fields');
+
+            function toggleGstFields() {
+                const isChecked = statusToggle.checked;
+                console.log('Toggle status:', isChecked); // Debug log
+                gstFields.forEach(field => {
+                    field.style.display = isChecked ? 'block' : 'none';
+                    console.log('Field display:', field.id, isChecked ? 'block' : 'none'); // Debug log
+                });
+
+                // Clear GST fields when toggle is off
+                if (!isChecked) {
+                    document.getElementById('gstin').value = '';
+                    document.getElementById('hsn_code').value = '';
+                }
+            }
+
+            // Initial check on page load
+            if (statusToggle) {
+                toggleGstFields();
+
+                // Add event listener for toggle changes
+                statusToggle.addEventListener('change', toggleGstFields);
+
+                // Also add click event to the label for better UX
+                const toggleLabel = statusToggle.closest('.switch');
+                if (toggleLabel) {
+                    toggleLabel.addEventListener('click', function() {
+                        // Small delay to let the checkbox state update
+                        setTimeout(toggleGstFields, 10);
+                    });
+                }
+            } else {
+                console.log('Status toggle not found'); // Debug log
+            }
         </script>
         {{--  <script>
 
@@ -487,7 +562,7 @@
                             });
                     }
                 });
-                
+
 
 
                // Product → Sizes
