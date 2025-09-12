@@ -43,13 +43,13 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         if ($user->role == 1 || $user->role == 3) {
-        //   dd($user->role);
+            //   dd($user->role);
             return redirect()->route('home'); // or any route name you use for admin
         } elseif ($user->role == 0) {
             return redirect()->route('Websitehome'); // or website home
-        } elseif($user->role == 2){
-               
-                return redirect()->route('dashboard'); 
+        } elseif ($user->role == 2) {
+
+            return redirect()->route('requests');
         }
 
         return redirect('/'); // fallback

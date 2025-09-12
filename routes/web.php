@@ -130,7 +130,7 @@ Route::middleware(['auth'])->group(function () {
     // designer customization routes--------------------------------------------------
     Route::prefix('designer')->group(function () {
 
-        Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
+        // Route::get('/dashboard', [CustomizationController::class, 'showRequests'])->name('dashboard');
         Route::get('/requests', [CustomizationController::class, 'showRequests'])->name('requests');
         Route::get('/recustomizations', [CustomizationController::class, 'showRecustomizations'])->name('recustomizations');
 
