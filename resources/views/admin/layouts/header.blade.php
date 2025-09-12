@@ -58,7 +58,11 @@
                 <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
                     <span class="mdi mdi-menu"></span>
                 </button>
-
+                @if (Auth::user()->role == '1')
+                    <h2 class="mt-4" style="color:#E31E24">Admin Panel</h2>
+                @elseif(Auth::user()->role == '3')
+                    <h2 class="mt-4" style="color:#E31E24">Production Panel</h2>
+                @endif
                 {{-- <div class="search-field d-none d-md-block">
                     <form class="d-flex align-items-center h-100">
                         <div class="input-group">
@@ -143,6 +147,8 @@
                             </a>
                             <div class="collapse" id="ordersMenu">
                                 <ul class="nav flex-column sub-menu">
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('orders') }}">All</a>
+                                    </li>
                                     <li class="nav-item"><a class="nav-link"
                                             href="{{ route('orders', 'delivered') }}">Delivered</a></li>
                                     <li class="nav-item"><a class="nav-link"
@@ -153,6 +159,9 @@
                                             href="{{ route('orders', 'accepted') }}">Designer</a></li>
                                     <li class="nav-item"><a class="nav-link"
                                             href="{{ route('orders', 'pending') }}">Pending</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('createorder') }}">Add
+                                            New</a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>

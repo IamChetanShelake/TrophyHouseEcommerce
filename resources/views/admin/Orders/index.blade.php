@@ -276,6 +276,9 @@
                                         <a class="btn btn-primary btn-sm view-products" data-id="{{ $p->order_id }}">
                                             Products
                                         </a>
+                                        @if (Auth::user()->role == 1)
+                                            <button class="btn btn-success  btn-sm "> Bill</button>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

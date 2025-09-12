@@ -25,6 +25,8 @@
                             <tr>
                                 <th>Order ID</th>
                                 <th>Product</th>
+                                <th>Size</th>
+                                <th>Color</th>
                                 <th>Quantity</th>
                                 <th>Image/CDR</th>
                                 <th>Status</th>
@@ -38,6 +40,8 @@
                                 <tr>
                                     <td>{{ $task->payment->order_id }}</td>
                                     <td>{{ $task->product->title }}</td>
+                                    <td>{{ $task->paymentItem->variant->size }}</td>
+                                    <td>{{ $task->paymentItem->color ?? '' }}</td>
                                     <td>{{ $task->paymentItem->quantity ?? '' }}</td>
                                     {{--  <td>
                                         @if ($task->file)
@@ -103,6 +107,8 @@
                                         @elseif($task->status === 'ready_to_dispatch')
                                             <span class="badge bg-success">Ready</span>
                                         @endif
+
+
                                     </td>
                                 </tr>
                             @endforeach

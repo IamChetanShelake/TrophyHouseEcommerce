@@ -55,7 +55,7 @@ class HomeController extends Controller
         $awardCategories = AwardCategory::count();
         $subCategories = SubCategory::count();
         $users = User::count();
-        $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser'])
+        $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser', 'variant'])
             ->orderBy('created_at', 'desc')->where('status', 'pending')
             ->get();
 

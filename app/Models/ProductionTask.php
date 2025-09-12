@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductionTask extends Model
 {
-     protected $guarded = []; 
-     // Each task belongs to a product
+    protected $guarded = [];
+    // Each task belongs to a product
     public function product()
     {
         return $this->belongsTo(Product::class);
@@ -17,6 +17,11 @@ class ProductionTask extends Model
     public function paymentItem()
     {
         return $this->belongsTo(PaymentItem::class);
+    }
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 
     // Each task is linked to a payment (order)

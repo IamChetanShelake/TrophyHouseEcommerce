@@ -554,18 +554,27 @@ class OrderController extends Controller
     public function getSizes($productId)
     {
         $sizes = ProductVariant::where('product_id', $productId)
-            ->select('id', 'size', 'price', 'discounted_price', 'quantity')
-            ->get();
+            ->select('id', 'size', 'price', 'discounted_price', 'quantity', 'color')
+            ->get()
+            ->map(function ($variant) {
+                // Ensure color is an array
+                if (is_string($variant->color)) {
+                    $variant->color = json_decode($variant->color, true) ?? [];
+                } elseif (!is_array($variant->color)) {
+                    $variant->color = [];
+                }
+                return $variant;
+            });
 
         return response()->json($sizes);
     }
 
     public function checkUser(Request $request)
     {
-        $exists = User::where('email', $request->email)->first();
+        $exists = User::where('mobile', $request->mobile)->first();
 
         if ($exists) {
-            return response()->json(['exists' => true]);
+            return response()->json(['exists' => true, 'user_id' => $exists->id]);
         } else {
             return response()->json(['exists' => false]);
         }
@@ -637,10 +646,10 @@ class OrderController extends Controller
         //  DB::beginTransaction();
 
 
-        // return $request->all();
+        //  return $request->all();
 
         // 1. Check if user exists
-        $user = User::Where('email', $request->email)
+        $user = User::Where('mobile', $request->mobile)
             ->first();
 
         if (!$user) {
@@ -665,6 +674,8 @@ class OrderController extends Controller
         $payment->amount         = $request->paidamount;
         $payment->status         = 'paid';
         $payment->payment_mode   = $request->payment_mode;
+        $payment->gstin   = $request->gstin;
+        $payment->hsn_code   = $request->hsn_code;
         $payment->save();
 
         // 3. Payment Item Table Entry (Object + save)
@@ -676,6 +687,7 @@ class OrderController extends Controller
                 $paymentItem->user_id      = $user->id;
                 $paymentItem->product_id   = $productId;
                 $paymentItem->variant_id   = $request->size[$key];
+                $paymentItem->color        = $request->color[$key] ?? null;
                 $paymentItem->quantity     = $request->qty[$key];
                 $paymentItem->unit_price   = $request->disc_rate[$key];
                 $paymentItem->total_price  = $request->total[$key];

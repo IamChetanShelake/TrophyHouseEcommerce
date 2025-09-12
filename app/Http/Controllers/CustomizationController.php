@@ -691,6 +691,8 @@ class CustomizationController extends Controller
             ->unique()
             ->toArray();
 
+
+
         // Base query
         $query = CustomizationRequest::with([
             'user',
@@ -727,6 +729,10 @@ class CustomizationController extends Controller
         $otherDesigners = User::where('role', 2)
             ->where('id', '!=', $designerId)
             ->get();
+
+
+
+        // return $requests;
 
         return view('admin.designer.requests', compact('requests', 'otherDesigners'));
     }
