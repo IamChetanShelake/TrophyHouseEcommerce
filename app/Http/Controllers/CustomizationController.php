@@ -705,10 +705,22 @@ class CustomizationController extends Controller
                 $q->where('status', 'paid');
             });
 
+
+
         // Apply status filter if tab is clicked
         if ($statusFilter) {
-            $query->where('designer_id', $designerId)
-                ->where('status', $statusFilter);
+            if ($statusFilter === 'pending') {
+                // For pending: show both assigned to current designer AND unassigned
+                $query->where('status', 'pending')
+                    ->where(function ($sub) use ($designerId) {
+                        $sub->whereNull('designer_id')  // Unassigned pending
+                            ->orWhere('designer_id', $designerId);  // Assigned pending
+                    });
+            } else {
+                // For other statuses: show only assigned to current designer
+                $query->where('designer_id', $designerId)
+                    ->where('status', $statusFilter);
+            }
         } else {
             // Default = pending unassigned
             $query->where(function ($sub) {

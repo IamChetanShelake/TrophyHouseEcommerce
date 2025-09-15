@@ -699,4 +699,20 @@ class OrderController extends Controller
 
         return redirect()->route('orders')->with('success', 'Order created successfully!');
     }
+
+    public function offgenerateBill($orderId)
+    {
+        $payment = Payment::with(['items.product', 'items.variant', 'user'])
+            ->where('order_id', $orderId)
+            ->firstOrFail();
+
+        // Check if bill is GST (1) or non-GST (0)
+        $isGst = $payment->bill == 1;
+
+        if ($isGst) {
+            return view('admin.bills.gst-bill', compact('payment'));
+        } else {
+            return view('admin.bills.non-gst-bill', compact('payment'));
+        }
+    }
 }
