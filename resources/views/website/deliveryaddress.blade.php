@@ -223,13 +223,13 @@
 
                     @php
                         use App\Models\CartItem;
-                        $cartItems = CartItem::with('product', 'variant')
+                        $cartItems = CartItem::with('product', 'variant', 'customizationRequest')
                             ->where('user_id', auth()->id())
                             ->get();
 
                         $totalMRP = 0;
                         $totalDiscount = 0;
-
+                        $totalPrintingCharges = 0;
                         $shippingCharges = 0;
 
                         foreach ($cartItems as $item) {
@@ -239,11 +239,25 @@
                             $quantity = $item->quantity;
                             $totalMRP += $originalPrice * $quantity;
                             $totalDiscount += ($originalPrice - $discountedPrice) * $quantity;
+
+                            // Calculate printing charges
+                            $printingCharge = 0;
+                            if ($item->customizationRequest ?? false) {
+                                if ($quantity >= 1 && $quantity <= 9) {
+                                    $printingCharge = 50 * $quantity;
+                                } elseif ($quantity >= 10 && $quantity <= 24) {
+                                    $printingCharge = 35 * $quantity;
+                                } else {
+                                    $printingCharge = 25 * $quantity;
+                                }
+                            }
+                            $totalPrintingCharges += $printingCharge;
                         }
 
                         $totalBase = $totalMRP - $totalDiscount;
-                        $totalGST = $totalBase * 0.18;
-                        $priceWithGST = $totalBase + $totalGST;
+                        $amountWithPrinting = $totalBase + $totalPrintingCharges;
+                        $totalGST = $amountWithPrinting * 0.18;
+                        $priceWithGST = $amountWithPrinting + $totalGST;
 
                         // Check for applied coupon
                         use App\Models\Coupon;
@@ -253,7 +267,7 @@
 
                         if ($appliedCoupon) {
                             $coupon = Coupon::find($appliedCoupon['id']);
-                            if ($coupon && $coupon->isValid()) {
+                            if ($coupon) {
                                 $couponDiscount = $appliedCoupon['discount'];
                                 $couponDisplay =
                                     $appliedCoupon['code'] .
@@ -317,6 +331,10 @@
                             </span>
                         </div>
                         <div class="d-flex">
+                            <span>Printing Charges</span>
+                            <span>+ ₹{{ number_format($totalPrintingCharges, 2) }}</span>
+                        </div>
+                        <div class="d-flex">
                             <span>GST (18%)</span>
                             <span>₹{{ number_format($totalGST, 2) }}</span>
                         </div>
@@ -343,9 +361,13 @@
                 </div>
                 <!-- Coupon Section -->
                 <div class="price-box m1-2">
-                    <p class="mb-3" style="font-family:'Source Sans 3', sans-serif;font-size:18px;font-weight:600;">Have
-                        a
-                        Coupon Code?</p>
+                    <p class="mb-3" style="font-family:'Source Sans 3', sans-serif;font-size:18px;font-weight:600;">
+                        @if($couponDiscount > 0)
+                            Coupon Applied
+                        @else
+                            Have a Coupon Code?
+                        @endif
+                    </p>
                     <div id="coupon-messages"></div> <!-- For success/error messages -->
                     <div class="d-flex" id="coupon-input-group">
                         <input type="text" class="form-control me-2" id="coupon-code" placeholder="Enter coupon code"
@@ -356,7 +378,7 @@
                         </button>
                     </div>
                     <div class="d-flex mt-2 d-none" id="coupon-applied">
-                        <span class="badge bg-success me-2" id="coupon-display">COUPON20</span>
+                        <span class="badge bg-success me-2 p-2" id="coupon-display">COUPON20</span>
                         <button type="button" class="btn btn-sm btn-outline-danger"
                             onclick="removeCoupon()">Remove</button>
                     </div>
@@ -431,15 +453,8 @@
                     if (data.success) {
                         showCouponMessage('Coupon applied successfully!', 'success');
 
-                        // Show applied coupon
-                        document.getElementById('coupon-applied').classList.remove('d-none');
-                        document.getElementById('coupon-display').textContent = data.coupon.code;
-
-                        // Hide input group
-                        document.getElementById('coupon-input-group').classList.add('d-none');
-
-                        // Update totals
-                        updateTotals(data.totals);
+                        // Reload page to update all PHP variables and totals
+                        window.location.reload();
                     } else {
                         showCouponMessage(data.message, 'danger');
                     }
@@ -488,10 +503,8 @@
 
         function showCouponMessage(message, type) {
             const messagesDiv = document.getElementById('coupon-messages');
-            messagesDiv.innerHTML = < div class = "alert alert-${type} mt-2 alert-dismissible fade show" > < button type =
-                "button"
-            class = "btn-close"
-            data - bs - dismiss = "alert" > < /button>${message}</div > ;
+            messagesDiv.innerHTML =
+                `<div class="alert alert-${type} mt-2 alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>${message}</div>`;
         }
 
         function updateTotals(totals) {

@@ -521,10 +521,11 @@ class WebsiteController extends Controller
         }
 
         // Get cart items to calculate total
-        $cartItems = cartItem::with('product', 'variant')->where('user_id', Auth::id())->get();
+        $cartItems = cartItem::with('product', 'variant', 'customizationRequest')->where('user_id', Auth::id())->get();
 
         $totalMRP = 0;
         $totalDiscount = 0;
+        $totalPrintingCharges = 0;
 
         foreach ($cartItems as $item) {
             $variant = $item->variant;
@@ -533,11 +534,25 @@ class WebsiteController extends Controller
             $quantity = $item->quantity;
             $totalMRP += $originalPrice * $quantity;
             $totalDiscount += ($originalPrice - $discountedPrice) * $quantity;
+
+            // Calculate printing charges
+            $printingCharge = 0;
+            if ($item->customizationRequest ?? false) {
+                if ($quantity >= 1 && $quantity <= 9) {
+                    $printingCharge = 50 * $quantity;
+                } elseif ($quantity >= 10 && $quantity <= 24) {
+                    $printingCharge = 35 * $quantity;
+                } else {
+                    $printingCharge = 25 * $quantity;
+                }
+            }
+            $totalPrintingCharges += $printingCharge;
         }
 
         $totalBase = $totalMRP - $totalDiscount;
-        $totalGST = $totalBase * 0.18;
-        $priceWithGST = $totalBase + $totalGST;
+        $amountWithPrinting = $totalBase + $totalPrintingCharges;
+        $totalGST = $amountWithPrinting * 0.18;
+        $priceWithGST = $amountWithPrinting + $totalGST;
 
         // Check minimum order amount
         if ($coupon->min_order_amount && $priceWithGST < $coupon->min_order_amount) {

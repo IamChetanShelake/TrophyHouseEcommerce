@@ -286,56 +286,65 @@
                                                 </span>
                                             @endif
                                             <div class="mt-4">
-                                                @foreach ($payments as $p)
-                                                    @if ($p->delivery_status == 'pending')
-                                                        <span class="badge"
-                                                            style="background-color: #dcbf00;color: #c2d400;
+                                                @if ($payment->delivery_status == 'pending')
+                                                    <span class="badge"
+                                                        style="    background-color: #fff5b0;
+    color: #5d6600;
     border: none;
     font-size: 16px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
-                                                    @elseif($p->delivery_status == 'accepted')
-                                                        <span class="badge"
-                                                            style="background-color: #008616;
-                                                color: #00d720;
+    border-radius: 25px;">{{ $payment->delivery_status }}</span>
+                                                @elseif($payment->delivery_status == 'accepted')
+                                                    Designer has <span class="badge"
+                                                        style="background-color: #bdffc8;
+                                                color: #00ad1a;
     border: none;
     font-size: 16px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
-                                                    @elseif ($p->delivery_status == 'approved')
-                                                        <button class="badge"
-                                                            style=" background-color: #c9ddff;
+    border-radius: 25px;">{{ $payment->delivery_status }}</span>
+                                                @elseif ($payment->delivery_status == 'approved')
+                                                    <button class="badge"
+                                                        style=" background-color: #c9ddff;
     color: #001cff;
     border: none;
     font-size: 16px;
     border-radius: 25px;
 "
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#statusModal{{ $p->id }}">
-                                                            {{ $p->delivery_status }}
-                                                        </button>
-                                                    @elseif ($p->delivery_status == 'ready_to_pickup')
-                                                        <button class="badge"
-                                                            style="background-color: #a4ffae;color: #00c264;
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#statusModal{{ $payment->id }}">
+                                                        {{ $payment->delivery_status }}
+                                                    </button>
+                                                @elseif ($payment->delivery_status == 'ready_to_pickup')
+                                                    <button class="badge"
+                                                        style="background-color: #a4ffae;color: #00c264;
     border: none;
     font-size: 16px;
     border-radius: 25px;"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#statusModalDelivered{{ $p->id }}">
-                                                            Ready To Pick Up
-                                                        </button>
-                                                    @elseif ($p->delivery_status == 'delivered')
-                                                        <span class="badge"
-                                                            style="background-color: #89ff9c;color: #39c900;
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#statusModalDelivered{{ $payment->id }}">
+                                                        Ready To Pick Up
+                                                    </button>
+                                                @elseif ($payment->delivery_status == 'ready_to_dispatch')
+                                                    <button class="badge"
+                                                        style="background-color: #a4ffae;color: #00c264;
     border: none;
     font-size: 16px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
-                                                    @elseif ($p->delivery_status == 'cancelled')
-                                                        <span class="badge"
-                                                            style="background-color: #ff7777;color: #d30000;
+    border-radius: 25px;"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#statusModalDelivered{{ $payment->id }}">
+                                                        Ready To Dispatch
+                                                    </button>
+                                                @elseif ($payment->delivery_status == 'delivered')
+                                                    <span class="badge"
+                                                        style="background-color: #89ff9c;color: #39c900;
     border: none;
     font-size: 16px;
-    border-radius: 25px;">{{ $p->delivery_status }}</span>
-                                                    @endif
-                                                @endforeach
+    border-radius: 25px;">{{ $payment->delivery_status }}</span>
+                                                @elseif ($payment->delivery_status == 'cancelled')
+                                                    <span class="badge"
+                                                        style="background-color: #ff7777;color: #d30000;
+    border: none;
+    font-size: 16px;
+    border-radius: 25px;">{{ $payment->delivery_status }}</span>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -359,12 +368,7 @@
                                                     </div>
 
                                                     {{-- Approval Status --}}
-                                                    @if ($item->is_approved)
-                                                        <span class="badge bg-success mt-1">Customization Approved</span>
-                                                    @else
-                                                        <span class="badge bg-warning mt-1">Pending Customization
-                                                            Approval</span>
-                                                    @endif
+
 
                                                     @php
                                                         $custom = $customization_request->firstWhere(

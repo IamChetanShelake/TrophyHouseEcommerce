@@ -19,6 +19,12 @@ class ProductionController extends Controller
         $task->status = $request->status;
         $task->save();
 
+
+        //orders status
+        $task->payment->delivery_status = 'ready_to_pickup';
+        $task->payment->save();
+
+        //payment item status
         $productitem = $task->paymentItem;
         $productitem->delivery_status = $request->status;
         $productitem->save();

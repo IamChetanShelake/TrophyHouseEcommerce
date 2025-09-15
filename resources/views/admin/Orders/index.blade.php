@@ -84,8 +84,9 @@
                                 <th>Amt.</th>
                                 <th>Items</th>
                                 <th>Paymt. Mode</th>
-                                <th>Prosucts</th>
+                                <th>Products</th>
                                 <th>Placed At</th>
+                                <th>Delivery Date</th>
                                 <th>Status</th>
                                 <th>Details</th>
                             </tr>
@@ -93,6 +94,12 @@
                         <tbody>
                             @foreach ($payments as $p)
                                 <!-- Status Modals -->
+                                @php
+                                    $isOffline = str_starts_with($p->order_id, 'THOFF_');
+                                    $nextStatus = $isOffline ? 'ready_to_pickup' : 'ready_to_dispatch';
+                                    $nextStatusText = $isOffline ? 'Ready to Pickup' : 'Ready to Dispatch';
+                                @endphp
+
                                 <div class="modal fade" id="statusModal{{ $p->id }}" tabindex="-1"
                                     aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
@@ -102,7 +109,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                Mark as <b>Ready to Pickup</b>?
+                                                Mark as <b>{{ $nextStatusText }}</b>?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
@@ -111,7 +118,8 @@
                                                     method="POST">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <input type="hidden" name="delivery_status" value="ready_to_pickup">
+                                                    <input type="hidden" name="delivery_status"
+                                                        value="{{ $nextStatus }}">
                                                     <button type="submit" class="btn btn-primary">Yes</button>
                                                 </form>
                                             </div>
@@ -156,6 +164,7 @@
                                     </td>
 
                                     <td>{{ $p->updated_at?->format('d M Y') }}</td>
+                                    <td>{{ $p->delivery_date ?? 'N/A' }}</td>
                                     {{--  <td>
                                         @if ($p->delivery_status == 'pending')
                                             <span class="badge"
@@ -243,22 +252,37 @@
                                             $styles = [
                                                 'pending' => 'background-color: #dcbf00; color: white;',
                                                 'accepted' => 'background-color: #008616; color: white;',
-                                                'approved' => 'background-color: #c9ddff; color: white;',
-                                                'ready_to_pickup' => 'background-color: #a4ffae; color: white;',
-                                                'delivered' => 'background-color: #89ff9c; color: white;',
-                                                'cancelled' => 'background-color: #ff7777; color: white;',
+                                                'approved' => 'background-color: #bae6ff; color: #202cff;',
+                                                'ready_to_pickup' => 'background-color: #c1ffc8; color: #0d8e00;',
+                                                'ready_to_dispatch' => 'background-color: #c1ffc8; color: #0d8e00;',
+                                                'dispatched' => 'background-color: #c1ffc8; color: #0d8e00;',
+                                                'delivered' => 'background-color: #dcffe2; color: #00d101;',
+                                                'cancelled' => 'background-color: #ff7777; color: red;',
                                             ];
 
                                             $defaultStyle = 'background-color: #333; color: #fff;';
                                             $style = $styles[$p->delivery_status] ?? $defaultStyle;
                                         @endphp
 
-                                        @if (in_array($p->delivery_status, ['approved', 'ready_to_pickup']))
+                                        @if ($p->delivery_status == 'approved')
+                                            <button class="badge"
+                                                style="{{ $style }} border: none; font-size: 13px; border-radius: 25px;"
+                                                data-bs-toggle="modal" data-bs-target="#statusModal{{ $p->id }}">
+                                                {{ $p->delivery_status }}
+                                            </button>
+                                        @elseif ($p->delivery_status == 'ready_to_pickup')
                                             <button class="badge"
                                                 style="{{ $style }} border: none; font-size: 13px; border-radius: 25px;"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#{{ $p->delivery_status == 'approved' ? 'statusModal' . $p->id : 'statusModalDelivered' . $p->id }}">
-                                                {{ $p->delivery_status == 'ready_to_pickup' ? 'Ready To Pick Up' : $p->delivery_status }}
+                                                data-bs-target="#statusModalDelivered{{ $p->id }}">
+                                                Ready To Pick Up
+                                            </button>
+                                        @elseif ($p->delivery_status == 'ready_to_dispatch')
+                                            <button class="badge"
+                                                style="{{ $style }} border: none; font-size: 13px; border-radius: 25px;"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#statusModalDelivered{{ $p->id }}">
+                                                Ready To Dispatch
                                             </button>
                                         @else
                                             <span class="badge"
@@ -385,6 +409,7 @@
                                                 <th>Designer</th>
                                                 <th>Chat</th>
                                                 <th>Customization Status</th>
+                                                <th>Transfer To</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -441,6 +466,20 @@
                                             <td>${designer}</td>
                                             <td>${chat}</td>
                                             <td>${statusHtml}</td>
+                                            <td>
+                                                 <form action="{{ route('customization.transfer', $orderId) }}" method="POST">
+        @csrf
+        <div class="input-group">
+            <select name="new_designer_id" class="form-select form-select-sm" required>
+                <option value="">Select Designer</option>
+                @foreach ($designers as $designer)
+                    <option value="{{ $designer->id }}">{{ $designer->name }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-warning btn-sm">Transfer</button>
+        </div>
+    </form>
+                                                </td>
                                         </tr>
                                     `;
                                 });

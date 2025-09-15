@@ -23,6 +23,7 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th>Sr.</th>
                                 <th>Order ID</th>
                                 <th>Product</th>
                                 <th>Size</th>
@@ -38,6 +39,7 @@
                         <tbody>
                             @foreach ($tasks as $task)
                                 <tr>
+                                    <td>{{ $loop->index + 1 }}</td>
                                     <td>{{ $task->payment->order_id }}</td>
                                     <td>{{ $task->product->title }}</td>
                                     <td>{{ $task->paymentItem->variant->size }}</td>
@@ -102,10 +104,10 @@
                                                 action="{{ route('production.updateStatus', $task->id) }}">
                                                 @csrf
                                                 <input type="hidden" name="status" value="ready_to_dispatch">
-                                                <button class="btn btn-sm btn-primary">Ready To Dispatch</button>
+                                                <button class="btn btn-sm btn-primary">Ready </button>
                                             </form>
                                         @elseif($task->status === 'ready_to_dispatch')
-                                            <span class="badge bg-success">Ready</span>
+                                            <span class="badge bg-success">Dispatched</span>
                                         @endif
 
 

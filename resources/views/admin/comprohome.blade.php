@@ -105,7 +105,8 @@
                                                 <button class="btn btn-sm btn-primary">Ready To Dispatch</button>
                                             </form>
                                         @elseif($task->status === 'ready_to_dispatch')
-                                            <span class="badge bg-success">Ready</span>
+                                            <span class="py-2 px-3"
+                                                style="background: #c2ffc2;color: green;border-radius:25px;">Ready</span>
                                         @endif
                                     </td>
                                 </tr>

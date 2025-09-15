@@ -741,6 +741,9 @@ class CustomizationController extends Controller
             })
             ->groupBy(function ($request) {
                 return $request->paymentItem->payment->order_id;
+            })
+            ->sortByDesc(function ($orderRequests, $orderId) {
+                return $orderRequests->first()->paymentItem->payment->created_at;
             });
         // dd($requests);
 
@@ -815,7 +818,7 @@ class CustomizationController extends Controller
             'attachment' => 'nullable',
         ]);
 
-        $customization = Customization::findOrFail($id);
+        $customization = CustomizationRequest::findOrFail($id);
 
         if (auth()->id() !== $customization->user_id) {
             abort(403);
