@@ -35,6 +35,12 @@ class Payment extends Model
         return $this->hasMany(PaymentItem::class);
     }
 
+
+    public function paymentDetails()
+    {
+        return $this->hasMany(PaymentDetail::class);
+    }
+
     public function allCustomizationsApproved(): bool
     {
         // assume `items` are loaded; will still work if not loaded but will hit DB

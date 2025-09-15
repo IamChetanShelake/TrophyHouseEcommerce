@@ -974,4 +974,26 @@ class OrderController extends Controller
             return view('admin.bills.non-gst-bill', compact('payment'));
         }
     }
+
+
+    public function savePayment(Request $request, $paymentId)
+    {
+        $payment = Payment::findOrFail($paymentId);
+
+        $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'payment_mode' => 'required|in:cash,card,upi,netbanking',
+            'date' => 'required|date',
+            'remark' => 'nullable|string',
+        ]);
+
+        $payment->paymentDetails()->create([
+            'amount' => $request->amount,
+            'payment_mode' => $request->payment_mode,
+            'date' => $request->date,
+            'remark' => $request->remark,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Payment saved successfully']);
+    }
 }

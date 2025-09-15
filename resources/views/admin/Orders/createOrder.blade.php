@@ -90,12 +90,18 @@
                         </div>
 
                         <!-- Mobile -->
-                        <div class="form-group col-lg-12 col-sm-12">
+                        {{--  <div class="form-group col-lg-12 col-sm-12">
                             <label for="mobile">Mobile</label> <span style="color:red;">*</span>
                             <input type="tel" class="form-control" id="mobile" name="mobile" value=""
                                 pattern="[0-9]{10}" placeholder="10 digit number" required>
-                            {{--  <small id="mobile_error" class="text-danger d-none">This mobile already exists.</small>  --}}
+                            
+                        </div>  --}}
+                        <div class="form-group col-lg-12 col-sm-12">
+                            <label for="mobile">Mobile</label> <span style="color:red;">*</span>
+                            <input type="tel" class="form-control" id="mobile" name="mobile" value=""
+                                pattern="[0-9]{10}" placeholder="10 digit number" maxlength="10" minlength="10" required>
                         </div>
+
 
                         <!-- Email -->
                         <div class="form-group col-lg-12 col-sm-12">
