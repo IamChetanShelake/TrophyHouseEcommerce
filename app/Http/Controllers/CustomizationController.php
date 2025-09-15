@@ -701,6 +701,8 @@ class CustomizationController extends Controller
                 $q->where('status', 'paid');
             });
 
+
+
         // Apply status filter if tab is clicked
         // if ($statusFilter) {
         //     $query->where('designer_id', $designerId ?? null)

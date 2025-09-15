@@ -354,6 +354,7 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('/get-sizes/{productId}', [OrderController::class, 'getSizes']);
     // web.php
     Route::post('/check-user', [OrderController::class, 'checkUser'])->name('checkUser');
+    Route::get('/offgenerate-bill/{orderId}', [OrderController::class, 'offgenerateBill'])->name('offgenerate.bill');
 
 
 

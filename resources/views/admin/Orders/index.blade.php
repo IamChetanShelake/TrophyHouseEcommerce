@@ -277,7 +277,8 @@
                                             Products
                                         </a>
                                         @if (Auth::user()->role == 1)
-                                            <button class="btn btn-success  btn-sm "> Bill</button>
+                                            <a href="{{ route('offgenerate.bill', $p->order_id) }}"
+                                                class="btn btn-success btn-sm" target="_blank">Bill</a>
                                         @endif
                                     </td>
                                 </tr>
