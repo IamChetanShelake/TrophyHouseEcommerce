@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Log;
 use PDF;
+use Illuminate\Support\Facades\Log;
 use App\Models\Page;
 use App\Models\User;
 use App\Models\Order;
@@ -62,6 +62,7 @@ class OrderController extends Controller
             'items.variant:id,product_id,size,color,price,discounted_price',
             'items.customizationRequest:id,payment_item_id,status',
             'items.customizationRequest.messages',
+            'items.customizationRequest.designer',
             'items.designer:id,name'
         ])->where('status', 'paid'); // show only paid
 
@@ -79,9 +80,17 @@ class OrderController extends Controller
             });
         }
 
+
+
         $payments = $q->latest('updated_at')->paginate(20);
 
-        return view('admin.Orders.index', compact('payments', 'status'));
+        // Get all designers (role = 2)
+        $designers = User::where('role', 2)
+            ->orderBy('name')
+            ->get();
+
+
+        return view('admin.Orders.index', compact('payments', 'status', 'designers'));
     }
 
 
@@ -972,6 +981,63 @@ class OrderController extends Controller
             return view('admin.bills.gst-bill', compact('payment'));
         } else {
             return view('admin.bills.non-gst-bill', compact('payment'));
+        }
+    }
+
+    public function getDesigners()
+    {
+        try {
+            $designers = User::where('role', 2)
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'designers' => $designers
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error in getDesigners', [
+                'message' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'Server error while fetching designers'], 500);
+        }
+    }
+
+    public function transferOrder(Request $request, $paymentId)
+    {
+        try {
+            $request->validate([
+                'new_designer_id' => 'required|exists:users,id'
+            ]);
+
+            $payment = Payment::findOrFail($paymentId);
+
+            // Get all payment items for this order
+            $paymentItems = $payment->items;
+
+            // Update designer for all items that have customization requests
+            foreach ($paymentItems as $item) {
+                if ($item->customizationRequest) {
+                    $item->customizationRequest->update([
+                        'designer_id' => $request->new_designer_id
+                    ]);
+                }
+
+                // Also update the payment item's designer if it exists
+                if ($item->designer_id) {
+                    $item->update([
+                        'designer_id' => $request->new_designer_id
+                    ]);
+                }
+            }
+
+            return back()->with('success', 'Order transferred to new designer successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error in transferOrder', [
+                'payment_id' => $paymentId,
+                'message' => $e->getMessage()
+            ]);
+            return back()->with('error', 'Failed to transfer order. Please try again.');
         }
     }
 }

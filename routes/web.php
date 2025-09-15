@@ -334,6 +334,8 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     Route::get('orders/{orderId}/products', [OrderController::class, 'showOrderProducts'])->name('orders.products');
 
     Route::get('/admin/orders/product/{productId}/chat', [OrderController::class, 'productChat']);
+    Route::get('/admin/designers', [OrderController::class, 'getDesigners'])->name('admin.designers');
+    Route::post('/admin/orders/{payment}/transfer', [OrderController::class, 'transferOrder'])->name('admin.orders.transfer');
 
     // Single order details
     Route::get('orders/{payment}', [OrderController::class, 'show'])->name('orders.show');
