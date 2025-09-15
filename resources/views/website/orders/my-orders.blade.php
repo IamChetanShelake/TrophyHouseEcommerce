@@ -404,13 +404,17 @@
                                                             @endif
                                                         </a>
                                                     @else
-                                                        <a href="javascript:void(0);"
-                                                            onclick="openCustomizationModal({{ $item->id }})"
-                                                            style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
-                                                            class="text-primary">
-                                                            <i class="bi bi-pencil-square me-1"></i>
-                                                            Customize with your own message or name.
-                                                        </a>
+                                                        @if ($item->cust_status == 1)
+                                                            <a href="javascript:void(0);"
+                                                                onclick="openCustomizationModal({{ $item->id }})"
+                                                                style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;border-radius:4px;padding:5px 10px;font-size:14px;display:inline-flex;align-items:center;"
+                                                                onmouseover="this.style.backgroundColor='#FFA6A6';"
+                                                                onmouseout="this.style.backgroundColor='#FFE3E3';"
+                                                                class="btn">
+                                                                <i class="bi bi-pencil-square me-1"></i>
+                                                                Customize with your own message or name.
+                                                            </a>
+                                                        @endif
                                                     @endif
                                                 </div>
 

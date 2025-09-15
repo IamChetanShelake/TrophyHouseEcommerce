@@ -445,12 +445,29 @@ class PaymentController extends Controller
                 'total_price' => $totalPrice
             ]);
 
-                // Link customization requests to this payment item
+            // Link customization requests to this payment item
             CustomizationRequest::where('cart_item_id', $cartItem->id)
                 ->update([
                     'payment_item_id' => $paymentItem->id,
                     'cart_item_id'    => null // unlink to avoid cascade delete
                 ]);
+
+            // Create production task for non-customized products (cust_status = 0)
+            if ($paymentItem->cust_status == 0) {
+                \App\Models\ProductionTask::create([
+                    'payment_item_id' => $paymentItem->id,
+                    'payment_id'      => $payment->id,
+                    'product_id'      => $cartItem->product_id,
+                    'file'            => null, // No custom file for non-customized products
+                    'status'          => 'pending',
+                ]);
+
+                Log::info('Production task created for non-customized product', [
+                    'payment_item_id' => $paymentItem->id,
+                    'product_id' => $cartItem->product_id,
+                    'payment_order_id' => $paymentOrderId
+                ]);
+            }
             }
 
              // After processing all items, delete the cart

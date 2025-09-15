@@ -408,13 +408,7 @@
                                                     @endif
                                                 </a>
                                             @else
-                                                {{-- <a href="javascript:void(0);"
-                                                    onclick="openCustomizationModal({{ $cart->id }})"
-                                                    style="font-size: 14px; text-decoration: underline; display: inline-flex; align-items: center;"
-                                                    class="text-primary btn">
-                                                    <i class="bi bi-pencil-square me-1"></i>
-                                                    Customize with your own message or name.
-                                                </a> --}}
+                                               
                                                 <button type="button"
                                                     onclick="openCustomizationModal({{ $cart->id }})"
                                                     style="color:#DE2300;background-color:#FFE3E3;border:1px solid #DE2300;border-radius:4px;padding:5px 10px;font-size:14px;display:inline-flex;align-items:center;"

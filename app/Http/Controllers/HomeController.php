@@ -56,7 +56,8 @@ class HomeController extends Controller
         $subCategories = SubCategory::count();
         $users = User::count();
         $tasks = ProductionTask::with(['product', 'payment', 'paymentItem', 'assignedUser', 'variant'])
-            ->orderBy('created_at', 'desc')->where('status', 'pending')
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return view('admin.prohome', compact(['products', 'testimonials', 'teams', 'pages', 'awardCategories', 'subCategories', 'users', 'tasks']));

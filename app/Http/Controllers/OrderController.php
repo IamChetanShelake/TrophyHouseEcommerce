@@ -24,36 +24,7 @@ use App\Models\CustomizationRequest;
 
 class OrderController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $q = Payment::with([
-    //         'user',
-    //         'items.product',
-    //         'items.variant:id,product_id,size,color,price,discounted_price',
-    //         'items.customizationRequest:id,payment_item_id,status',
-    //         'items.customizationRequest.messages',
-    //         'items.designer:id,name'
-    //     ])
-    //         ->where('status', 'paid'); // show only paid
-
-    //     if ($request->filled('q')) {
-    //         $term = '%' . $request->q . '%';
-    //         $q->where(function ($qb) use ($term) {
-    //             $qb->where('order_id', 'like', $term)
-    //                 ->orWhere('customer_name', 'like', $term)
-    //                 ->orWhere('customer_email', 'like', $term);
-    //         });
-    //     }
-
-    //     $payments = $q->latest('updated_at')->paginate(20);
-    //     // return $payments;
-    //     // foreach ($payments as $p) {
-    //     //      $p->order_status;
-    //     // }
-    //     return view('admin.Orders.index', compact('payments'));
-    // }
-
-
+    
     public function index(Request $request, $status = null)
     {
         $q = Payment::with([
@@ -942,6 +913,7 @@ class OrderController extends Controller
         $payment->amount         = $finalAmount;
         $payment->making_charges = $makingCharges;
         $payment->status         = 'paid';
+        // $payment->deliverey_date = now()->;
         $payment->payment_mode   = $request->payment_mode;
         $payment->gstin   = $request->gstin;
         $payment->hsn_code   = $request->hsn_code;
@@ -962,9 +934,29 @@ class OrderController extends Controller
                 $paymentItem->total_price  = $request->total[$key];
                 // Set customization status based on whether the checkbox was checked
                 $paymentItem->cust_status  = isset($request->customization[$key]) && $request->customization[$key] == '1' ? '1' : '0';
+                if ($paymentItem->cust_status == 0) {
+                    $paymentItem->delivery_status  = 'approved';
+                }
                 $paymentItem->save();
             }
         }
+        // Create production task for non-customized products (cust_status = 0)
+        if ($paymentItem->cust_status == 0) {
+            \App\Models\ProductionTask::create([
+                'payment_item_id' => $paymentItem->id,
+                'payment_id'      => $payment->id,
+                'product_id'      => $paymentItem->product_id,
+                'file'            => null, // No custom file for non-customized products
+                'status'          => 'pending',
+            ]);
+
+            Log::info('Production task created for non-customized product', [
+                'payment_item_id' => $paymentItem->id,
+                'product_id' => $paymentItem->product_id,
+                'payment_order_id' => $paymentItem->payment_order_id
+            ]);
+        }
+
 
         return redirect()->route('orders')->with('success', 'Order created successfully!');
     }

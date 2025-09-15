@@ -95,6 +95,45 @@
                             </thead>
                             <tbody>
                                 @foreach ($payments as $p)
+                                    <div class="modal fade" id="transferOrderModal" tabindex="-1"
+                                        aria-labelledby="transferOrderModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-md">
+                                            <div class="modal-content">
+
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="transferOrderModalLabel">Transfer Order</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <form action="{{ route('admin.orders.transfer', $p->id) }}"
+                                                        method="POST" class="d-inline">
+                                                        @csrf
+                                                        <div class="input-group input-group-sm">
+                                                            <select name="new_designer_id"
+                                                                class="form-select form-select-sm" required
+                                                                style="min-width: 120px;">
+                                                                <option value="">Transfer To</option>
+                                                                @foreach ($designers as $designer)
+                                                                    <option value="{{ $designer->id }}">
+                                                                        {{ $designer->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                            <button type="button" class="btn btn-warning btn-sm"
+                                                                title="Transfer Order" data-bs-toggle="modal"
+                                                                data-bs-target="#transferOrderModal">
+                                                                <i class="fas fa-exchange-alt"></i> Transfer
+                                                            </button>
+
+                                                        </div>
+                                                    </form>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
                                     <!-- Status Modals -->
                                     @php
                                         $isOffline = str_starts_with($p->order_id, 'THOFF_');
@@ -314,24 +353,12 @@
 
                                         <td class="d-none d-md-table-cell">
                                             @if ($designers && $designers->count() > 0)
-                                                <form action="{{ route('admin.orders.transfer', $p->id) }}"
-                                                    method="POST" class="d-inline">
-                                                    @csrf
-                                                    <div class="input-group input-group-sm">
-                                                        <select name="new_designer_id" class="form-select form-select-sm"
-                                                            required style="min-width: 120px;">
-                                                            <option value="">Transfer To</option>
-                                                            @foreach ($designers as $designer)
-                                                                <option value="{{ $designer->id }}">{{ $designer->name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        <button type="submit" class="btn btn-warning btn-sm"
-                                                            title="Transfer Order">
-                                                            <i class="fas fa-exchange-alt"></i> Transfer
-                                                        </button>
-                                                    </div>
-                                                </form>
+                                                <button type="button" class="btn btn-warning btn-sm"
+                                                    title="Transfer Order" data-bs-toggle="modal"
+                                                    data-bs-target="#transferOrderModal">
+                                                    <i class="fas fa-exchange-alt"></i> Transfer
+                                                </button>
+
                                                 <div class="mt-1">
                                                     <small class="text-muted">Status: {{ $p->delivery_status }}</small>
                                                 </div>
