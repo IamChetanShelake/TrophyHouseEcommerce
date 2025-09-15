@@ -564,20 +564,16 @@
                                 </span>
                             </div>
                             <div class="d-flex justify-content-between ">
-                                <span>Total MRP</span>
-                                <span id="final-mrp">₹00.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between fw-bold">
-                                <span>Total MRP (incl. 18% GST)</span>
-                                <span id="amt">₹00.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between ">
                                 <span>Printing Charges</span>
                                 <span id="printing-charges">₹00.00</span>
                             </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Total MRP</span>
+                                <span id="final-mrp">₹00.00</span>
+                            </div>
                             <hr />
                             <div class="d-flex justify-content-between fw-bold">
-                                <span>Total Amount</span>
+                                <span>Total Amount (incl. 18% GST)</span>
                                 <span id="total-amount">₹00.00</span>
                             </div>
 
@@ -601,7 +597,7 @@
                             @foreach ($similarProducts as $prod)
                                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product"
                                     data-subcategory-id="{{ $prod->sub_category_id }}" style="display: block;">
-                                    <a href="{{ route('productDetail', $prod->id) }}">
+                                    <a href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                         <div class="card trophy-card text-center shadow-md">
                                             <div class="position-relative">
                                                 <img src="{{ asset('product_images/' . $prod->image) }}" alt="Trophy"
@@ -638,7 +634,7 @@
                                                     </form>
                                                     <i class="fas fa-share icon-toggle share-icon" data-bs-toggle="modal"
                                                         data-bs-target="#shareModal"
-                                                        data-share-link="{{ route('productDetail', $prod->id) }}">
+                                                        data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                                     </i>
                                                     <!-- <i class="fas fa-share icon-toggle"></i> -->
                                                 </div>
@@ -784,20 +780,19 @@
                     totalPrintingCharges += printingCharge;
                 });
 
+                // New calculation order: Printing charges first, then GST on total
                 const totalBase = totalMRP - totalDiscount;
-                const totalGST = totalBase * 0.18;
-                const priceWithGST = totalBase + totalGST;
-                const amount = priceWithGST;
-                const totalAmount = priceWithGST + shippingCharges + totalPrintingCharges;
+                const amountWithPrinting = totalBase + totalPrintingCharges; // Add printing charges first
+                const totalGST = amountWithPrinting * 0.18; // Apply GST to base + printing
+                const totalAmount = amountWithPrinting + totalGST + shippingCharges; // Final total
 
                 document.getElementById('total-mrp').textContent = `₹${totalMRP.toFixed(2)}`;
                 document.getElementById('discount-mrp').textContent = `- ₹${totalDiscount.toFixed(2)}`;
                 document.getElementById('discount-mrp').className = shippingCharges === 0 ? 'text-danger' : '';
-                document.getElementById('final-mrp').textContent = `₹${totalBase.toFixed(2)}`;
+                document.getElementById('final-mrp').textContent = `₹${amountWithPrinting.toFixed(2)}`;
                 document.getElementById('shipping-charges').textContent = shippingCharges === 0 ? 'FREE' :
                     `₹${shippingCharges.toFixed(2)}`;
                 document.getElementById('shipping-charges').className = shippingCharges === 0 ? 'text-success' : '';
-                document.getElementById('amt').textContent = `₹${amount.toFixed(2)}`;
                 document.getElementById('total-amount').textContent = `₹${totalAmount.toFixed(2)}`;
                 document.getElementById('printing-charges').textContent = `+ ₹${totalPrintingCharges.toFixed(2)}`;
             }

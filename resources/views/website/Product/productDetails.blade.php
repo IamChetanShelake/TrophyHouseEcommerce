@@ -10,8 +10,13 @@
         <div class="row gy-4">
             <div class="col-md-5 d-flex justify-content-center align-items-start">
                 @if ($product->image)
-                    <img src="{{ asset('product_images/' . $product->image) }}" alt="{{ $product->title }}"
-                        class="product-image img-fluid">
+                    @if(isset($isOccasional) && $isOccasional)
+                        <img src="{{ asset('OccasionalProduct_images/' . $product->image) }}" alt="{{ $product->title }}"
+                            class="product-image img-fluid">
+                    @else
+                        <img src="{{ asset('product_images/' . $product->image) }}" alt="{{ $product->title }}"
+                            class="product-image img-fluid">
+                    @endif
                 @else
                     <img src="{{ asset('images/dummyTrophy.jpg') }}" alt="{{ $product->title }}"
                         class="product-image img-fluid">
@@ -135,7 +140,7 @@
                                 <!--</div>-->
                                 <button class="btn wishlist-btn" data-product-id="{{ $product->id }}">
                                     <span
-                                        class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
+                                        class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_product_ids ?? []) || in_array($product->id, $wishlist_occasional_product_ids ?? []) ? 'text-danger' : '' }}"
                                         data-product-id="{{ $product->id }}" title="Toggle Wishlist"
                                         onclick="toggleWishlist(this)"></span>
 
@@ -154,7 +159,11 @@
                             <div class="mt-3 d-flex gap-2 flex-wrap">
                                 <form action="{{ route('cart.add') }}" method="POST" id="cartForm">
                                     @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    @if(isset($isOccasional) && $isOccasional)
+                                        <input type="hidden" name="occasional_product_id" value="{{ $product->id }}">
+                                    @else
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    @endif
                                     <input type="hidden" name="variant_id" id="selectedVariantId"
                                         value="{{ $firstVariant->id ?? '' }}">
                                     @php
@@ -227,9 +236,9 @@
                             <div class="swiper-wrapper">
                                 @forelse ($similarProducts as $similarProduct)
                                     <div class="swiper-slide">
-                                        <div class="col-12">
+                                    <div class="col-12">
                                             <div class="card trophy-card zoom-on-hover text-center shadow-sm">
-                                                <a href="{{ route('productDetail', $similarProduct->id) }}">
+                                                <a href="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}">
                                                     <div class="position-relative">
                                                         <img src="{{ asset('product_images/' . $similarProduct->image) }}"
                                                             alt="{{ $similarProduct->title }}" class="img-fluid"
@@ -268,7 +277,7 @@
                                                             </form>
                                                             {{-- <i class="fas fa-share icon-toggle"></i> --}}
                                                             <i class="fas fa-share icon-toggle share-icon"
-                                                                data-share-link="{{ route('productDetail', $similarProduct->id) }}"
+                                                                data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}"
                                                                 style="cursor: pointer;">
                                                         </div>
                                                     </div>
@@ -295,7 +304,7 @@
                             @forelse ($similarProducts as $similarProduct)
                                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
                                     <div class="card trophy-card zoom-on-hover text-center shadow-sm">
-                                        <a href="{{ route('productDetail', $similarProduct->id) }}">
+                                        <a href="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}">
                                             <div class="position-relative">
                                                 <img src="{{ asset('product_images/' . $similarProduct->image) }}"
                                                     alt="{{ $similarProduct->title }}" class="img-fluid"
@@ -329,7 +338,7 @@
                                                     </form>
                                                     {{-- <i class="fas fa-share icon-toggle"></i> --}}
                                                     <i class="fas fa-share icon-toggle share-icon"
-                                                        data-share-link="{{ route('productDetail', $similarProduct->id) }}"
+                                                        data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}"
                                                         style="cursor: pointer;">
                                                     </i>
                                                 </div>
@@ -445,7 +454,11 @@
                         '{{ route('wishlist.add') }}';
                     const method = isWishlisted ? 'GET' : 'POST';
                     const body = isWishlisted ? null : JSON.stringify({
+                        @if(isset($isOccasional) && $isOccasional)
+                        occasional_product_id: productId
+                        @else
                         product_id: productId
+                        @endif
                     });
 
                     fetch(url, {

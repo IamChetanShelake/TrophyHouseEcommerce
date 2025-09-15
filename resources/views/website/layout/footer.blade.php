@@ -173,6 +173,7 @@
           document.querySelectorAll('.share-icon').forEach(icon => {
               icon.addEventListener('click', function(e) {
                   e.preventDefault(); // stop navigation
+                  e.stopPropagation(); // prevent event bubbling to parent <a>
                   let link = this.dataset.shareLink;
 
                   // Populate your modal's link input/text

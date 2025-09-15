@@ -259,14 +259,10 @@
             }
         }
 
-        .occProduct-trophy-card {
-            width: 150px;
-        }
-
         /* .nice-select:hover {
-                 border-color: #dbdbdb;
-                    display: none !important;
-                        } */
+                                     border-color: #dbdbdb;
+                                        display: none !important;
+                                            } */
     </style>
 
     <!-- Modal -->
@@ -752,62 +748,87 @@
 </script> --}}
 
                 <script>
-                    document.querySelectorAll('.subcategory-tab').forEach(tab => {
-                        tab.addEventListener('click', function() {
-                            const subcatId = this.dataset.subcategoryId;
+                    let currentSelectedSubcategory = null;
 
-                            // Elements
-                            const topPicks = document.querySelectorAll('.top-pick-product');
-                            const bestSellers = document.querySelectorAll('.best-seller-product');
-                            const newArrivals = document.querySelectorAll('.new-arrival-product');
-                            const noProductMsg = document.getElementById('no-products-msg');
+                    // Function to handle subcategory click
+                    function handleSubcategoryClick(subcatId) {
+                        currentSelectedSubcategory = subcatId;
 
-                            // Hide all products
-                            topPicks.forEach(p => p.style.display = 'none');
-                            bestSellers.forEach(p => p.style.display = 'none');
-                            newArrivals.forEach(p => p.style.display = 'none');
+                        // Elements
+                        const topPicks = document.querySelectorAll('.top-pick-product');
+                        const bestSellers = document.querySelectorAll('.best-seller-product');
+                        const newArrivals = document.querySelectorAll('.new-arrival-product');
+                        const noProductMsg = document.getElementById('no-products-msg');
 
-                            // Filter & Show Max 6 for Top Picks
-                            let topCount = 0;
-                            topPicks.forEach(p => {
-                                if (p.dataset.subcategoryId === subcatId && topCount < 6) {
-                                    p.style.display = 'block';
-                                    topCount++;
-                                }
-                            });
+                        // Hide all products
+                        topPicks.forEach(p => p.style.display = 'none');
+                        bestSellers.forEach(p => p.style.display = 'none');
+                        newArrivals.forEach(p => p.style.display = 'none');
 
-                            // Filter & Show Max 6 for Best Sellers
-                            let bestCount = 0;
-                            bestSellers.forEach(p => {
-                                if (p.dataset.subcategoryId === subcatId && bestCount < 6) {
-                                    p.style.display = 'block';
-                                    bestCount++;
-                                }
-                            });
-
-                            // Filter & Show Max 6 for New Arrivals
-                            let newCount = 0;
-                            newArrivals.forEach(p => {
-                                if (p.dataset.subcategoryId === subcatId && newCount < 6) {
-                                    p.style.display = 'block';
-                                    newCount++;
-                                }
-                            });
-
-                            // Show/Hide "Product Not Found" for all sections
-                            if (topCount === 0 && bestCount === 0 && newCount === 0) {
-                                noProductMsg.classList.remove('d-none');
-                            } else {
-                                noProductMsg.classList.add('d-none');
+                        // Filter & Show Max 6 for Top Picks
+                        let topCount = 0;
+                        topPicks.forEach(p => {
+                            if (p.dataset.subcategoryId === subcatId && topCount < 6) {
+                                p.style.display = 'block';
+                                topCount++;
                             }
                         });
-                    });
 
-                    // Trigger the first subcategory on page load
-                    window.addEventListener('DOMContentLoaded', () => {
+                        // Filter & Show Max 6 for Best Sellers
+                        let bestCount = 0;
+                        bestSellers.forEach(p => {
+                            if (p.dataset.subcategoryId === subcatId && bestCount < 6) {
+                                p.style.display = 'block';
+                                bestCount++;
+                            }
+                        });
+
+                        // Filter & Show Max 6 for New Arrivals
+                        let newCount = 0;
+                        newArrivals.forEach(p => {
+                            if (p.dataset.subcategoryId === subcatId && newCount < 6) {
+                                p.style.display = 'block';
+                                newCount++;
+                            }
+                        });
+
+                        // Show/Hide "Product Not Found" for all sections
+                        if (topCount === 0 && bestCount === 0 && newCount === 0) {
+                            noProductMsg.classList.remove('d-none');
+                        } else {
+                            noProductMsg.classList.add('d-none');
+                        }
+
+                        // Update "See More" button href with selected subcategory
+                        updateSeeMoreButtons(subcatId);
+                    }
+
+                    // Function to update "See More" button hrefs
+                    function updateSeeMoreButtons(subcategoryId) {
+                        const seeMoreButtons = document.querySelectorAll('.see-more-btn');
+                        seeMoreButtons.forEach(button => {
+                            const baseUrl = '{{ route('viewproducts') }}';
+                            const newHref = baseUrl + '?subcategory=' + subcategoryId;
+                            button.href = newHref;
+                            button.setAttribute('data-selected-subcategory', subcategoryId);
+                        });
+                    }
+
+                    // Attach event listeners to subcategory tabs
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelectorAll('.subcategory-tab').forEach(tab => {
+                            tab.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const subcatId = this.dataset.subcategoryId;
+                                handleSubcategoryClick(subcatId);
+                            });
+                        });
+
+                        // Trigger the first subcategory on page load
                         const firstTab = document.querySelector('.subcategory-tab');
                         if (firstTab) {
-                            firstTab.click(); // Simulate a click to filter products for the first subcategory
+                            const firstSubcatId = firstTab.dataset.subcategoryId;
+                            handleSubcategoryClick(firstSubcatId);
                         } else {
                             // If no subcategories, show "No Products Found"
                             document.getElementById('no-products-msg').classList.remove('d-none');
@@ -855,7 +876,7 @@
 
 
                                     <!-- <div class="row justify-content-center text-center py-5"
-                                            style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
+                                                                style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
 
                                     <!-- Product Not Found Message -->
                                     {{-- <p class="text-center text-danger fw-bold d-none" id="no-products-msg">
@@ -866,7 +887,7 @@
 
                                     <!-- Product Card Wrapper -->
                                     <!-- <div class="trophy-card-wrapper position-relative">
-                                                <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
+                                                                    <div class="row justify-content-center text-center position-relative" id="products-wrapper"> -->
                                     @php $hasTopPick = false; @endphp
 
                                     @foreach ($products as $prod)
@@ -874,7 +895,8 @@
                                         <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product"
                                             data-subcategory-id="{{ $prod->sub_category_id }}" style="display: none;">
                                             <div class="card trophy-card text-center shadow-md">
-                                                <a href="{{ route('productDetail', $prod->id) }}">
+                                                <a
+                                                    href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                                     <div class="position-relative">
                                                         <img src="{{ asset('product_images/' . $prod->image) }}"
                                                             alt="Trophy" class="img-fluid"
@@ -896,7 +918,9 @@
                                                                     Cart</button>
                                                             </form>
 
-                                                            <i class="fas fa-share icon-toggle"></i>
+                                                            <i class="fas fa-share icon-toggle share-icon"
+                                                                data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"
+                                                                data-bs-toggle="modal" data-bs-target="#shareModal"></i>
                                                         </div>
                                                     </div>
 
@@ -917,8 +941,7 @@
 
                             <!-- See More Button -->
                             <div class="text-center mt-4 w-100">
-                                <a href="{{ route('viewproducts', ['subcategory' => $prod->sub_category_id ?? '']) }}"
-                                    class="see-more-btn">See More</a>
+                                <a href="{{ route('viewproducts') }}" class="see-more-btn">See More</a>
                             </div>
                         </div>
                     </div>
@@ -939,7 +962,7 @@
                                 <div class="hover-yellow-bg d-none d-sm-block"></div>
                                 <div class="row justify-content-center text-center position-relative">
                                     <!-- <div class="row justify-content-center text-center py-5"
-                                            style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
+                                                                style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
 
                                     <!-- Product Not Found Message -->
                                     <p class="text-center text-danger fw-bold d-none" id="best-seller-no-products-msg">
@@ -949,7 +972,7 @@
                                     </p>
 
                                     <!-- <div class="trophy-card-wrapper position-relative">
-                                                <div class="row justify-content-center text-center position-relative" id="best-seller-wrapper"> -->
+                                                                    <div class="row justify-content-center text-center position-relative" id="best-seller-wrapper"> -->
                                     @php $hasBestSellers = false; @endphp
 
                                     @foreach ($products as $prod)
@@ -957,7 +980,8 @@
                                         <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 best-seller-product"
                                             data-subcategory-id="{{ $prod->sub_category_id }}" style="display: none;">
                                             <div class="card trophy-card text-center shadow-md" style="height: 100%;">
-                                                <a href="{{ route('productDetail', $prod->id) }}">
+                                                <a
+                                                    href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                                     <div class="position-relative">
                                                         <img src="{{ asset('product_images/' . $prod->image) }}"
                                                             alt="Trophy" class="img-fluid"
@@ -975,7 +999,9 @@
                                                                 <button type="submit" class="add-to-cart-btn">Add To
                                                                     Cart</button>
                                                             </form>
-                                                            <i class="fas fa-share icon-toggle"></i>
+                                                            <i class="fas fa-share icon-toggle share-icon"
+                                                                data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"
+                                                                data-bs-toggle="modal" data-bs-target="#shareModal"></i>
                                                         </div>
                                                     </div>
                                                     <div class="card-body pt-2 pb-1">
@@ -1009,258 +1035,199 @@
                     </div>
                 </section>
 
-                <!-- <section class="trophy-section" style="font-family: 'Times New Roman', serif; background-color:white">
-                                    <div class="container-fluid">
-                                        <h4 class="text-center"
-                                            style="color: #e63946; font-family: 'Source Sans 3', sans-serif; font-weight: bold;">
-                                            "Our Best Sellers"
-                                        </h4>
-                                        <div class="row justify-content-center text-center">
-                                            <div class="trophy-card-wrapper position-relative py-5">
-                                                <div class="hover-yellow-bg d-none d-sm-block"></div>
-                                                <div class="row justify-content-center text-center position-relative">
 
-                                                    @foreach ($products as $prod)
-    @if ($prod->is_best_seller == 1 && $loop->index + 1 <= 6)
-    <div class="col-12 d-flex justify-content-center d-sm-block col-sm-4 col-md-3 col-lg-2 mb-4 best-seller-product"
-                                                                 data-subcategory-id="{{ $prod->sub_category_id }}" style="display: none;">
-                                                                <div class="card trophy-card text-center shadow-md" style="height: 100%;">
-                                                                    <a href="{{ route('productDetail', $prod->id) }}">
-                                                                        <div class="position-relative">
-                                                                            <img src="{{ asset('product_images/' . $prod->image) }}"
-                                                                                 alt="Trophy" class="img-fluid"
-                                                                                 style="height: 150px; width: 100%; object-fit: contain; margin-bottom: 0;" />
-                                                                            <div class="trophy-hover-bar mt-1 d-flex justify-content-around">
-                                                                                <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($prod->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                                                   data-product-id="{{ $prod->id }}"
-                                                                                   title="Toggle Wishlist"></i>
-                                                                                <form action="{{ route('cart.add') }}" method="POST">
-                                                                                    @csrf
-                                                                                    <input type="hidden" name="product_id" value="{{ $prod->id }}">
-                                                                                    <button type="submit" class="add-to-cart-btn">Add To Cart</button>
-                                                                                </form>
-                                                                                <i class="fas fa-share icon-toggle"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="card-body pt-2 pb-1">
-                                                                            <p class="product-id mb-1">{{ Str::limit($prod->title, 25) }}</p>
-                                                                            @php
-                                                                                $first = $prod->variants->first();
-                                                                            @endphp
-                                                                            <p class="text-danger fw-bold mb-0">
-                                                                                {{ $first ? $first->price . ' Rs' : 'No price disclosed' }}
-                                                                            </p>
-                                                                        </div>
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-    @endif
-    @endforeach
-
-                                                    <div id="top-pick-no-products" class="no-products" style="display: none;">
-                                                        No Best Seller products found for this subcategory.
-                                                    </div>
-
-                                                    <div class="text-center mt-4 w-100">
-                                                        <a href="{{ route('viewproducts') }}" class="see-more-btn">See More</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section> -->
 
                 <!--====== End Our Best Sellers Section ======-->
 
 
                 <!--======Celebrate the moments Sections  ======-->
-                @if ($occProducts->isNotEmpty())
-                    <section class="container-fluid testimonial-section py-5 bg-white">
-                        <!--@php $occProducts @endphp-->
-                        <div class="container">
-                            <div class="row align-items-center mb-4">
+                @foreach ($occasions as $occ)
+                    @if ($occ->occproducts->isNotEmpty())
+                        <section class="container-fluid testimonial-section py-5 bg-white">
+                            <div class="container">
+                                <div class="row align-items-center mb-4">
 
-                                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-                                    <div class="custom-card text-center p-0 overflow-hidden">
+                                    <!-- Occasion Left Card -->
+                                    <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                                        <div class="custom-card text-center p-0 overflow-hidden">
 
-                                        <div class="py-4" id="card-header">
-                                            <img src="{{ asset('occasion_images/') }}" alt="occasion image"
-                                                style="max-width: 100px;">
-                                        </div>
+                                            <div class="py-4" id="card-header">
+                                                <img src="{{ asset('occasion_images/' . $occ->image) }}"
+                                                    alt="occasion image" style="max-width:100px;object-fit:cover;">
+                                            </div>
 
-                                        <div class="list-group list-group-flush" id="list-view"
-                                            style="font-family: 'Source Sans 3', sans-serif;">
-                                            <div
-                                                class="list-group-item custom-item bg-light-yellow text-dark hover-yellow">
-                                                <span style="font-weight: 600;">Designed for the Day</span>
-                                                <button
-                                                    class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
-                                                    onclick="showDetail(0)">→</button>
+                                            <div class="list-group list-group-flush" id="list-view"
+                                                style="font-family: 'Source Sans 3', sans-serif;">
+                                                <div
+                                                    class="list-group-item custom-item bg-light-yellow text-dark hover-yellow">
+                                                    <span style="font-weight: 600;">Designed for the Day</span>
+                                                    <button
+                                                        class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
+                                                        onclick="showDetail(0)">→</button>
+                                                </div>
+                                                <div class="list-group-item custom-item bg-light-red text-dark hover-red">
+                                                    <span style="font-weight: 600;">Limited Editions, Big Impact</span>
+                                                    <button
+                                                        class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
+                                                        onclick="showDetail(1)">→</button>
+                                                </div>
+                                                <div
+                                                    class="list-group-item custom-item bg-light-yellow text-dark hover-yellow">
+                                                    <span style="font-weight: 600;">A Keepsake to Remember</span>
+                                                    <button
+                                                        class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
+                                                        onclick="showDetail(2)">→</button>
+                                                </div>
+                                                <div class="list-group-item custom-item bg-light-red text-dark hover-red">
+                                                    <span style="font-weight: 600;">Personalized Just for Them</span>
+                                                    <button
+                                                        class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
+                                                        onclick="showDetail(3)">→</button>
+                                                </div>
                                             </div>
-                                            <div class="list-group-item custom-item bg-light-red text-dark hover-red">
-                                                <span style="font-weight: 600;">Limited Editions, Big Impact</span>
-                                                <button
-                                                    class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
-                                                    onclick="showDetail(1)">→</button>
-                                            </div>
-                                            <div
-                                                class="list-group-item custom-item bg-light-yellow text-dark hover-yellow">
-                                                <span style="font-weight: 600;">A Keepsake to Remember</span>
-                                                <button
-                                                    class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
-                                                    onclick="showDetail(2)">→</button>
-                                            </div>
-                                            <div class="list-group-item custom-item bg-light-red text-dark hover-red">
-                                                <span style="font-weight: 600;">Personalized Just for Them</span>
-                                                <button
-                                                    class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
-                                                    onclick="showDetail(3)">→</button>
-                                            </div>
-                                        </div>
 
-                                        <div class="p-3 bg-light-yellow text-start d-none" id="detail-view"
-                                            style="font-family: 'Source Sans 3', sans-serif;">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <strong id="detail-title">Title</strong>
-                                                <button
-                                                    class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
-                                                    onclick="backToList()">↗</button>
-
+                                            <div class="p-3 bg-light-yellow text-start d-none" id="detail-view"
+                                                style="font-family: 'Source Sans 3', sans-serif;">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <strong id="detail-title">Title</strong>
+                                                    <button
+                                                        class="btn btn-sm rounded-circle bg-white text-dark border border-white shadow"
+                                                        onclick="backToList()">↗</button>
+                                                </div>
+                                                <p class="mt-2" id="detail-desc"></p>
                                             </div>
-                                            <p class="mt-2" id="detail-desc">
-                                            </p>
                                         </div>
                                     </div>
-                                </div>
 
+                                    <!-- Occasion Products -->
+                                    <div class="col-lg-9 col-md-12">
+                                        <h2 class="text-danger fw-bold mb-2"
+                                            style="font-family: 'Times New Roman', serif;">
+                                            Celebrate the moment
+                                        </h2>
 
-                                <script>
-                                    const detailData = [{
-                                            title: "Designed for the Day",
-                                            desc: "At Trophy House, every occasion takes center stage. Our limited edition trophies are thoughtfully crafted to capture the emotion and significance of your special moments. Celebrate milestones with a gift that creates lasting memories."
-                                        },
-                                        {
-                                            title: "Limited Editions, Big Impact",
-                                            desc: "Our seasonal collections are available exclusively for limited periods, making each trophy truly unique. By choosing from these special editions, you give a gift that stands out and feels one-of-a-kind. Celebrate meaningful moments with a rare keepsake that captures the spirit of the season."
-                                        },
-                                        {
-                                            title: "A Keepsake to Remember",
-                                            desc: "More than just a gesture, our trophies are crafted to endure through time. They serve as lasting reminders of love, appreciation, and heartfelt recognition. Every piece tells a story that keeps the special moment alive forever."
-                                        },
-                                        {
-                                            title: "Personalized Just for Them",
-                                            desc: "Add personalized names, dates, or heartfelt messages to make each trophy uniquely yours. Transform a beautiful award into a treasured keepsake full of meaning and memories. Give a gift that they’ll cherish and remember for a lifetime."
-                                        }
-                                    ];
+                                        <h5 class="fw-bold mb-3" style="font-family: 'Source Sans 3', sans-serif;">
+                                            {{ $occ->title }}
+                                        </h5>
+                                        <p class="text-muted mb-4" style="font-family: 'Source Sans 3', sans-serif;">
+                                            {!! $occ->description !!}
+                                        </p>
 
-                                    function showDetail(index) {
-                                        document.getElementById('list-view').classList.add('d-none');
-                                        document.getElementById('detail-view').classList.remove('d-none');
-                                        document.getElementById('detail-title').innerText = detailData[index].title;
-                                        document.getElementById('detail-desc').innerText = detailData[index].desc;
-                                    }
+                                        <div class="d-flex flex-wrap gap-5 justify-content-start">
+                                            <div class="occasional-slider-section">
+                                                <div class="product-section">
+                                                    <div class="occasional-slider-container" id="occasionSlider">
+                                                        @foreach ($occ->occproducts as $product)
+                                                            @php
+                                                                $variant = $product->variants->first();
+                                                                $price = $variant
+                                                                    ? $variant->discounted_price ?? $variant->price
+                                                                    : 0;
+                                                            @endphp
+                                                            <div class="card trophy-card text-center shadow-md">
+                                                                <a
+                                                                    href="{{ route('productDetail', ['type' => 'occasional', 'id' => $product->id]) }}">
+                                                                    <div class="position-relative">
+                                                                        <img src="{{ asset('OccasionalProduct_images/' . $product->image) }}"
+                                                                            alt="{{ $product->title }}" class="img-fluid"
+                                                                            style="height: 150px; width: 100%; object-fit: contain;padding:10px;" />
 
-                                    function backToList() {
-                                        document.getElementById('list-view').classList.remove('d-none');
-                                        document.getElementById('detail-view').classList.add('d-none');
-                                    }
-                                </script>
+                                                                        <div
+                                                                            class="trophy-hover-bar mt-1 d-flex justify-content-around">
+                                                                            <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_occasional_product_ids ?? []) ? 'text-danger' : '' }}"
+                                                                                data-occasional-product-id="{{ $product->id }}"
+                                                                                title="Toggle Wishlist"></i>
 
-                                <div class="col-lg-9 col-md-12">
-                                    <h2 class="text-danger fw-bold mb-2" style="font-family: 'Times New Roman', serif;">
-                                        Celebrate the
-                                        moment</h2>
+                                                                            <form action="{{ route('cart.add') }}"
+                                                                                method="POST">
+                                                                                @csrf
+                                                                                <input type="hidden"
+                                                                                    name="occasional_product_id"
+                                                                                    value="{{ $product->id }}">
+                                                                                <input type="hidden" name="variant_id"
+                                                                                    value="{{ $variant ? $variant->id : '' }}">
+                                                                                <button type="submit"
+                                                                                    class="add-to-cart-btn">Add To
+                                                                                    Cart</button>
+                                                                            </form>
 
-                                    <h5 class="fw-bold mb-3" style="font-family: 'Source Sans 3', sans-serif;">
-                                        Celebrate Dad in Style — Limited Edition Trophies Available Now!
-                                    </h5>
-                                    <p class="text-muted mb-4" style="font-family: 'Source Sans 3', sans-serif;">
-                                        Make this Father’s Day unforgettable with a trophy that says it all. Our limited
-                                        edition designs
-                                        are crafted to honor <br>the strength, love, and support only a dad can give. Shop
-                                        now and give
-                                        him the recognition he truly deserves!
-                                    </p>
-
-
-                                    <div class="d-flex flex-wrap gap-5 justify-content-start">
-                                        <div class = "occasional-slider-section">
-                                            <div class="product-section">
-                                                <div class="occasional-slider-container" id="occasionSlider">
-                                                    @foreach ($occProducts as $product)
-                                                        @php
-                                                            $image =
-                                                                $product->images->first()->image ??
-                                                                'website/assets/images/Trophy.png';
-                                                            $variant = $product->variants->first();
-                                                            $price =
-                                                                $variant->discounted_price ?? ($variant->price ?? 0);
-                                                        @endphp
-                                                        <div
-                                                            class="card trophy-card occProduct-trophy-card text-center shadow-sm">
-                                                            <a href="{{ route('productDetail', $product->id) }}">
-                                                                <div class="position-relative p-2">
-                                                                    <img src="{{ asset('OccasionalProduct_images/' . $product->image) }}"
-                                                                        alt="{{ $product->title }}" class="img-fluid"
-                                                                        style="max-height: 150px; width: 100%; object-fit: contain;" />
-
-                                                                    <div class="trophy-hover-bar">
-                                                                        <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($product->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                                            data-product-id="{{ $product->id }}"
-                                                                            title="Toggle Wishlist"></i>
-
-                                                                        <form action="{{ route('cart.add') }}"
-                                                                            method="POST">
-                                                                            @csrf
-                                                                            <input type="hidden" name="product_id"
-                                                                                value="{{ $prod->id }}">
-                                                                            <button type="submit"
-                                                                                class="add-to-cart-btn">Add To
-                                                                                Cart</button>
-                                                                        </form>
-                                                                        <i class="fas fa-share icon-toggle"></i>
+                                                                            <i class="fas fa-share icon-toggle share-icon"
+                                                                                data-share-link="{{ route('productDetail', ['type' => 'occasional', 'id' => $product->id]) }}"
+                                                                                data-bs-toggle="modal"
+                                                                                data-bs-target="#shareModal"></i>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div class="card-body py-2">
-                                                                    <p class="mb-1 product-id">{{ $product->id }}</p>
-                                                                    <p class="mb-0 text-danger fw-bold">
-                                                                        {{ $price }} Rs</p>
-                                                                </div>
-                                                            </a>
-                                                        </div>
-                                                    @endforeach
-
+                                                                    <div class="card-body py-2">
+                                                                        <p class="mb-1 product-id">
+                                                                            {{ Str::limit($product->title, 25) }}</p>
+                                                                        <p class="mb-0 text-danger fw-bold">
+                                                                            {{ $price }} Rs</p>
+                                                                    </div>
+                                                                </a>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
+                                        <div>
+                                            @if ($occ->occproducts->count() > 3)
+                                                <img src="{{ asset('website/assets/images/homePage/carousal-right.png') }}"
+                                                    alt="Next" class="slider-right-arrow" id="occasionArrow"
+                                                    style="height: 35px;position: relative;left: 795px;bottom: 121px;">
+                                            @endif
+                                        </div>
                                     </div>
-                                    <div>
-                                        <!--<img src="{{ asset('website/assets/images/homePage/carousal-right.png') }}" alt="images"-->
-                                        <!--    style="height: 35px;position: relative;left: 795px;bottom: 121px;">-->
-                                        @if ($occProducts->count() > 3)
-                                            <img src="{{ asset('website/assets/images/homePage/carousal-right.png') }}"
-                                                alt="Next" class="slider-right-arrow" id="occasionArrow"
-                                                style="height: 35px;position: relative;left: 795px;bottom: 121px;">
-                                        @endif
 
-                                    </div>
                                 </div>
-                                <script>
-                                    document.getElementById('occasionArrow')?.addEventListener('click', function() {
-                                        const container = document.getElementById('occasionSlider');
-                                        const card = container.querySelector('.trophy-card');
-                                        const scrollAmount = card.offsetWidth + 30;
-                                        container.scrollBy({
-                                            left: scrollAmount * 1,
-                                            behavior: 'smooth'
-                                        });
-                                    });
-                                </script>
-
                             </div>
-                    </section>
-                @endif
+                        </section>
+                    @endif
+                @endforeach
+
+                <script>
+                    const detailData = [{
+                            title: "Designed for the Day",
+                            desc: "At Trophy House, every occasion takes center stage. Our limited edition trophies are thoughtfully crafted to capture the emotion and significance of your special moments. Celebrate milestones with a gift that creates lasting memories."
+                        },
+                        {
+                            title: "Limited Editions, Big Impact",
+                            desc: "Our seasonal collections are available exclusively for limited periods, making each trophy truly unique. By choosing from these special editions, you give a gift that stands out and feels one-of-a-kind. Celebrate meaningful moments with a rare keepsake that captures the spirit of the season."
+                        },
+                        {
+                            title: "A Keepsake to Remember",
+                            desc: "More than just a gesture, our trophies are crafted to endure through time. They serve as lasting reminders of love, appreciation, and heartfelt recognition. Every piece tells a story that keeps the special moment alive forever."
+                        },
+                        {
+                            title: "Personalized Just for Them",
+                            desc: "Add personalized names, dates, or heartfelt messages to make each trophy uniquely yours. Transform a beautiful award into a treasured keepsake full of meaning and memories. Give a gift that they’ll cherish and remember for a lifetime."
+                        }
+                    ];
+
+                    function showDetail(index) {
+                        document.getElementById('list-view').classList.add('d-none');
+                        document.getElementById('detail-view').classList.remove('d-none');
+                        document.getElementById('detail-title').innerText = detailData[index].title;
+                        document.getElementById('detail-desc').innerText = detailData[index].desc;
+                    }
+
+                    function backToList() {
+                        document.getElementById('list-view').classList.remove('d-none');
+                        document.getElementById('detail-view').classList.add('d-none');
+                    }
+
+                    document.getElementById('occasionArrow')?.addEventListener('click', function() {
+                        const container = document.getElementById('occasionSlider');
+                        const card = container.querySelector('.trophy-card');
+                        const scrollAmount = card.offsetWidth + 30;
+                        container.scrollBy({
+                            left: scrollAmount,
+                            behavior: 'smooth'
+                        });
+                    });
+                </script>
+
                 <!--====== End Celebrate the momentss Sections  ======-->
 
 
@@ -1278,7 +1245,7 @@
                                 <div class="hover-yellow-bg d-none d-sm-block"></div>
                                 <div class="row justify-content-center text-center position-relative">
                                     <!-- <div class="row justify-content-center text-center py-5"
-                                             style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
+                                                                 style="background: linear-gradient(90deg, #fff7dc, #FFDE57);"> -->
 
                                     <!-- No Products Message -->
                                     <p class="text-center text-danger fw-bold d-none" id="new-arrival-no-products">
@@ -1288,14 +1255,15 @@
                                     </p>
 
                                     <!-- <div class="trophy-card-wrapper position-relative">
-                                                <div class="row justify-content-center text-center position-relative" id="new-arrival-wrapper"> -->
+                                                                    <div class="row justify-content-center text-center position-relative" id="new-arrival-wrapper"> -->
                                     @php $hasNewArrivals = false; @endphp
                                     @foreach ($products as $prod)
                                         @php $hasNewArrivals = true; @endphp
                                         <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 new-arrival-product"
                                             data-subcategory-id="{{ $prod->sub_category_id }}" style="display: none;">
                                             <div class="card trophy-card text-center shadow-md" style="height: 100%;">
-                                                <a href="{{ route('productDetail', $prod->id) }}">
+                                                <a
+                                                    href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                                     <div class="position-relative">
                                                         <img src="{{ asset('product_images/' . $prod->image) }}"
                                                             alt="Trophy" class="img-fluid"
@@ -1314,7 +1282,9 @@
 
                                                                     Cart</button>
                                                             </form>
-                                                            <i class="fas fa-share icon-toggle"></i>
+                                                            <i class="fas fa-share icon-toggle share-icon"
+                                                                data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"
+                                                                data-bs-toggle="modal" data-bs-target="#shareModal"></i>
                                                         </div>
                                                     </div>
                                                     <div class="card-body pt-2 pb-1">
@@ -1349,68 +1319,7 @@
                 </section>
 
 
-                <!-- <section class="trophy-section py-5" style="font-family: 'Times New Roman', serif; background-color:white">
-                                    <div class="container-fluid">
 
-                                        <p class="text-center mb-5"
-                                           style="color: #e63946;font-family: 'Source Sans 3', sans-serif;font-weight: bold;font-size: 24px;">
-                                            "New Arrivals"
-                                        </p>
-
-                                        <div class="row justify-content-center text-center">
-                                            <div class="trophy-card-wrapper position-relative py-5">
-                                                <div class="hover-yellow-bg d-none d-sm-block"></div>
-                                                <div class="row justify-content-center text-center position-relative">
-
-                                                    @foreach ($products as $prod)
-    @if ($prod->is_new_arrival == 1 && $loop->index + 1 <= 6)
-    <div class="col-12 d-flex justify-content-center d-sm-block col-sm-4 col-md-3 col-lg-2 mb-4 new-arrival-product"
-                                                                 data-subcategory-id="{{ $prod->sub_category_id }}" style="display: none;">
-                                                                <div class="card trophy-card text-center shadow-md" style="height: 100%;">
-                                                                    <a href="{{ route('productDetail', $prod->id) }}">
-                                                                        <div class="position-relative">
-                                                                            <img src="{{ asset('product_images/' . $prod->image) }}"
-                                                                                 alt="Trophy" class="img-fluid"
-                                                                                 style="height: 150px; width: 100%; object-fit: contain; margin-bottom: 0;" />
-                                                                            <div class="trophy-hover-bar mt-1 d-flex justify-content-around">
-                                                                                <i class="fas fa-heart icon-toggle wishlist-toggle {{ in_array($prod->id, $wishlist_product_ids ?? []) ? 'text-danger' : '' }}"
-                                                                                   data-product-id="{{ $prod->id }}"
-                                                                                   title="Toggle Wishlist"></i>
-                                                                                <form action="{{ route('cart.add') }}" method="POST">
-                                                                                    @csrf
-                                                                                    <input type="hidden" name="product_id" value="{{ $prod->id }}">
-                                                                                    <button type="submit" class="add-to-cart-btn">Add To Cart</button>
-                                                                                </form>
-                                                                                <i class="fas fa-share icon-toggle"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="card-body pt-2 pb-1">
-                                                                            <p class="mb-1 product-id">{{ Str::limit($prod->title, 25) }}</p>
-                                                                            @php
-                                                                                $first = $prod->variants->first();
-                                                                            @endphp
-                                                                            <p class="text-danger fw-bold mb-0">
-                                                                                {{ $first ? $first->price . ' Rs' : 'No price disclosed' }}
-                                                                            </p>
-                                                                        </div>
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-    @endif
-    @endforeach
-
-                                                    <div id="new-arrival-no-products" class="no-products" style="display: none;">
-                                                        No New Arrival products found for this subcategory.
-                                                    </div>
-
-                                                    <div class="text-center mt-4 w-100">
-                                                        <a href="{{ route('viewproducts') }}" class="see-more-btn">See More</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section> -->
 
                 <!--====== End New Arrivals Section ======-->
 
@@ -1992,7 +1901,10 @@
                             button.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 e.stopPropagation(); // Prevent parent link navigation
+
+                                // Check if it's a regular product or occasional product
                                 const productId = this.dataset.productId;
+                                const occasionalProductId = this.dataset.occasionalProductId;
                                 const isWishlisted = this.classList.contains('text-danger');
 
                                 // Check if user is authenticated
@@ -2002,13 +1914,21 @@
                                     return;
                                 }
 
+                                // Determine which ID to use
+                                const targetId = occasionalProductId || productId;
+                                const isOccasional = !!occasionalProductId;
+
                                 // Prepare the request
-                                const url = isWishlisted ? '/wishlist/get-item/' + productId :
+                                const url = isWishlisted ? '/wishlist/get-item/' + targetId :
                                     '{{ route('wishlist.add') }}';
                                 const method = isWishlisted ? 'GET' : 'POST';
-                                const body = isWishlisted ? null : JSON.stringify({
-                                    product_id: productId
-                                });
+                                const body = isWishlisted ? null : JSON.stringify(
+                                    isOccasional ? {
+                                        occasional_product_id: targetId
+                                    } : {
+                                        product_id: targetId
+                                    }
+                                );
 
                                 // First, fetch the wishlist item ID if removing
                                 fetch(url, {

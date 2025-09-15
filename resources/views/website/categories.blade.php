@@ -65,7 +65,7 @@
                                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product"
                                     data-subcategory-id="{{ $prod->sub_category_id }}">
                                     <div class="card trophy-card text-center shadow-md">
-                                        <a href="{{ route('productDetail', $prod->id) }}">
+                                        <a href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                             <div class="position-relative">
                                                 <img src="{{ asset('product_images/' . $prod->image) }}" alt="Trophy"
                                                     class="img-fluid"
@@ -99,7 +99,7 @@
                                                     </form>
                                                     {{-- <i class="fas fa-share icon-toggle"></i> --}}
                                                     <i class="fas fa-share icon-toggle share-icon"
-                                                        data-share-link="{{ route('productDetail', $prod->id) }}"></i>
+                                                        data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"></i>
                                                 </div>
                                             </div>
                                             <div class="card-body py-2">
@@ -125,7 +125,7 @@
                     const subcatId = this.dataset.subcategoryId;
                     const wrapper = document.getElementById('products-wrapper');
                     const noProductsMsg = document.getElementById('no-products-msg');
-                    const productDetailUrl = "{{ url('/productDetail') }}";
+                    const productDetailUrl = "{{ url('/productDetail/product') }}";
                     if (subcatId === 'all') {
                         // Show all products
                         noProductsMsg.classList.add('d-none');
@@ -154,7 +154,7 @@
                                         wrapper.innerHTML += `
                                         <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product" data-subcategory-id="${prod.sub_category_id}">
                                             <div class="card trophy-card text-center shadow-md">
-                                                <a href="/ProductDetail/${prod.id}">
+                                                <a href="/productDetail/product/${prod.id}">
                                                     <div class="position-relative">
                                                         <img src="/product_images/${prod.image}" class="img-fluid" style="height:150px; object-fit:contain;padding:10px;">
                                                         <div class="trophy-hover-bar">

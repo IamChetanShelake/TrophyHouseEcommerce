@@ -1,7 +1,7 @@
 @foreach ($products as $prod)
     <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4 top-pick-product">
         <div class="card trophy-card text-center shadow-md">
-            <a href="{{ route('productDetail', $prod->id) }}">
+            <a href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                 <div class="position-relative">
                     <img src="{{ asset('product_images/' . $prod->image) }}" alt="{{ $prod->title }}" class="img-fluid"
                         style="height: 150px; width: 100%; object-fit: contain; padding:10px;" />
@@ -21,7 +21,8 @@
 
                         <!-- Share -->
                         <i class="fas fa-share icon-toggle share-icon"
-                            data-share-link="{{ route('productDetail', $prod->id) }}"></i>
+                            data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"
+                            data-bs-toggle="modal" data-bs-target="#shareModal"></i>
                     </div>
                 </div>
 

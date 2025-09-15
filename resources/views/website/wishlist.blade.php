@@ -49,28 +49,49 @@
                                             <tr data-wishlist-id="{{ $item->id }}" style="font-family: 'Source Sans 3', sans-serif;">
                                                 <td>
                                                     <div class="product-img">
-                                                        <img src="{{ asset('product_images/' . $item->product->image) }}"
-                                                             alt="{{ $item->product->title }}"
-                                                             style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px;">
+                                                        @if($item->product)
+                                                            <img src="{{ asset('product_images/' . $item->product->image) }}"
+                                                                 alt="{{ $item->product->title }}"
+                                                                 style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px;">
+                                                        @elseif($item->occProducts)
+                                                            <img src="{{ asset('OccasionalProduct_images/' . $item->occProducts->image) }}"
+                                                                 alt="{{ $item->occProducts->title }}"
+                                                                 style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px;">
+                                                        @endif
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="product-info">
                                                         <h5 class="mb-1">
                                                             <a href="#"
-                                                               style="color: #333; text-decoration: none;">Code - {{ $item->product->title }}
+                                                               style="color: #333; text-decoration: none;">
+                                                                Code -
+                                                                @if($item->product)
+                                                                    {{ $item->product->title }}
+                                                                @elseif($item->occProducts)
+                                                                    {{ $item->occProducts->title }}
+                                                                @endif
                                                             </a>
                                                         </h5>
                                                         <p class="text-muted mb-0" style="font-size: 14px;">
-                                                            <!--{!! Str::limit($item->product->description, 50) !!}-->
-                                                            {{$item->product->category->name }}
+                                                            @if($item->product && $item->product->category)
+                                                                {{ $item->product->category->name }}
+                                                            @elseif($item->occProducts && $item->occProducts->occasion)
+                                                                {{ $item->occProducts->occasion->name }}
+                                                            @endif
                                                         </p>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="price" style="color: #e63946; font-weight: 600;">
                                                         <span class="currency">₹</span>
-                                                        <span class="unit-price">{{ $item->product->variants->first()->price ?? 'N/A' }}</span>
+                                                        <span class="unit-price">
+                                                            @if($item->product)
+                                                                {{ $item->product->variants->first()->price ?? 'N/A' }}
+                                                            @elseif($item->occProducts)
+                                                                {{ $item->occProducts->variants->first()->price ?? 'N/A' }}
+                                                            @endif
+                                                        </span>
                                                     </div>
                                                 </td>
                                                 

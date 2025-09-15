@@ -676,8 +676,7 @@ class CustomizationController extends Controller
     public function showRequests(Request $request)
     {
         $designerId = auth()->id();
-        $statusFilter = $request->get('status'); // comes from tab click
-
+        $statusFilter = $request->get('status');
         // Blocked orders
         $blockedOrderIds = CustomizationRequest::where('status', 'accepted')
             ->whereNotNull('designer_id')
@@ -690,9 +689,6 @@ class CustomizationController extends Controller
             ->filter()
             ->unique()
             ->toArray();
-
-
-
         // Base query
         $query = CustomizationRequest::with([
             'user',
@@ -706,15 +702,35 @@ class CustomizationController extends Controller
             });
 
         // Apply status filter if tab is clicked
+        // if ($statusFilter) {
+        //     $query->where('designer_id', $designerId ?? null)
+        //         ->where('status', $statusFilter);
+        // } else {
+        //     $query->where(function ($sub) {
+        //         $sub->where('status', 'pending')->whereNull('designer_id');
+        //     });
+        // }
+        // Apply status filter if tab is clicked
         if ($statusFilter) {
-            $query->where('designer_id', $designerId)
-                ->where('status', $statusFilter);
+            if ($statusFilter === 'pending') {
+                // For pending: show both assigned to current designer AND unassigned
+                $query->where('status', 'pending')
+                    ->where(function ($sub) use ($designerId) {
+                        $sub->whereNull('designer_id')  // Unassigned pending
+                            ->orWhere('designer_id', $designerId);  // Assigned pending
+                    });
+            } else {
+                // For other statuses: show only assigned to current designer
+                $query->where('designer_id', $designerId)
+                    ->where('status', $statusFilter);
+            }
         } else {
             // Default = pending unassigned
             $query->where(function ($sub) {
                 $sub->where('status', 'pending')->whereNull('designer_id');
             });
         }
+
 
         $requests = $query->get()
             ->filter(function ($request) use ($designerId, $blockedOrderIds) {
@@ -724,6 +740,7 @@ class CustomizationController extends Controller
             ->groupBy(function ($request) {
                 return $request->paymentItem->payment->order_id;
             });
+        // dd($requests);
 
         // Other designers for transfer dropdown
         $otherDesigners = User::where('role', 2)

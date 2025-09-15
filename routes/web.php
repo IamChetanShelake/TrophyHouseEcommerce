@@ -82,7 +82,7 @@ Route::get('/refundPolicy', [WebsiteController::class, 'refundPolicy'])->name('r
 Route::get('/payment', [WebsiteController::class, 'payment'])->name('payment');
 Route::post('/generate-bill', [WebsiteController::class, 'generateBill'])->name('generate.bill');
 // end-------------------------------------------------------------------------------------
-Route::any('/ProductDetail/{id}', [CartItemController::class, 'productDetail'])->name('productDetail');
+Route::any('/ProductDetail/{type}/{id}', [CartItemController::class, 'productDetail'])->name('productDetail');
 
 Route::any('/View-Products', [WebsiteController::class, 'viewProducts'])->name('viewproducts');
 

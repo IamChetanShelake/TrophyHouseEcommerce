@@ -9,6 +9,7 @@ use App\Models\WishlistItem;
 use Illuminate\Http\Request;
 use App\Models\AwardCategory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WishlistController extends Controller
 {
@@ -16,11 +17,11 @@ class WishlistController extends Controller
     {
         $categories = AwardCategory::with('products')->get();
          $pages = Page::all();
-        $wishlistItems = WishlistItem::where('user_id', Auth::id())->with('product')->get();
+        $wishlistItems = WishlistItem::where('user_id', Auth::id())->with(['product', 'occProducts'])->get();
        $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem
         // $categories = AwardCategory::select('name')->get();
         $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
-        
+
         return view('website.wishlist', compact('pages','wishlistItems', 'cart_items', 'categories', 'wishlist_count'));
     }
 
@@ -31,21 +32,18 @@ class WishlistController extends Controller
             'occasional_product_id' => 'nullable|exists:occasional_products,id',
         ]);
         $productId = $request->input('product_id');
-        $occasionalProductId = $request->input('occasional_product_id,');
-        
-        // $existing = WishlistItem::where('user_id', Auth::id())
-        //     ->where('product_id', $productId)
-        //     ->first();
-         // Check if item already exists in wishlist
-    $existing = WishlistItem::where('user_id', $userId)
-        ->when($request->filled('product_id'), function ($query) use ($request) {
-            $query->where('product_id', $request->product_id);
-        })
-        ->when($request->filled('occasional_product_id'), function ($query) use ($request) {
-            $query->where('occasional_product_id', $request->occasional_product_id);
-        })
-        ->first();
-        
+        $occasionalProductId = $request->input('occasional_product_id');
+
+        // Check if item already exists in wishlist
+        $existing = WishlistItem::where('user_id', Auth::id())
+            ->when($request->filled('product_id'), function ($query) use ($request) {
+                $query->where('product_id', $request->product_id);
+            })
+            ->when($request->filled('occasional_product_id'), function ($query) use ($request) {
+                $query->where('occasional_product_id', $request->occasional_product_id);
+            })
+            ->first();
+
         if ($existing) {
             return response()->json([
                 'success' => false,
@@ -91,7 +89,7 @@ class WishlistController extends Controller
                 'count' => WishlistItem::where('user_id', Auth::id())->count(),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Wishlist removal error: ' . $e->getMessage());
+            Log::error('Wishlist removal error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while removing the product from your wishlist.',
@@ -128,7 +126,7 @@ class WishlistController extends Controller
                 'count' => WishlistItem::where('user_id', Auth::id())->count(),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Wishlist quantity update error: ' . $e->getMessage());
+            Log::error('Wishlist quantity update error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while updating the quantity.',
@@ -141,7 +139,10 @@ class WishlistController extends Controller
     {
         try {
             $wishlistItem = WishlistItem::where('user_id', Auth::id())
-                ->where('product_id', $productId)
+                ->where(function ($query) use ($productId) {
+                    $query->where('product_id', $productId)
+                          ->orWhere('occasional_product_id', $productId);
+                })
                 ->first();
 
             if (!$wishlistItem) {
@@ -159,7 +160,7 @@ class WishlistController extends Controller
                 'count' => WishlistItem::where('user_id', Auth::id())->count(),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Wishlist item fetch error: ' . $e->getMessage());
+            Log::error('Wishlist item fetch error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while fetching the wishlist item.',
@@ -171,15 +172,22 @@ class WishlistController extends Controller
     public function proceedToCart(Request $request)
     {
         try {
-            $wishlistItems = WishlistItem::where('user_id', Auth::id())->with('product')->get();
-            
+            $wishlistItems = WishlistItem::where('user_id', Auth::id())->with(['product', 'occProducts'])->get();
+
             if ($wishlistItems->isEmpty()) {
                 return redirect()->route('cartPage')->with('error', 'Your wishlist is empty.');
             }
 
             foreach ($wishlistItems as $item) {
+                // Check for both regular and occasional products
                 $cartItem = cartItem::where('user_id', Auth::id())
-                    ->where('product_id', $item->product_id)
+                    ->where(function ($query) use ($item) {
+                        if ($item->product_id) {
+                            $query->where('product_id', $item->product_id);
+                        } elseif ($item->occasional_product_id) {
+                            $query->where('occasional_product_id', $item->occasional_product_id);
+                        }
+                    })
                     ->first();
 
                 if ($cartItem) {
@@ -191,6 +199,7 @@ class WishlistController extends Controller
                     cartItem::create([
                         'user_id' => Auth::id(),
                         'product_id' => $item->product_id,
+                        'occasional_product_id' => $item->occasional_product_id,
                         'quantity' => $item->quantity,
                     ]);
                 }
@@ -198,7 +207,7 @@ class WishlistController extends Controller
 
             return redirect()->route('cartPage')->with('success', 'All wishlist items added to cart successfully!');
         } catch (\Exception $e) {
-            \Log::error('Wishlist to cart error: ' . $e->getMessage());
+            Log::error('Wishlist to cart error: ' . $e->getMessage());
             return redirect()->route('cartPage')->with('error', 'An error occurred while adding wishlist items to cart.');
         }
     }

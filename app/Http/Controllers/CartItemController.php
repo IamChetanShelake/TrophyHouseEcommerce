@@ -82,26 +82,51 @@ class CartItemController extends Controller
 
 
 
-    public function productDetail($id)
+    public function productDetail($type, $id)
     {
-        $product = Product::with('variants')->find($id);
-      // Decode colors for each variant
+        if ($type === 'occasional') {
+            $product = \App\Models\OccasionProduct::with('variants')->find($id);
+            $isOccasional = true;
+        } else {
+            $product = Product::with('variants')->find($id);
+            $isOccasional = false;
+        }
+
+        if (!$product) {
+            abort(404, 'Product not found');
+        }
+
+        // Decode colors for each variant
         $product->variants->map(function ($variant) {
-        $variant->color = is_string($variant->color) ? json_decode($variant->color, true) : $variant->color;
-        return $variant;
-});
+            $variant->color = is_string($variant->color) ? json_decode($variant->color, true) : $variant->color;
+            return $variant;
+        });
 
         $wishlist_count = Auth::check() ? WishlistItem::where('user_id', Auth::id())->count() : 0;
-        $similarProducts = Product::where('category_id', $product->category_id)
-            ->where('sub_category_id', $product->sub_category_id)
-            ->where('id', '!=', $id)
-            ->get();
-             $categories = AwardCategory::with('products')->get();
-         $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem  
-          $pages = Page::all();  
-          
-        return view('website.Product.productDetails', compact('pages','product','wishlist_count','similarProducts','categories','cart_items'));
 
+        // Get wishlist product IDs for heart icon display
+        $wishlist_product_ids = [];
+        $wishlist_occasional_product_ids = [];
+        if (Auth::check()) {
+            $wishlistItems = WishlistItem::where('user_id', Auth::id())->get();
+            $wishlist_product_ids = $wishlistItems->whereNotNull('product_id')->pluck('product_id')->toArray();
+            $wishlist_occasional_product_ids = $wishlistItems->whereNotNull('occasional_product_id')->pluck('occasional_product_id')->toArray();
+        }
+
+        // For occasional products, we don't have similar products logic yet
+        $similarProducts = [];
+        if (!$isOccasional) {
+            $similarProducts = Product::where('category_id', $product->category_id)
+                ->where('sub_category_id', $product->sub_category_id)
+                ->where('id', '!=', $id)
+                ->get();
+        }
+
+        $categories = AwardCategory::with('products')->get();
+        $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0;
+        $pages = Page::all();
+
+        return view('website.Product.productDetails', compact('pages','product','wishlist_count','similarProducts','categories','cart_items','isOccasional','wishlist_product_ids','wishlist_occasional_product_ids'));
     }
 
 

@@ -317,10 +317,18 @@
                                 data-category-id="{{ $prod->category_id }}"
                                 data-subcategory-id="{{ $prod->sub_category_id }}"
                                 data-price="{{ $prod->variants->first()->discounted_price ?? 0 }}"
-                                data-colors="{{ implode(',', $prod->variants->pluck('color')->flatten()->unique()->toArray()) }}"
+                                data-colors="{{ implode(',', $prod->variants->pluck('color')->flatMap(function ($color) {
+                                    if (is_string($color)) {
+                                        $decoded = json_decode($color, true);
+                                        return is_array($decoded) ? $decoded : [$color];
+                                    }
+                                    return is_array($color) ? $color : ($color ? [$color] : []);
+                                })->filter()->map(function($color) {
+                                    return is_string($color) ? ucfirst(strtolower(trim($color))) : $color;
+                                })->unique()->values()->toArray()) }}"
                                 data-sizes="{{ implode(',', $prod->variants->pluck('size')->unique()->toArray()) }}">
                                 <div class="card trophy-card text-center shadow-md">
-                                    <a href="{{ route('productDetail', $prod->id) }}">
+                                    <a href="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}">
                                         <div class="position-relative">
                                             <img src="{{ asset('product_images/' . $prod->image) }}" alt="Trophy"
                                                 class="img-fluid"
@@ -351,7 +359,9 @@
                                                         value="{{ $firstColor }}">
                                                     <button type="submit" class="add-to-cart-btn">Add To Cart</button>
                                                 </form>
-                                                <i class="fas fa-share icon-toggle"></i>
+                                                <i class="fas fa-share icon-toggle share-icon"
+                                                    data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"
+                                                    style="cursor: pointer;"></i>
                                             </div>
                                         </div>
                                         <div class="card-body py-2">
@@ -397,9 +407,14 @@
             }
 
             function parsePriceRange(range) {
-                const clean = range.replace(/[₹,\s]/g, '');
-                if (clean.toLowerCase().includes('above')) return [5000, Infinity];
-                return clean.split('-').map(Number);
+                const clean = range.replace(/[₹,\s]/g, '').toLowerCase();
+                if (clean.includes('below500')) return [0, 499];
+                if (clean.includes('500-800')) return [500, 800];
+                if (clean.includes('800-1000')) return [800, 1000];
+                if (clean.includes('1000-1500')) return [1000, 1500];
+                if (clean.includes('1500-2000')) return [1500, 2000];
+                if (clean.includes('2000&above')) return [2000, Infinity];
+                return [0, Infinity]; // fallback
             }
 
             function filterProducts() {

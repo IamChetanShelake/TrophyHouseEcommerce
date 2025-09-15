@@ -65,7 +65,7 @@ class WebsiteController extends Controller
     public function Websiteindex()
     {
         $products = Product::with('variants')->get();
-        $occProducts = OccasionProduct::with('variants')->get();
+        $occProducts = OccasionProduct::with('variants', 'occasion')->get();
         $occasions = Occasion::all();
         $categories = AwardCategory::with('products')->get();
         $cart_items = Auth::check() ? cartItem::where('user_id', Auth::id())->count() : 0; // Updated to cartItem
@@ -78,10 +78,6 @@ class WebsiteController extends Controller
 
         $minPrice = ProductVariant::whereNotNull('discounted_price')->min('discounted_price') ?? 0;
         $maxPrice = ProductVariant::whereNotNull('discounted_price')->max('discounted_price') ?? 5000;
-        // foreach($products as $prod){
-        //    echo $prod->variants->count()."<br>";
-        // }
-
 
         return view('website.home', compact('pages', 'testimonials', 'aboutus', 'clients', 'products', 'occasions', 'occProducts', 'categories', 'cart_items', 'wishlist_product_ids', 'wishlist_count', 'minPrice', 'maxPrice'));
     }
@@ -223,19 +219,14 @@ class WebsiteController extends Controller
 
 
         //for prices --------------------------------------
-        $allPrices = ProductVariant::pluck('price')->sort()->values();
-        // Optional: create dynamic price ranges (in ₹500 gaps)
-        $minPrice = floor($allPrices->min() / 500) * 500;
-        $maxPrice = ceil($allPrices->max() / 500) * 500;
-        $priceRanges = [];
-        $step = 500;
-        for ($i = $minPrice; $i < $maxPrice; $i += $step) {
-            $range = '₹' . $i . ' - ₹' . ($i + $step);
-            $priceRanges[] = $range;
-            // echo  $range;
-        }
-        // Add a "₹X & above" range
-        $priceRanges[] = '₹' . $maxPrice . ' & above';
+        $priceRanges = [
+            'Below 500',
+            '500-800',
+            '800-1000',
+            '1000-1500',
+            '1500-2000',
+            '2000 & above'
+        ];
 
 
         //for colors --------------------------------------
@@ -258,7 +249,7 @@ class WebsiteController extends Controller
             ->toArray();
 
         $sizes = $this->getSizeLabels();
-        return view('website.Product.products', compact('wishlist_count', 'cart_items', 'pages', 'products', 'wishlist_count', 'categories', 'allPrices', 'priceRanges', 'allColors', 'sizes', 'subcategoryId'));
+        return view('website.Product.products', compact('wishlist_count', 'cart_items', 'pages', 'products', 'wishlist_count', 'categories', 'priceRanges', 'allColors', 'sizes', 'subcategoryId'));
     }
 
     public function cart()

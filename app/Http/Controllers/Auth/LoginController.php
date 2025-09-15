@@ -49,7 +49,7 @@ class LoginController extends Controller
             return redirect()->route('Websitehome'); // or website home
         } elseif ($user->role == 2) {
 
-            return redirect()->route('requests');
+            return redirect()->route('requests', ['status' => 'pending']);
         }
 
         return redirect('/'); // fallback
