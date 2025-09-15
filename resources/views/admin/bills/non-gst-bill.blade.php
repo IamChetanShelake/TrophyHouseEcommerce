@@ -1,82 +1,228 @@
 @extends('admin.layouts.masterlayout')
 
 @section('content')
-<div class="content-wrapper">
-    <div class="card">
-        <div class="card-body">
-            <div class="text-center mb-4">
-                <h2>Bill</h2>
-                <h4>Order ID: {{ $payment->order_id }}</h4>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h5>Customer Details:</h5>
-                    <p><strong>Name:</strong> {{ $payment->customer_name }}</p>
-                    <p><strong>Email:</strong> {{ $payment->customer_email }}</p>
-                    <p><strong>Phone:</strong> {{ $payment->customer_phone }}</p>
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h2>Bill</h2>
                 </div>
-                <div class="col-md-6 text-end">
-                    <h5>Order Details:</h5>
-                    <p><strong>Order Date:</strong> {{ $payment->created_at->format('d M Y') }}</p>
-                    <p><strong>Payment Mode:</strong> {{ $payment->payment_mode }}</p>
-                    <p><strong>Status:</strong> {{ $payment->status }}</p>
-                </div>
-            </div>
 
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Sr. No.</th>
-                        <th>Product</th>
-                        <th>Size</th>
-                        <th>Color</th>
-                        <th>Quantity</th>
-                        <th>Rate</th>
-                        <th>Discount</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $sr = 1; $subtotal = 0; @endphp
-                    @foreach($payment->items as $item)
+                {{--  <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4>Customer Details:</h4>
+                        <p><strong>Order ID:</strong> {{ $payment->order_id }}</p>
+                        <p><strong>Name:</strong> {{ $payment->customer_name }}</p>
+                        <p><strong>Email:</strong> {{ $payment->customer_email }}</p>
+                        <p><strong>Phone:</strong> {{ $payment->customer_phone }}</p>
+                        <p><strong>Order Date:</strong> {{ $payment->created_at->format('d M Y') }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <img src="{{ asset('admin/assets/images/trophy house logo.png') }}" alt="logo" style="max-width: 150px;">
+                        <p><b>
+                            Space cosmos, old Mumbai Agra Road,<br> Beside Canara Bank, opp. Meher Bus Stop,<br> Ashok
+                            Stambh,
+                            Nashik 422002
+                        </b></p>
+                        <p><strong>Phone:</strong> 9423962242, 9423962042, 9404076742</p>
+                        <p><strong>Email:</strong> trophyhousensk1@gmail.com</p>
+                    </div>
+                </div>  --}}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4>Customer Details:</h4>
+                        <p><strong>Order ID:</strong> {{ $payment->order_id }}</p>
+                        <p><strong>Name:</strong> {{ $payment->customer_name }}</p>
+                        <p><strong>Email:</strong> {{ $payment->customer_email }}</p>
+                        <p><strong>Phone:</strong> {{ $payment->customer_phone }}</p>
+                        <p><strong>Order Date:</strong> {{ $payment->created_at->format('d M Y') }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <img src="{{ asset('admin/assets/images/trophy house logo.png') }}" alt="logo"
+                            style="max-width: 120px;">
+                        <p><b>
+                                Space cosmos, old Mumbai Agra Road,<br> Beside Canara Bank, opp. Meher Bus Stop,<br> Ashok
+                                Stambh,
+                                Nashik 422002
+                            </b></p>
+                        <p><strong>Phone:</strong> 9423962242, 9423962042</p>
+                        <p><strong>Email:</strong> trophyhousensk1@gmail.com</p>
+                    </div>
+                </div>
+
+                <style>
+                    @media print {
+
+                        /* Hide everything by default */
+                        body * {
+                            visibility: hidden;
+                        }
+
+                        /* Show only the content-wrapper and its children */
+                        .content-wrapper,
+                        .content-wrapper * {
+                            visibility: visible;
+                        }
+
+                        /* Ensure content-wrapper takes full width and is positioned correctly */
+                        .content-wrapper {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            margin: 0;
+                            padding: 10px;
+                        }
+
+                        /* Hide buttons inside content-wrapper during print */
+                        .content-wrapper .btn {
+                            display: none !important;
+                        }
+
+                        /* Ensure the row with customer and company details stays on one line */
+                        .row.mb-4 {
+                            display: flex;
+                            flex-wrap: nowrap;
+                            width: 100%;
+                            margin: 0;
+                        }
+
+                        .col-md-6 {
+                            flex: 0 0 50%;
+                            max-width: 50%;
+                            padding: 0 10px;
+                            box-sizing: border-box;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+
+                        /* Ensure the table and text are formatted nicely */
+                        .table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+
+                        .table th,
+                        .table td {
+                            border: 1px solid #000;
+                            padding: 8px;
+                        }
+
+                        /* Ensure logo fits within the column */
+                        .col-md-6 img {
+                            max-width: 100%;
+                            height: auto;
+                        }
+
+                        /* Optional: Adjust font sizes or other styles for print */
+                        body {
+                            margin: 0;
+                            font-size: 12pt;
+                        }
+                    }
+                </style>
+
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td>{{ $sr++ }}</td>
-                            <td>{{ $item->product->title ?? 'N/A' }}</td>
-                            <td>{{ $item->variant->size ?? 'N/A' }}</td>
-                            <td>{{ $item->color ?? 'N/A' }}</td>
-                            <td>{{ $item->quantity }}</td>
-                            <td>₹{{ number_format($item->unit_price, 2) }}</td>
-                            <td>₹{{ number_format(($item->unit_price - $item->total_price/$item->quantity), 2) }}</td>
-                            <td>₹{{ number_format($item->total_price, 2) }}</td>
+                            <th>Sr. No.</th>
+                            <th>Product</th>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Quantity</th>
+                            <th>Rate</th>
+                            <th>Total</th>
                         </tr>
-                        @php $subtotal += $item->total_price; @endphp
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="6" class="text-end"><strong>Subtotal:</strong></td>
-                        <td colspan="2">₹{{ number_format($subtotal, 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="6" class="text-end"><strong>Total Amount:</strong></td>
-                        <td colspan="2"><strong>₹{{ number_format($payment->amount, 2) }}</strong></td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </thead>
+                    <tbody>
+                        @php
+                            $sr = 1;
+                            $subtotal = 0;
+                        @endphp
+                        @foreach ($payment->items as $item)
+                            <tr>
+                                <td>{{ $sr++ }}</td>
+                                <td>{{ $item->product->title ?? 'N/A' }}</td>
+                                <td>{{ $item->variant->size ?? 'N/A' }}</td>
+                                <td>{{ $item->color ?? 'N/A' }}</td>
+                                <td>{{ $item->quantity }}</td>
+                                <td>₹{{ number_format($item->unit_price, 2) }}</td>
+                                <td>₹{{ number_format($item->total_price, 2) }}</td>
+                            </tr>
+                            @php $subtotal += $item->total_price; @endphp
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="6" class="text-end"><strong>Subtotal:</strong></td>
+                            <td>₹{{ number_format($subtotal, 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-end"><strong>Printing Charges:</strong></td>
+                            <td>₹{{ number_format($payment->making_charges, 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-end"><strong>Total Amount:</strong></td>
+                            <td><strong>₹{{ number_format($payment->amount, 2) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
 
-            <div class="text-center mt-4">
-                <button onclick="window.print()" class="btn btn-primary">Print Bill</button>
-                <a href="{{ route('orders') }}" class="btn btn-secondary">Back to Orders</a>
+                <div class="text-center mt-4">
+                    <button onclick="window.print()" class="btn btn-primary">Print Bill</button>
+                    <a href="{{ route('orders') }}" class="btn btn-secondary">Back to Orders</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<style>
-@media print {
-    .btn, .card-header, .content-wrapper { display: none !important; }
-    body { margin: 0; }
-}
-</style>
+    <style>
+        @media print {
+
+            /* Hide everything by default */
+            body * {
+                visibility: hidden;
+            }
+
+            /* Show only the content-wrapper and its children */
+            .content-wrapper,
+            .content-wrapper * {
+                visibility: visible;
+            }
+
+            /* Ensure content-wrapper takes full width and is positioned correctly */
+            .content-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                margin: 0;
+                padding: 10px;
+            }
+
+            /* Hide buttons inside content-wrapper during print */
+            .content-wrapper .btn {
+                display: none !important;
+            }
+
+            /* Ensure the table and text are formatted nicely */
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .table th,
+            .table td {
+                border: 1px solid #000;
+                padding: 8px;
+            }
+
+            /* Optional: Adjust font sizes or other styles for print */
+            body {
+                margin: 0;
+                font-size: 12pt;
+            }
+        }
+    </style>
 @endsection
