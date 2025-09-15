@@ -198,6 +198,7 @@
                                     <th>Rate</th>
                                     <th>Disc.Rate</th>
                                     <th>Total</th>
+                                    <th>Customization</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -241,6 +242,14 @@
                                     <td><input type="number" name="disc_rate[]" class="form-control disc-rate" readonly>
                                     </td>
                                     <td><input type="number" name="total[]" class="form-control total" readonly></td>
+                                    {{--  <td>
+                                        <input type="checkbox" name="customization[]" value="1" class="form-check-input">
+                                        <input type="hidden" name="customization[]" value="0">
+                                    </td>  --}}
+                                    <td>
+                                        <input type="checkbox" name="customization[0]" value="1"
+                                            class="form-check-input">
+                                    </td>
                                     <td><button type="button" class="btn btn-danger remove_row"
                                             style="padding:4px 8px;">
                                             <i class="fa fa-trash"></i></button>
@@ -287,15 +296,21 @@
 
 
 
-                // Add row
                 document.getElementById("add_row").addEventListener("click", function() {
                     let table = document.querySelector("#products_table tbody");
                     let newRow = table.rows[0].cloneNode(true);
+                    let rowCount = table.rows.length; // Get the current number of rows for the new index
 
-                    // reset input & select values
-                    newRow.querySelectorAll("input, select").forEach(el => el.value = "");
+                    // Reset input & select values
+                    newRow.querySelectorAll("input, select").forEach(el => {
+                        if (el.name.startsWith("customization[")) {
+                            el.name = `customization[${rowCount}]`; // Set new index for customization
+                        } else {
+                            el.value = ""; // Reset other inputs
+                        }
+                    });
 
-                    // reset image properly
+                    // Reset image properly
                     let img = newRow.querySelector(".product-image");
                     if (img) {
                         img.src = "";
@@ -305,7 +320,6 @@
                     table.appendChild(newRow);
                     updateGrandTotal();
                 });
-
 
                 // Remove row
                 document.addEventListener("click", function(e) {

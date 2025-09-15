@@ -201,14 +201,12 @@ class OrderController extends Controller
                     $payment->id,
                 );
 
-                $customization = Auth::user()
-                    ->customizationRequests()
+                $customization = CustomizationRequest::where('user_id', Auth::id())
                     ->where('payment_item_id', $payment->id)
                     ->where('status', 'pending')
                     ->first();
 
-                $customizationApproved = Auth::user()
-                    ->customizationRequests()
+                $customizationApproved = CustomizationRequest::where('user_id', Auth::id())
                     ->where('payment_item_id', $payment->id)
                     ->where('status', 'approved')
                     ->first();
@@ -400,7 +398,7 @@ class OrderController extends Controller
                 'phone' => $payment->user->mobile ?? $payment->customer_phone,
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('Error in getUserDetails', [
+            Log::error('Error in getUserDetails', [
                 'order_id' => $orderId,
                 'message' => $e->getMessage()
             ]);
@@ -641,16 +639,228 @@ class OrderController extends Controller
 
 
 
+    // public function offlineorderstore(Request $request)
+    // {
+    //     //return $request->all();
+
+    //     // 1. Check if user exists
+    //     $user = User::Where('mobile', $request->mobile)
+    //         ->first();
+
+    //     if (!$user) {
+    //         // New User (Object + save)
+    //         $user = new User();
+    //         $user->name     = $request->name;
+    //         $user->email    = $request->email;
+    //         $user->mobile   = $request->mobile;
+    //         $user->password = Hash::make($request->password);
+    //         $user->status   = 0;
+    //         $user->save();
+    //     }
+
+    //     // 2. Calculate making charges based on customized products
+    //     $makingCharges = 0;
+    //     $customizedQuantities = [];
+
+    //     if ($request->product && is_array($request->product)) {
+    //         foreach ($request->product as $key => $productId) {
+    //             $isCustomized = isset($request->customization[$key]) && $request->customization[$key] == 1;
+    //             if ($isCustomized) {
+    //                 $customizedQuantities[] = $request->qty[$key];
+    //             }
+    //         }
+    //     }
+
+    //     // Calculate making charges based on total customized quantity
+    //     if (!empty($customizedQuantities)) {
+    //         $totalCustomizedQty = array_sum($customizedQuantities);
+
+    //         if ($totalCustomizedQty >= 1 && $totalCustomizedQty <= 9) {
+    //             $makingCharges = $totalCustomizedQty * 50;
+    //         } elseif ($totalCustomizedQty >= 10 && $totalCustomizedQty <= 24) {
+    //             $makingCharges = $totalCustomizedQty * 35;
+    //         } elseif ($totalCustomizedQty >= 25) {
+    //             $makingCharges = $totalCustomizedQty * 25;
+    //         }
+    //     }
+
+    //     // 3. Calculate final amount with GST if applicable
+    //     $paidAmount = $request->paidamount;
+    //     $isGstBill = $request->status == 1; // GST toggle
+
+    //     if ($isGstBill) {
+    //         // GST bill: (paidamount + making_charges) * 1.18
+    //         $finalAmount = ($paidAmount + $makingCharges) * 1.18;
+    //     } else {
+    //         // Non-GST bill: just paidamount + making_charges
+    //         $finalAmount = $paidAmount + $makingCharges;
+    //     }
+
+    //     // 4. Payment Table Entry (Object + save)
+    //     $payment = new Payment();
+    //     $payment->order_id = 'THOFF_' . time() . '_' . $user->id;
+    //     $payment->customer_id    = $user->id;
+    //     $payment->customer_name  = $user->name;
+    //     $payment->customer_phone = $user->mobile;
+    //     $payment->customer_email = $user->email;
+    //     $payment->bill = $request->status;
+    //     $payment->amount         = $finalAmount;
+    //     $payment->making_charges = $makingCharges;
+    //     $payment->status         = 'paid';
+    //     $payment->payment_mode   = $request->payment_mode;
+    //     $payment->gstin   = $request->gstin;
+    //     $payment->hsn_code   = $request->hsn_code;
+    //     $payment->save();
+
+    //     // 5. Payment Item Table Entry (Object + save)
+    //     if ($request->product && is_array($request->product)) {
+    //         foreach ($request->product as $key => $productId) {
+    //             $paymentItem = new PaymentItem();
+    //             $paymentItem->payment_id   = $payment->id;
+    //             $paymentItem->payment_order_id   = $payment->order_id;
+    //             $paymentItem->user_id      = $user->id;
+    //             $paymentItem->product_id   = $productId;
+    //             $paymentItem->variant_id   = $request->size[$key];
+    //             $paymentItem->color        = $request->color[$key] ?? null;
+    //             $paymentItem->quantity     = $request->qty[$key];
+    //             $paymentItem->unit_price   = $request->disc_rate[$key];
+    //             $paymentItem->total_price  = $request->total[$key];
+    //             $paymentItem->cust_status  = isset($request->customization[$key]) && $request->customization[$key] == '1'  ? '1' : '0';
+    //             $paymentItem->save();
+    //         }
+    //     }
+
+    //     return redirect()->route('orders')->with('success', 'Order created successfully!');
+    // }
+
+    // public function offlineorderstore(Request $request)
+    // {
+    //     return $request->all();
+    //     // 1. Check if user exists
+    //     $user = User::where('mobile', $request->mobile)->first();
+
+    //     if (!$user) {
+    //         // New User (Object + save)
+    //         $user = new User();
+    //         $user->name     = $request->name;
+    //         $user->email    = $request->email;
+    //         $user->mobile   = $request->mobile;
+    //         $user->password = Hash::make($request->password);
+    //         $user->status   = 0;
+    //         $user->save();
+    //     }
+
+    //     // 2. Calculate making charges based on customized products
+    //     $makingCharges = 0;
+    //     $customizedQuantities = [];
+    //     $customizations = $request->customization ?? [];
+    //     $index = 0;
+
+    //     if ($request->product && is_array($request->product)) {
+    //         foreach ($request->product as $key => $productId) {
+    //             if ($index >= count($customizations)) {
+    //                 $isCustomized = false;
+    //             } else {
+    //                 $value = $customizations[$index];
+    //                 if ($value == 1) {
+    //                     $isCustomized = true;
+    //                     $index += 2; // Skip the 1 and the following 0
+    //                 } else {
+    //                     $isCustomized = false;
+    //                     $index += 1; // Skip the 0
+    //                 }
+    //             }
+
+    //             if ($isCustomized) {
+    //                 $customizedQuantities[] = $request->qty[$key];
+    //             }
+    //         }
+    //     }
+
+    //     // Calculate making charges based on total customized quantity
+    //     if (!empty($customizedQuantities)) {
+    //         $totalCustomizedQty = array_sum($customizedQuantities);
+
+    //         if ($totalCustomizedQty >= 1 && $totalCustomizedQty <= 9) {
+    //             $makingCharges = $totalCustomizedQty * 50;
+    //         } elseif ($totalCustomizedQty >= 10 && $totalCustomizedQty <= 24) {
+    //             $makingCharges = $totalCustomizedQty * 35;
+    //         } elseif ($totalCustomizedQty >= 25) {
+    //             $makingCharges = $totalCustomizedQty * 25;
+    //         }
+    //     }
+
+    //     // 3. Calculate final amount with GST if applicable
+    //     $baseAmount = $request->totalamount;
+    //     $isGstBill = $request->status == 1; // GST toggle
+
+    //     if ($isGstBill) {
+    //         // GST bill: (totalamount + making_charges) * 1.18
+    //         $finalAmount = ($baseAmount + $makingCharges) * 1.18;
+    //     } else {
+    //         // Non-GST bill: just totalamount + making_charges
+    //         $finalAmount = $baseAmount + $makingCharges;
+    //     }
+
+    //     // 4. Payment Table Entry (Object + save)
+    //     $payment = new Payment();
+    //     $payment->order_id = 'THOFF_' . time() . '_' . $user->id;
+    //     $payment->customer_id    = $user->id;
+    //     $payment->customer_name  = $user->name;
+    //     $payment->customer_phone = $user->mobile;
+    //     $payment->customer_email = $user->email;
+    //     $payment->bill = $request->status;
+    //     $payment->amount         = $finalAmount;
+    //     $payment->making_charges = $makingCharges;
+    //     $payment->status         = 'paid';
+    //     $payment->payment_mode   = $request->payment_mode;
+    //     $payment->gstin   = $request->gstin;
+    //     $payment->hsn_code   = $request->hsn_code;
+    //     $payment->save();
+
+    //     // 5. Payment Item Table Entry (Object + save)
+    //     if ($request->product && is_array($request->product)) {
+    //         // Reset index for customization parsing in this loop
+    //         $customizations = $request->customization ?? [];
+    //         $index = 0;
+
+    //         foreach ($request->product as $key => $productId) {
+    //             if ($index >= count($customizations)) {
+    //                 $isCustomized = false;
+    //             } else {
+    //                 $value = $customizations[$index];
+    //                 if ($value == 1) {
+    //                     $isCustomized = true;
+    //                     $index += 2;
+    //                 } else {
+    //                     $isCustomized = false;
+    //                     $index += 1;
+    //                 }
+    //             }
+
+    //             $paymentItem = new PaymentItem();
+    //             $paymentItem->payment_id   = $payment->id;
+    //             $paymentItem->payment_order_id   = $payment->order_id;
+    //             $paymentItem->user_id      = $user->id;
+    //             $paymentItem->product_id   = $productId;
+    //             $paymentItem->variant_id   = $request->size[$key];
+    //             $paymentItem->color        = $request->color[$key] ?? null;
+    //             $paymentItem->quantity     = $request->qty[$key];
+    //             $paymentItem->unit_price   = $request->disc_rate[$key];
+    //             $paymentItem->total_price  = $request->total[$key];
+    //             $paymentItem->cust_status  = $isCustomized ? '1' : '0';
+    //             $paymentItem->save();
+    //         }
+    //     }
+
+    //     return redirect()->route('orders')->with('success', 'Order created successfully!');
+    // }
+
     public function offlineorderstore(Request $request)
     {
-        //  DB::beginTransaction();
-
-
-        //  return $request->all();
-
+        // return $request->all();
         // 1. Check if user exists
-        $user = User::Where('mobile', $request->mobile)
-            ->first();
+        $user = User::where('mobile', $request->mobile)->first();
 
         if (!$user) {
             // New User (Object + save)
@@ -663,7 +873,56 @@ class OrderController extends Controller
             $user->save();
         }
 
-        // 2. Payment Table Entry (Object + save)
+        // 2. Calculate making charges based on customized products
+        $makingCharges = 0;
+        $customizedQuantities = [];
+
+        // if ($request->product && is_array($request->product)) {
+        //     foreach ($request->product as $key => $productId) {
+        //         // Check if customization is set for this row and equals "1"
+        //         $isCustomized = isset($request->customization[$key]) && $request->customization[$key] == '1';
+        //         if ($isCustomized) {
+        //             $customizedQuantities[] = $request->qty[$key];
+        //         }
+        //     }
+        // }
+
+        if ($request->product && is_array($request->product)) {
+            foreach ($request->product as $key => $productId) {
+                // Check if customization is set for this row and equals "1"
+                $isCustomized = isset($request->customization[$key]) && $request->customization[$key] == '1';
+                if ($isCustomized) {
+                    $customizedQuantities[] = $request->qty[$key];
+                }
+            }
+        }
+
+        // Calculate making charges based on total customized quantity
+        if (!empty($customizedQuantities)) {
+            $totalCustomizedQty = array_sum($customizedQuantities);
+
+            if ($totalCustomizedQty >= 1 && $totalCustomizedQty <= 9) {
+                $makingCharges = $totalCustomizedQty * 50;
+            } elseif ($totalCustomizedQty >= 10 && $totalCustomizedQty <= 24) {
+                $makingCharges = $totalCustomizedQty * 35;
+            } elseif ($totalCustomizedQty >= 25) {
+                $makingCharges = $totalCustomizedQty * 25;
+            }
+        }
+
+        // 3. Calculate final amount with GST if applicable
+        $baseAmount = $request->totalamount;
+        $isGstBill = $request->status == 1; // GST toggle
+
+        if ($isGstBill) {
+            // GST bill: (totalamount + making_charges) * 1.18
+            $finalAmount = ($baseAmount + $makingCharges) * 1.18;
+        } else {
+            // Non-GST bill: just totalamount + making_charges
+            $finalAmount = $baseAmount + $makingCharges;
+        }
+
+        // 4. Payment Table Entry (Object + save)
         $payment = new Payment();
         $payment->order_id = 'THOFF_' . time() . '_' . $user->id;
         $payment->customer_id    = $user->id;
@@ -671,14 +930,15 @@ class OrderController extends Controller
         $payment->customer_phone = $user->mobile;
         $payment->customer_email = $user->email;
         $payment->bill = $request->status;
-        $payment->amount         = $request->paidamount;
+        $payment->amount         = $finalAmount;
+        $payment->making_charges = $makingCharges;
         $payment->status         = 'paid';
         $payment->payment_mode   = $request->payment_mode;
         $payment->gstin   = $request->gstin;
         $payment->hsn_code   = $request->hsn_code;
         $payment->save();
 
-        // 3. Payment Item Table Entry (Object + save)
+        // 5. Payment Item Table Entry (Object + save)
         if ($request->product && is_array($request->product)) {
             foreach ($request->product as $key => $productId) {
                 $paymentItem = new PaymentItem();
@@ -691,15 +951,14 @@ class OrderController extends Controller
                 $paymentItem->quantity     = $request->qty[$key];
                 $paymentItem->unit_price   = $request->disc_rate[$key];
                 $paymentItem->total_price  = $request->total[$key];
+                // Set customization status based on whether the checkbox was checked
+                $paymentItem->cust_status  = isset($request->customization[$key]) && $request->customization[$key] == '1' ? '1' : '0';
                 $paymentItem->save();
             }
         }
 
-        // DB::commit();
-
         return redirect()->route('orders')->with('success', 'Order created successfully!');
     }
-
     public function offgenerateBill($orderId)
     {
         $payment = Payment::with(['items.product', 'items.variant', 'user'])
