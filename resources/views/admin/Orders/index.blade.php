@@ -2,7 +2,59 @@
 
 @section('content')
 
-    <!-- Chat Modal -->
+    <!-- Payment Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Payment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Client Information</h6>
+                            <p><strong>Client Name:</strong> <span id="clientName"></span></p>
+                            <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+                            <p><strong>Total Amount:</strong> <span id="totalAmount"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Payment Information</h6>
+                            <p><strong>Received Amount:</strong> <input type="number" id="receivedAmount"
+                                    class="form-control" step="0.01" placeholder="Enter amount"></p>
+                            <p><strong>Payment Mode:</strong>
+                                <select id="paymentMode" class="form-control">
+                                    <option value="">Select Mode</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="card">Card</option>
+                                    <option value="upi">UPI</option>
+                                    <option value="netbanking">Net Banking</option>
+                                </select>
+                            </p>
+                            <p><strong>Date:</strong> <input type="date" id="paymentDate" class="form-control"></p>
+                            <p><strong>Remark:</strong>
+                                <textarea id="remark" class="form-control" placeholder="Add remark (optional)"></textarea>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12 text-center">
+                            <img src="{{ asset('admin/assets/images/payment_upper.png') }}" alt="Upper Image"
+                                class="img-fluid mb-2" id="upperImage" style="max-height: 150px;">
+                            <img src="{{ asset('admin/assets/images/payment_lower.png') }}" alt="Lower Image"
+                                class="img-fluid" id="lowerImage" style="max-height: 150px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="savePayment">Save Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Modals (Chat, User Details, Products) -->
     <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md modal-dialog-scrollable">
             <div class="modal-content">
@@ -20,7 +72,6 @@
         </div>
     </div>
 
-    <!-- User Details Modal -->
     <div class="modal fade" id="userModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -34,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Products Modal -->
     <div class="modal fade" id="productsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -101,7 +151,8 @@
                                             <div class="modal-content">
 
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title" id="transferOrderModalLabel">Transfer Order</h5>
+                                                    <h5 class="modal-title" id="transferOrderModalLabel">Transfer Order
+                                                    </h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
                                                 </div>
@@ -404,7 +455,7 @@
             // Load designers on page load
             loadDesigners();
 
-            // Delegation for chat buttons
+            // Existing JavaScript for chat, user, and products modals
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('view-chat-btn')) {
                     const productId = e.target.dataset.productId;
@@ -417,7 +468,6 @@
                     const productsModal = bootstrap.Modal.getInstance(productsModalEl);
                     if (productsModal) productsModal.hide();
 
-                    // Open chat modal
                     document.getElementById("chatModalLabel").innerText = "Chat for Product - " +
                         productName;
 
@@ -440,7 +490,6 @@
                 }
             });
 
-            // View User Details
             document.querySelectorAll('.view-user').forEach(btn => {
                 btn.addEventListener('click', function() {
                     let orderId = this.getAttribute('data-id');
@@ -456,6 +505,10 @@
                                 <p><strong>Name:</strong> ${user.name || 'N/A'}</p>
                                 <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
                                 <p><strong>Phone:</strong> ${user.phone || 'N/A'}</p>
+                                <p><strong>Profile:</strong> <img src="${user.image}" alt="Profile Image" width="80" height="80"></p>
+                                <p><strong>Name:</strong> ${user.name}</p>
+                                <p><strong>Email:</strong> ${user.email}</p>
+                                <p><strong>Phone:</strong> ${user.phone ?? 'N/A'}</p>
                             `;
                             new bootstrap.Modal(document.getElementById('userModal')).show();
                         })
@@ -468,7 +521,6 @@
                 });
             });
 
-            // Products Modal
             document.querySelectorAll('.view-products').forEach(btn => {
                 btn.addEventListener('click', function() {
                     let orderId = this.getAttribute('data-id');
@@ -518,7 +570,6 @@
                                             </thead>
                                             <tbody>
                                 `;
-
                                 data.products.forEach(p => {
                                     let variant = p.variant ?
                                         `${p.variant.size || 'N/A'} inch (${p.variant.color || 'N/A'})` :
@@ -560,6 +611,8 @@
                                             case 'rejected':
                                                 statusHtml =
                                                     `<span class="badge bg-danger"><i class="fas fa-times"></i> Rejected</span>`;
+                                                statusHtml =
+                                                    `<span class="badge bg-danger">Rejected</span>`;
                                                 break;
                                             default:
                                                 statusHtml =
@@ -569,7 +622,6 @@
                                         statusHtml =
                                             `<span class="badge bg-light text-dark">No Customization</span>`;
                                     }
-
                                     table += `
                                         <tr>
                                             <td>
@@ -583,10 +635,10 @@
                                             <td>${chat}</td>
                                             <td>${statusHtml}</td>
                                            
+                                            
                                         </tr>
                                     `;
                                 });
-
                                 table += `
                                             </tbody>
                                         </table>
@@ -608,6 +660,135 @@
                 });
             });
 
+            // Pay Now Modal
+            document.querySelectorAll('.pay-now').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const paymentId = this.getAttribute('data-id');
+                    const orderId = this.getAttribute('data-order-id');
+                    const clientName = this.getAttribute('data-client-name');
+                    const totalAmount = this.getAttribute('data-total-amount');
+
+                    document.getElementById('clientName').textContent = clientName;
+                    document.getElementById('orderId').textContent = orderId;
+                    document.getElementById('totalAmount').textContent =
+                        `₹${parseFloat(totalAmount).toFixed(2)}`;
+                    document.getElementById('receivedAmount').value = '';
+                    document.getElementById('paymentMode').value = '';
+                    document.getElementById('paymentDate').value = '';
+                    document.getElementById('remark').value = '';
+
+                    const paymentModal = new bootstrap.Modal(document.getElementById(
+                        'paymentModal'));
+                    paymentModal.show();
+
+                    document.getElementById('savePayment').onclick = function() {
+                        const receivedAmount = document.getElementById('receivedAmount').value;
+                        const paymentMode = document.getElementById('paymentMode').value;
+                        const paymentDate = document.getElementById('paymentDate').value;
+                        const remark = document.getElementById('remark').value;
+
+                        if (!receivedAmount || !paymentMode || !paymentDate) {
+                            alert('Please fill all required fields.');
+                            return;
+                        }
+
+                        fetch(`/admin/orders/${paymentId}/payment`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').getAttribute(
+                                        'content')
+                                },
+                                body: JSON.stringify({
+                                    amount: receivedAmount,
+                                    payment_mode: paymentMode,
+                                    date: paymentDate,
+                                    remark: remark
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Payment saved successfully.');
+                                    paymentModal.hide();
+                                    location.reload(); // Reload to reflect changes
+                                } else {
+                                    alert('Failed to save payment: ' + data.message);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error:', err);
+                                alert('An error occurred while saving the payment.');
+                            });
+                    };
+                });
+            });
+
         });
     </script>
+
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .content-wrapper,
+            .content-wrapper * {
+                visibility: visible;
+            }
+
+            .content-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                margin: 0;
+                padding: 10px;
+            }
+
+            .content-wrapper .btn {
+                display: none !important;
+            }
+
+            .row.mb-4 {
+                display: flex;
+                flex-wrap: nowrap;
+                width: 100%;
+                margin: 0;
+            }
+
+            .col-md-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+                padding: 0 10px;
+                box-sizing: border-box;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .table th,
+            .table td {
+                border: 1px solid #000;
+                padding: 8px;
+            }
+
+            .col-md-6 img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            body {
+                margin: 0;
+                font-size: 12pt;
+            }
+        }
+    </style>
 @endsection

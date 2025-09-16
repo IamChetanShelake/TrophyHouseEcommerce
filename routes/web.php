@@ -328,6 +328,8 @@ Route::middleware(['auth', isAdmin::class])->group(function () {
     // Route::get('/orders', [OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{status?}', [OrderController::class, 'index'])->name('orders');
 
+    Route::post('/orders/{payment}/payment', [OrderController::class, 'savePayment'])->name('orders.savePayment');
+
 
 
     Route::get('orders/user/{orderId}', [OrderController::class, 'getUserDetails'])->name('user');

@@ -127,6 +127,7 @@
                     <thead>
                         <tr>
                             <th>Sr. No.</th>
+                            <th>Image</th>
                             <th>Product</th>
                             <th>Size</th>
                             <th>Color</th>
@@ -143,9 +144,10 @@
                         @foreach ($payment->items as $item)
                             <tr>
                                 <td>{{ $sr++ }}</td>
+                                <td> <img src="{{ asset('product_images/' . $item->product->image) }}" alt="Image"></td>
                                 <td>{{ $item->product->title ?? 'N/A' }}</td>
                                 <td>{{ $item->variant->size ?? 'N/A' }}</td>
-                                <td>{{ $item->color ?? 'N/A' }}</td>
+                                <td>{{ $item->color ?? '-' }}</td>
                                 <td>{{ $item->quantity }}</td>
                                 <td>₹{{ number_format($item->unit_price, 2) }}</td>
                                 <td>₹{{ number_format($item->total_price, 2) }}</td>
@@ -155,15 +157,15 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="6" class="text-end"><strong>Subtotal:</strong></td>
+                            <td colspan="7" class="text-end"><strong>Subtotal:</strong></td>
                             <td>₹{{ number_format($subtotal, 2) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="text-end"><strong>Printing Charges:</strong></td>
+                            <td colspan="7" class="text-end"><strong>Printing Charges:</strong></td>
                             <td>₹{{ number_format($payment->making_charges, 2) }}</td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="text-end"><strong>Total Amount:</strong></td>
+                            <td colspan="7" class="text-end"><strong>Total Amount:</strong></td>
                             <td><strong>₹{{ number_format($payment->amount, 2) }}</strong></td>
                         </tr>
                     </tfoot>
