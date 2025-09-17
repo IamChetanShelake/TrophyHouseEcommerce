@@ -288,6 +288,7 @@
                                                             <option value="{{ $variant->id }}"
                                                                 data-price="{{ $variant->price }}"
                                                                 data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
+                                                                data-quantity="{{ $variant->quantity }}"
                                                                 {{ $cart->variant_id == $variant->id ? 'selected' : '' }}>
                                                                 {{ $variant->size }} inch -
                                                                 ₹{{ $variant->discounted_price ?? $variant->price }}
@@ -298,6 +299,7 @@
                                                             <option value="{{ $variant->id }}"
                                                                 data-price="{{ $variant->price }}"
                                                                 data-discounted="{{ $variant->discounted_price ?? $variant->price }}"
+                                                                data-quantity="{{ $variant->quantity }}"
                                                                 {{ $cart->variant_id == $variant->id ? 'selected' : '' }}>
                                                                 {{ $variant->size }} inch -
                                                                 ₹{{ $variant->discounted_price ?? $variant->price }}
@@ -793,9 +795,16 @@
 
             function changeQty(cartId, delta) {
                 const input = document.getElementById(`quantity-${cartId}`);
+                const card = input.closest('.cart-item-card');
+                const variantSelect = card.querySelector('.variant-select');
+                const selectedOption = variantSelect.options[variantSelect.selectedIndex];
+                const maxQuantity = parseInt(selectedOption.dataset.quantity) || 200;
                 let quantity = parseInt(input.value) + delta;
                 if (quantity < 1) quantity = 1;
-                if (quantity > 200) quantity = 200;
+                if (quantity > maxQuantity) {
+                    alert('We have limited quantity available. Maximum available: ' + maxQuantity);
+                    return;
+                }
                 input.value = quantity;
                 updateCartItem(cartId);
             }

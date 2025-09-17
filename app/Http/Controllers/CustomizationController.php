@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\PaymentItem;
 use App\Models\Payment;
 use App\Models\ProductionTask;
+use App\Models\PaymentDeliveryStatus;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -53,6 +54,12 @@ class CustomizationController extends Controller
                 $payment->update([
                     'delivery_status' => 'accepted'  // delivery_status will now reflect customization status
                 ]);
+                PaymentDeliveryStatus::create([
+                    'payment_id' => $payment->id,
+                    'delivery_status' => $payment->delivery_status,
+                    'changed_at' => now(),
+                ]);
+                
             }
         });
 
@@ -247,6 +254,13 @@ class CustomizationController extends Controller
             // Set delivery date = 5 days after last approved image
             $payment->delivery_date = Carbon::now()->addDays(5);
             $payment->save();
+
+            PaymentDeliveryStatus::create([
+                'payment_id' => $payment->id,
+                'delivery_status' => $payment->delivery_status,
+                'changed_at' => now(),
+            ]);
+
         }
 
         // 4. Create a production task for this approved image
@@ -294,6 +308,13 @@ class CustomizationController extends Controller
             $payment->delivery_status = 'accepted';   // or "pending" if you prefer
             $payment->delivery_date = null;     // remove scheduled delivery
             $payment->save();
+
+
+            PaymentDeliveryStatus::create([
+                'payment_id' => $payment->id,
+                'delivery_status' => $payment->delivery_status,
+                'changed_at' => now(),
+            ]);
         }
 
         return response()->json(['success' => true]);

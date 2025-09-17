@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\PaymentItem;
+use App\Models\PaymentDeliveryStatus;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -57,5 +58,10 @@ class Payment extends Model
             // if no customization request, treat as OK; change if you want otherwise
         }
         return true;
+    }
+
+    public function deliveryStatuses()
+    {
+        return $this->hasMany(PaymentDeliveryStatus::class);
     }
 }

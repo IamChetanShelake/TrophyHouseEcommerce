@@ -95,7 +95,11 @@
 
                                                         <input type="hidden" name="color" id="selectedColor"
                                                             value="{{ $firstColor }}">
-                                                        <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                        @if ($firstVariant && $firstVariant->quantity !== null && $firstVariant->quantity > 0)
+                                                            <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                        @else
+                                                            <button type="button" class="add-to-cart-btn" disabled style="opacity: 0.5;">Out of Stock</button>
+                                                        @endif
                                                     </form>
                                                     {{-- <i class="fas fa-share icon-toggle"></i> --}}
                                                     <i class="fas fa-share icon-toggle share-icon"
@@ -166,18 +170,20 @@
                                                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
                                                                 <input type="hidden" name="product_id" value="${prod.id}">
                                                                  <input type="hidden" name="variant_id" value="${prod.variants && prod.variants.length > 0 ? prod.variants[0].id : ''}">
-    <input type="hidden" name="color" value="${prod.variants && prod.variants.length > 0 
+    <input type="hidden" name="color" value="${prod.variants && prod.variants.length > 0
         ? (
-            Array.isArray(prod.variants[0].color) 
-            ? prod.variants[0].color[0] 
+            Array.isArray(prod.variants[0].color)
+            ? prod.variants[0].color[0]
             : (
-                typeof prod.variants[0].color === 'string' && prod.variants[0].color.startsWith('[') 
-                ? JSON.parse(prod.variants[0].color)[0] 
+                typeof prod.variants[0].color === 'string' && prod.variants[0].color.startsWith('[')
+                ? JSON.parse(prod.variants[0].color)[0]
                 : prod.variants[0].color
               )
-          ) 
+          )
         : ''}">
-                                                                <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                                ${prod.variants && prod.variants.length > 0 && prod.variants[0].quantity !== null && prod.variants[0].quantity > 0
+                                                                    ? '<button type="submit" class="add-to-cart-btn">Add To Cart</button>'
+                                                                    : '<button type="button" class="add-to-cart-btn" disabled style="opacity: 0.5;">Out of Stock</button>'}
                                                             </form>
                                                             
                                                             <i class="fas fa-share icon-toggle share-icon"

@@ -10,7 +10,7 @@
         <div class="row gy-4">
             <div class="col-md-5 d-flex justify-content-center align-items-start">
                 @if ($product->image)
-                    @if(isset($isOccasional) && $isOccasional)
+                    @if (isset($isOccasional) && $isOccasional)
                         <img src="{{ asset('OccasionalProduct_images/' . $product->image) }}" alt="{{ $product->title }}"
                             class="product-image img-fluid">
                     @else
@@ -45,8 +45,18 @@
                             style="font-family: 'Times New Roman', Times, serif; font-size:32px; font-weight:700;">
                             {{ $product->title }}
                         </p>
-                        <p class="text-success mb-4" style="font-family:'Source Sans 3', sans-serif; font-size:16px;">In
-                            Stock</p>
+                        @if ($firstVariant && $firstVariant->quantity !== null && $firstVariant->quantity > 0)
+                            <p id="stockStatus" class="text-success mb-4" style="font-family:'Source Sans 3', sans-serif; font-size:16px;">
+                                In
+                                Stock
+                            </p>
+                        @else
+                            <p id="stockStatus" class="text-danger mb-4" style="font-family:'Source Sans 3', sans-serif; font-size:16px;">
+                                Out Of
+                                Stock
+                            </p>
+                        @endif
+
 
 
                         <div id="strikeBlock" class="fw-bold mb-2"
@@ -75,17 +85,38 @@
                         <!-- Sizes -->
                         <p class="mb-3"><strong>Sizes</strong></p>
                         <div class="d-flex flex-wrap mb-3" id="sizeOptions">
+                            @php
+                                $hasAnyInStock = false;
+                                foreach ($variants as $variant) {
+                                    if ($variant->quantity && $variant->quantity > 0) {
+                                        $hasAnyInStock = true;
+                                        break;
+                                    }
+                                }
+                            @endphp
                             @foreach ($variants as $variant)
-                                <div class="size-option {{ $loop->first ? 'active' : '' }}"
+                                @php
+                                    $isInStock = $variant->quantity && $variant->quantity > 0;
+                                @endphp
+                                <div class="size-option {{ $loop->first ? 'active' : '' }} {{ !$isInStock ? 'out-of-stock' : '' }}"
+                                    @if($isInStock)
                                     onclick="selectSize(
          this,
          '{{ $variant->size }}',
          {{ $variant->discounted_price ?? ($variant->price ?? 0) }},   // discountedPrice (shown)
          {{ $variant->discount_percentage ?? 0 }},                    // discountPercent
          {{ $variant->price ?? 0 }},                                  // originalPrice (old price)
-         {{ $variant->id }}
-     )">
+         {{ $variant->id }},
+         {{ $variant->quantity }}
+     )"
+                                    @else
+                                    onclick="selectOutOfStockSize(this)"
+                                    @endif
+                                    >
                                     {{ $variant->size }} - inch
+                                    @if(!$isInStock)
+                                        <span class="stock-indicator">(Out of Stock)</span>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -159,7 +190,7 @@
                             <div class="mt-3 d-flex gap-2 flex-wrap">
                                 <form action="{{ route('cart.add') }}" method="POST" id="cartForm">
                                     @csrf
-                                    @if(isset($isOccasional) && $isOccasional)
+                                    @if (isset($isOccasional) && $isOccasional)
                                         <input type="hidden" name="occasional_product_id" value="{{ $product->id }}">
                                     @else
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -181,7 +212,11 @@
                                     <input type="hidden" name="color" id="selectedColor" value="{{ $firstColor }}">
 
                                     <input type="hidden" name="quantity" id="cartQuantity" value="1">
-                                    <button type="submit" class="btn-size-style">Add to Cart</button>
+                                    @if($hasAnyInStock)
+                                        <button type="submit" class="btn-size-style" id="addToCartBtn">Add to Cart</button>
+                                    @else
+                                        <button type="submit" class="btn-size-style" id="addToCartBtn" style="display: none;">Add to Cart</button>
+                                    @endif
                                 </form>
                                 <!--<button style="margin-left: 35px;" class="btn-size-style">Customization</button>-->
                             </div>
@@ -236,9 +271,10 @@
                             <div class="swiper-wrapper">
                                 @forelse ($similarProducts as $similarProduct)
                                     <div class="swiper-slide">
-                                    <div class="col-12">
+                                        <div class="col-12">
                                             <div class="card trophy-card zoom-on-hover text-center shadow-sm">
-                                                <a href="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}">
+                                                <a
+                                                    href="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}">
                                                     <div class="position-relative">
                                                         <img src="{{ asset('product_images/' . $similarProduct->image) }}"
                                                             alt="{{ $similarProduct->title }}" class="img-fluid"
@@ -304,7 +340,8 @@
                             @forelse ($similarProducts as $similarProduct)
                                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
                                     <div class="card trophy-card zoom-on-hover text-center shadow-sm">
-                                        <a href="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}">
+                                        <a
+                                            href="{{ route('productDetail', ['type' => 'product', 'id' => $similarProduct->id]) }}">
                                             <div class="position-relative">
                                                 <img src="{{ asset('product_images/' . $similarProduct->image) }}"
                                                     alt="{{ $similarProduct->title }}" class="img-fluid"
@@ -368,7 +405,7 @@
 
         let currentQuantity = 1;
 
-        function selectSize(element, size, discountedPrice, discountPercent, originalPrice, variantId) {
+        function selectSize(element, size, discountedPrice, discountPercent, originalPrice, variantId, quantity) {
             document.querySelectorAll('.size-option').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
@@ -400,6 +437,39 @@
             } else {
                 if (strikeBlock) strikeBlock.style.display = 'none';
             }
+            // update stock status
+            const stockEl = document.getElementById('stockStatus');
+            if (stockEl) {
+                if (quantity && quantity > 0) {
+                    stockEl.innerText = 'In Stock';
+                    stockEl.className = 'text-success mb-4';
+                    stockEl.style.fontFamily = "'Source Sans 3', sans-serif";
+                    stockEl.style.fontSize = '16px';
+                } else {
+                    stockEl.innerText = 'Out Of Stock';
+                    stockEl.className = 'text-danger mb-4';
+                    stockEl.style.fontFamily = "'Source Sans 3', sans-serif";
+                    stockEl.style.fontSize = '16px';
+                }
+            }
+            // update add to cart button
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            if (addToCartBtn) {
+                if (quantity && quantity > 0) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.innerText = 'Add to Cart';
+                    addToCartBtn.style.display = 'inline-block';
+                } else {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.innerText = 'Out of Stock';
+                    addToCartBtn.style.display = 'none';
+                }
+            }
+        }
+
+        function selectOutOfStockSize(element) {
+            // Show alert when clicking on out-of-stock size
+            alert('This size is currently out of stock. Please select an available size.');
         }
 
 
@@ -454,10 +524,10 @@
                         '{{ route('wishlist.add') }}';
                     const method = isWishlisted ? 'GET' : 'POST';
                     const body = isWishlisted ? null : JSON.stringify({
-                        @if(isset($isOccasional) && $isOccasional)
-                        occasional_product_id: productId
+                        @if (isset($isOccasional) && $isOccasional)
+                            occasional_product_id: productId
                         @else
-                        product_id: productId
+                            product_id: productId
                         @endif
                     });
 
@@ -549,6 +619,31 @@
                     }
                 });
             }
+
+            // Set initial button state based on whether any variant is in stock
+            const hasAnyInStock = {{ $hasAnyInStock ? 'true' : 'false' }};
+            const initialQuantity = {{ $firstVariant ? $firstVariant->quantity : 0 }};
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            if (addToCartBtn) {
+                if (hasAnyInStock && initialQuantity && initialQuantity > 0) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.innerText = 'Add to Cart';
+                    addToCartBtn.style.display = 'inline-block';
+                } else {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.innerText = 'Out of Stock';
+                    addToCartBtn.style.display = 'none';
+                }
+            }
+
+            // Prevent form submission if button is disabled
+            document.getElementById('cartForm').addEventListener('submit', function(e) {
+                const addToCartBtn = document.getElementById('addToCartBtn');
+                if (addToCartBtn.disabled) {
+                    e.preventDefault();
+                    alert('This product is out of stock.');
+                }
+            });
         });
     </script>
 
@@ -571,6 +666,20 @@
             border-color: #e63946;
         }
 
+        .size-option.out-of-stock {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+        }
+
+        .stock-indicator {
+            font-size: 12px;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
         .btn-outline {
             border: 1px solid #ddd;
             background: rgba(235, 234, 234, 1);
@@ -586,6 +695,11 @@
             padding: 5px 20px;
             border-radius: 10px;
             cursor: pointer;
+        }
+
+        .btn-size-style:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .cart-toast {

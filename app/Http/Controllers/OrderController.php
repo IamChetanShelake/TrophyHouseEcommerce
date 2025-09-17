@@ -16,6 +16,7 @@ use App\Models\WishlistItem;
 use Illuminate\Http\Request;
 use App\Models\AwardCategory;
 use App\Models\ProductVariant;
+use App\Models\PaymentDeliveryStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -89,6 +90,13 @@ class OrderController extends Controller
 
         $payment->delivery_status = $data['delivery_status'];
         $updated =  $payment->save();
+
+        PaymentDeliveryStatus::create([
+            'payment_id' => $payment->id,
+            'delivery_status' => $payment->delivery_status,
+            'changed_at' => now(),
+        ]);
+
         if ($updated) {
             return back()->with('success', 'Delivery status updated.');
         } else {

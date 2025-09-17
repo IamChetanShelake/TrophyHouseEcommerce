@@ -16,7 +16,14 @@
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $prod->id }}">
                             <input type="hidden" name="variant_id" value="{{ $prod->variants->first()->id ?? '' }}">
-                            <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                            @php
+                                $firstVariant = $prod->variants->first();
+                            @endphp
+                            @if ($firstVariant && $firstVariant->quantity !== null && $firstVariant->quantity > 0)
+                                <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                            @else
+                                <button type="button" class="add-to-cart-btn" disabled style="opacity: 0.5;">Out of Stock</button>
+                            @endif
                         </form>
 
                         <!-- Share -->

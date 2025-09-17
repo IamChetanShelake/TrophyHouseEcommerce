@@ -996,8 +996,14 @@
                                                                     value="{{ $prod->id }}">
                                                                 <input type="hidden" name="variant_id"
                                                                     value="{{ $prod->variants->first()->id ?? '' }}">
-                                                                <button type="submit" class="add-to-cart-btn">Add To
-                                                                    Cart</button>
+                                                                @php
+                                                                    $firstVariant = $prod->variants->first();
+                                                                @endphp
+                                                                @if ($firstVariant && $firstVariant->quantity !== null && $firstVariant->quantity > 0)
+                                                                    <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                                @else
+                                                                    <button type="button" class="add-to-cart-btn" disabled style="opacity: 0.5;">Out of Stock</button>
+                                                                @endif
                                                             </form>
                                                             <i class="fas fa-share icon-toggle share-icon"
                                                                 data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"
@@ -1146,9 +1152,12 @@
                                                                                     value="{{ $product->id }}">
                                                                                 <input type="hidden" name="variant_id"
                                                                                     value="{{ $variant ? $variant->id : '' }}">
-                                                                                <button type="submit"
-                                                                                    class="add-to-cart-btn">Add To
-                                                                                    Cart</button>
+                                                                                @if ($variant && $variant->quantity !== null && $variant->quantity > 0)
+                                                                                    <button type="submit"
+                                                                                        class="add-to-cart-btn">Add To Cart</button>
+                                                                                @else
+                                                                                    <button type="button" class="add-to-cart-btn" disabled style="opacity: 0.5;">Out of Stock</button>
+                                                                                @endif
                                                                             </form>
 
                                                                             <i class="fas fa-share icon-toggle share-icon"
@@ -1278,9 +1287,14 @@
                                                                     value="{{ $prod->id }}">
                                                                 <input type="hidden" name="variant_id"
                                                                     value="{{ $prod->variants->first()->id ?? '' }}">
-                                                                <button type="submit" class="add-to-cart-btn">Add To
-
-                                                                    Cart</button>
+                                                                @php
+                                                                    $firstVariant = $prod->variants->first();
+                                                                @endphp
+                                                                @if ($firstVariant && $firstVariant->quantity !== null && $firstVariant->quantity > 0)
+                                                                    <button type="submit" class="add-to-cart-btn">Add To Cart</button>
+                                                                @else
+                                                                    <button type="button" class="add-to-cart-btn" disabled style="opacity: 0.5;">Out of Stock</button>
+                                                                @endif
                                                             </form>
                                                             <i class="fas fa-share icon-toggle share-icon"
                                                                 data-share-link="{{ route('productDetail', ['type' => 'product', 'id' => $prod->id]) }}"

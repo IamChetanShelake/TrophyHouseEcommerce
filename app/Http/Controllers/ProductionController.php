@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ProductionTask;
+use App\Models\PaymentDeliveryStatus;
 use App\Http\Controllers\Controller;
 
 class ProductionController extends Controller
@@ -23,6 +24,12 @@ class ProductionController extends Controller
         //orders status
         $task->payment->delivery_status = 'ready_to_pickup';
         $task->payment->save();
+
+        PaymentDeliveryStatus::create([
+            'payment_id' => $task->payment->id,
+            'delivery_status' => $task->payment->delivery_status,
+            'changed_at' => now(),
+        ]);
 
         //payment item status
         $productitem = $task->paymentItem;
