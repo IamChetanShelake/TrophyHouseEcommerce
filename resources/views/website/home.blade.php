@@ -275,7 +275,7 @@
 
                 <div class="modal-body">
                     <div class="login-content text-center d-none">
-                        <img src="{{ asset('website/assets/images/TH-logo.png') }}" alt="Logo" style="height: 60px;"
+                        <img src="{{ asset('website/assets/images/desiglow_logo.png') }}" alt="Logo" style="height: 60px;"
                             class="mb-3">
                         <h4>Welcome Back! Login to continue.</h4>
 
@@ -751,6 +751,7 @@
                     let currentSelectedSubcategory = null;
 
                     // Function to handle subcategory click
+
                     function handleSubcategoryClick(subcatId) {
                         currentSelectedSubcategory = subcatId;
 
@@ -970,9 +971,6 @@
                                             alt="">
                                         No Products Found.
                                     </p>
-
-                                    <!-- <div class="trophy-card-wrapper position-relative">
-                                                                    <div class="row justify-content-center text-center position-relative" id="best-seller-wrapper"> -->
                                     @php $hasBestSellers = false; @endphp
 
                                     @foreach ($products as $prod)
@@ -2089,9 +2087,6 @@ document.getElementById('priceRange').addEventListener('change', function() {
                             });
                     }
                 </script>
-
-
-
 
     </main>
 @endsection

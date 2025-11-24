@@ -6,7 +6,7 @@
               <!-- Logo & Tagline -->
               <div class="col-lg-2 col-md-6 col-sm-12">
                   <img src="{{ asset('website/assets/images/TH-Logo.png') }}" alt="Trophy House" style="width: 150px;">
-                  <p class="mt-3 mb-1">Celebrate the moment, cherish the memory.<br>Trophy House is where victories live
+                  <p class="mt-3 mb-1">Celebrate the moment, cherish the memory.<br>Desi Glow is where victories live
                       on.</p>
                   <p><strong>From Our Hands to Your Victory</strong></p>
                   <div class="d-flex gap-3 mt-3">
@@ -34,19 +34,6 @@
                       <li class="mb-2"><i class="fas fa-caret-right me-2"></i><a href="{{ route('contact') }}"
                               class="text-black text-decoration-none">CONTACT US</a></li>
 
-
-                      {{-- <li>
-                          <select class="">
-                              <i class="fas fa-caret-right me-2"></i>
-                              <option value="">Pages</option>
-                              @foreach ($pages as $page)
-                                  <option class="text-black text-decoration-none"
-                                      href="{{ route('pageDetail', $page->id) }}">{{ $page->title }}</option>
-                              @endforeach
-                          </select>
-
-                      </li> --}}
-
                   </ul>
 
               </div>
@@ -66,11 +53,11 @@
                       <li class="mb-3 d-flex align-items-start">
                           <i class="fas fa-envelope me-2 mt-1"></i>
                           <a href="mailto:Trophyhouse@gmail.com"
-                              class="text-black text-decoration-none">trophyhousensk1@gmail.com </a>
+                              class="text-black text-decoration-none">desiglow@gmail.com </a>
                       </li>
                       <li class="d-flex align-items-start">
                           <i class="fas fa-phone me-2 mt-1"></i>
-                          <span class="text-black">9423962242, 9423962042, 9404076742</span>
+                          <span class="text-black">0000000000</span>
                       </li>
                   </ul>
               </div>

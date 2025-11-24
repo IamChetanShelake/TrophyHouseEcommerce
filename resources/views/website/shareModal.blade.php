@@ -58,35 +58,6 @@
     </div>
 </div>
 
-<!-- JavaScript -->
-{{-- <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.share-icon').forEach(icon => {
-            icon.addEventListener('click', function(e) {
-                e.preventDefault(); // Prevent link navigation
-                e.stopPropagation(); // Stop event bubbling
-
-                const shareLink = this.getAttribute('data-share-link');
-
-                document.getElementById('shareLinkInput').value = shareLink;
-                document.getElementById('facebookShare').href =
-                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`;
-                document.getElementById('twitterShare').href =
-                    `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareLink)}`;
-                document.getElementById('whatsappShare').href =
-                    `https://wa.me/?text=${encodeURIComponent(shareLink)}`;
-            });
-        });
-    });
-
-    function copyToClipboard() {
-        const input = document.getElementById("shareLinkInput");
-        input.select();
-        input.setSelectionRange(0, 99999);
-        document.execCommand("copy");
-        alert("Link copied to clipboard!");
-    }
-</script> --}}
 <script>
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('share-icon')) {

@@ -9,9 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!--====== Title ======-->
-    <title>@yield('title', 'Trophy House') </title>
+    <title>@yield('title', 'DesiGlow') </title>
     <!--====== Favicon Icon ======-->
-    <link rel="shortcut icon" href="{{ asset('website/assets/images/TH-Favicon.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ asset('website/assets/images/desiglow_logo.png') }}" type="image/png">
     <!--====== Google Fonts ======-->
     <link
         href="https://fonts.googleapis.com/css2?family=Aoboshi+One&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
@@ -111,50 +111,7 @@
                         document.querySelector(".sidemenu-wrapper-cart").classList.remove("open");
                     });
                 </script>
-                <!--<div class="sidebar-user d-flex align-items-center gap-3 px-3 py-3 border-bottom">-->
-                <!--    <div class="profile-wrapper">-->
-                <!--        @if (isset(Auth::user()->image))
--->
-                <!--            <img src="{{ asset('website/assets/images/header-menu.png') }}" alt="User">-->
-            <!--        @else-->
-                <!--            <img src="{{ asset('images/profile-default.png') }}" alt="User">-->
-                <!--
-@endif-->
-                <!--        <input type="file" id="cameraInput" accept="image/*" capture="environment"-->
-                <!--            style="display: none;">-->
-                <!--        <div class="camera-icon" onclick="document.getElementById('cameraInput').click()">-->
-                <!--            <i class="fas fa-camera"></i>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div class="user-info">-->
-                <!--        <h6 class="mb-0 fw-semibold">-->
-                <!--            @if (Auth::user())
--->
-                <!--                {{ Auth::user()->name }}-->
-                <!--
-@endif-->
-                <!--        </h6>-->
-                <!--        <p class="small  mb-1">-->
-                <!--            @if (Auth::user())
--->
-                <!--                {{ Auth::user()->email }}-->
-                <!--
-@endif-->
-                <!--        </p>-->
-                <!--        @if (Auth::user())
--->
-                <!--            <a class="btn btn-outline-danger btn-sm" href="{{ route('profile.edit') }}">Edit-->
-                <!--                Profile</a>-->
-                <!--            {{-- <button class="btn btn-outline-danger btn-sm">Edit Profile</button> --}}-->
-            <!--        @else-->
-                <!--            {{-- <a href="{{route('login')}}" class="btn btn-outline-danger btn-sm">Login</a> --}}-->
-                <!--            <a href="{{ route('login') }}" class="custom-btn btn-outline-danger btn-sm"-->
-                <!--                style="cursor:pointer;" data-form="login">Log-->
-                <!--                in</a>-->
-                <!--
-@endif-->
-                <!--    </div>-->
-                <!--</div>-->
+
                 <div class="sidebar-user d-flex align-items-center gap-3 px-3 py-3 border-bottom">
                     <!-- Profile Image Section -->
                     <div class="navbar-profile-wrapper" style="position: relative;">
@@ -206,129 +163,7 @@
 
                 <!-- JavaScript for preview -->
 
-                <!--<div class="sidebar px-3">-->
-                <!--    <div class="category-section mb-3">-->
-                <!--        <h6 class="fw-bold"-->
-                <!--            style="font-family: 'Source Sans 3', sans-serif;top: 15px;position: relative;">-->
-                <!--            <img src="{{ asset('website/assets/images/categories.png') }}" alt="Icon"-->
-                <!--                style="width: 16px; height: 16px; margin-right: 8px;">-->
-                <!--            Categories-->
-                <!--        </h6>-->
-                <!--        <ul class="list-unstyled category-list"-->
-                <!--            style="font-family: 'Source Sans 3', sans-serif;top: 23px;position: relative;">-->
-                <!--            @foreach ($categories as $cat)
--->
-                <!--                {{-- <li><a href="{{ route('view.category', $cat->id) }}">{{$cat->name}}</a></li> --}}-->
-                <!--                <li>-->
-                <!--                    <a href="{{ route('view.category', $cat->id) }}" class="category"-->
-                <!--                        data-target="#filters-trophies">{{ $cat->name }}</a>-->
-                <!--                </li>-->
-                <!--
-@endforeach-->
-                <!--        </ul>-->
-                <!--    </div>-->
-                <!--    <div id="filters-trophies" class="filter-block d-none"-->
-                <!--        style="font-family: 'Source Sans 3', sans-serif;">-->
-                <!--        <h6 class="fw-semibold mt-3">Price</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price1">-->
-                <!--            <label class="form-check-label" for="price1">₹100 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price2">-->
-                <!--            <label class="form-check-label" for="price2">₹500 - ₹1000</label>-->
-                <!--        </div>-->
-                <!--        <h6 class="fw-semibold mt-3">Colours</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color1">-->
-                <!--            <label class="form-check-label" for="color1">Black</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color2">-->
-                <!--            <label class="form-check-label" for="color2">Golden</label>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="filters-medals" class="filter-block d-none">-->
-                <!--        <h6 class="fw-semibold mt-3">Price</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price1">-->
-                <!--            <label class="form-check-label" for="price1">₹100 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price2">-->
-                <!--            <label class="form-check-label" for="price2">₹101 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price3">-->
-                <!--            <label class="form-check-label" for="price3">₹50 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price4">-->
-                <!--            <label class="form-check-label" for="price4">₹600 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price5">-->
-                <!--            <label class="form-check-label" for="price5">₹1500 - ₹1000</label>-->
-                <!--        </div>-->
-                <!--        <h6 class="fw-semibold mt-3">Colours</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color1">-->
-                <!--            <label class="form-check-label" for="color1">Black</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color2">-->
-                <!--            <label class="form-check-label" for="color2">Golden</label>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="filters-gifts" class="filter-block d-none">-->
-                <!--        <h6 class="fw-semibold mt-3">Price</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price1">-->
-                <!--            <label class="form-check-label" for="price1">₹100 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price2">-->
-                <!--            <label class="form-check-label" for="price2">₹500 - ₹1000</label>-->
-                <!--        </div>-->
-                <!--        <h6 class="fw-semibold mt-3">Colours</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color1">-->
-                <!--            <label class="form-check-label" for="color1">Black</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color2">-->
-                <!--            <label class="form-check-label" for="color2">Golden</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color3">-->
-                <!--            <label class="form-check-label" for="color3">Red</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color4">-->
-                <!--            <label class="form-check-label" for="color4">Blue</label>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="filters-samman" class="filter-block d-none">-->
-                <!--        <h6 class="fw-semibold mt-3">Price</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price1">-->
-                <!--            <label class="form-check-label" for="price1">₹100 - ₹500</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="price2">-->
-                <!--            <label class="form-check-label" for="price2">₹500 - ₹1000</label>-->
-                <!--        </div>-->
-                <!--        <h6 class="fw-semibold mt-3">Colours</h6>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color1">-->
-                <!--            <label class="form-check-label" for="color1">Black</label>-->
-                <!--        </div>-->
-                <!--        <div class="form-check square-check">-->
-                <!--            <input class="form-check-input" type="checkbox" id="color2">-->
-                <!--            <label class="form-check-label" for="color2">Golden</label>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
+
                 <div class="sidebar-footer mt-auto px-3">
                     <ul class="list-unstyled" style="position: relative;top: 10px;">
                         <li><i class="fas fa-box"></i><a href="{{ route('my.orders') }}"
@@ -385,7 +220,7 @@
                     <div class="nav-inner-menu">
                         <div class="logo-wrap d-none d-lg-block">
                             <a href="{{ route('Websitehome') }}">
-                                <img src="{{ asset('website/assets/images/TH-Logo.png') }}" alt="Company Logo"
+                                <img src="{{ asset('website/assets/images/desiglow_logo.png') }}" alt="Company Logo"
                                     style="height: 60px;">
                             </a>
                         </div>
